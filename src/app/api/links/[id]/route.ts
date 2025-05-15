@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { Link } from '@/app/models/links';
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
     await dbConnect();
-    const { id } = params;
+    const { id } = await context.params;
     await Link.findByIdAndDelete(id);
     return NextResponse.json({ success: true });
 }
