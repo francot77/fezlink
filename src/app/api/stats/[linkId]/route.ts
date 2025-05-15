@@ -1,0 +1,26 @@
+// app/api/stats/[linkId]/route.ts
+import { auth } from "@clerk/nextjs/server";
+import dbConnect from "@/lib/mongodb";
+import { Link } from "@/app/models/links";
+import { LinkStats } from "@/app/models/linkStats";
+import { NextResponse } from "next/server";
+
+export async function GET(req: Request, { params }: { params: Promise<{ linkId: string }> }) {
+    const { userId } = await auth();
+    const { linkId } = await params;
+
+    if (!userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await dbConnect();
+
+    const link = await Link.findOne({ _id: linkId, userId });
+    if (!link) {
+        return NextResponse.json({ error: "Link not found or not yours" }, { status: 403 });
+    }
+
+    const stats = await LinkStats.find({ linkId });
+
+    return NextResponse.json(stats[0]);
+}

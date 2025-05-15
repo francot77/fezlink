@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
+/* * {
+  outline: 1px solid red;
+} */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
 }
 
 @theme inline {
@@ -20,7 +25,56 @@
 }
 
 body {
-  background: var(--background);
+
+  background: radial-gradient(circle at top, #010102, #04122b);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes slideInLeft {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+#animated-section h1,
+#animated-section h2,
+#animated-section h3,
+#animated-section div,
+#animated-section h5,
+#animated-section h6 {
+  opacity: 0;
+  animation: slideInLeft 1s ease-out forwards;
+}
+
+
+#animated-section h1 {
+  animation-delay: 0s;
+}
+
+#animated-section h2 {
+  animation-delay: 0.5s;
+}
+
+#animated-section h3 {
+  animation-delay: 1s;
+}
+
+#animated-section div {
+  animation-delay: 1.5s;
+}
+
+#animated-section h5 {
+  animation-delay: 2s;
+}
+
+#animated-section h6 {
+  animation-delay: 2.5s;
+
 }
