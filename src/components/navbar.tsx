@@ -1,8 +1,8 @@
 'use client'
 
+import Link from "next/link"
 import Button from "./button"
 import { SignedIn, SignInButton, SignedOut, SignUpButton, UserButton } from "@clerk/nextjs"
-//import { useState } from "react"
 type NavElement = {
     title: string,
     path: string,
@@ -13,7 +13,6 @@ type NavElement = {
 }
 
 const NavBar = () => {
-    //const [activeLink, setActiveLink] = useState("Home")
     const Routes: NavElement[] = [{
         title: "Home",
         path: "/"
@@ -41,10 +40,9 @@ const NavBar = () => {
             </SignedOut>
             <SignedIn>
                 <div className="flex gap-4 items-center">
-                    <a href="/dashboard" className="text-sm underline">Dashboard</a>
+                    <Link href="/dashboard" className="text-sm underline">Dashboard</Link>
                     <UserButton />
                 </div>
-                {/* <UserButton /> */}
             </SignedIn>
         </div>
     </nav>

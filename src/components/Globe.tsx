@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -10,7 +11,8 @@ export default function ClicksGlobe({
 }: {
     countries: { country: string; clicksCount: number }[];
 }) {
-    const [arcsData, setArcsData] = useState<any[]>([]);
+    type PointData = { lat: number; lng: number; size: number };
+    const [arcsData, setArcsData] = useState<PointData[]>([]);
     const globeEl = useRef<any>(null);
 
     // 🧠 Delay hasta que ref esté disponible
@@ -55,9 +57,9 @@ export default function ClicksGlobe({
                 globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
                 backgroundColor="rgba(0,0,0,0)"
                 pointsData={arcsData}
-                pointLat={(d) => d.lat}
-                pointLng={(d) => d.lng}
-                pointAltitude={(d) => d.size * 0.001}
+                pointLat={(d: any) => d.lat}
+                pointLng={(d: any) => d.lng}
+                pointAltitude={(d: any) => d.size * 0.001}
                 pointColor={() => '#b3f96d'}
                 pointRadius={0.3}
                 pointResolution={12}

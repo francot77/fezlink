@@ -10,7 +10,7 @@ export interface ModalProps {
     isStats?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, title, description, onAccept, onCancel, isStats, isLoading }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, title, description, onAccept, onCancel, isStats }) => {
     if (!isOpen) return null;
 
     return (
