@@ -7,35 +7,36 @@ import Button from '@/components/button'
 export default function Home() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen px-4 text-white font-bold bg-gradient-to-br from-gray-900 to-black relative">
-      {/* Navbar */}
+
       <NavBar />
 
-      {/* Contenido principal */}
+
       <div className="flex flex-col md:flex-row items-center justify-between max-w-5xl mx-auto gap-10 py-12 text-center md:text-left z-10">
-        {/* Texto e ítems */}
+
         <section className="md:w-1/2 space-y-6">
           <h1 className="text-4xl md:text-6xl leading-tight">Fast and Easy Link</h1>
 
           <ul className="space-y-3 text-lg md:text-xl">
             <li className="flex items-center gap-3 justify-center md:justify-start">
-              <span>👆🏻</span> Lleva un registro de clicks
+              <span>👆🏻</span> Keep track of clicks
             </li>
             <li className="flex items-center gap-3 justify-center md:justify-start">
-              <span>🌍</span> Revisa desde qué país acceden a tus enlaces
+              <span>🌍</span> See which country your links are accessed from
             </li>
             <li className="flex items-center gap-3 justify-center md:justify-start">
               <Image src="/qr.webp" width={20} height={20} alt="QR icon" />
-              Crea tus propios códigos QR
+              Create your own QR codes
             </li>
             <li className="flex items-center gap-3 justify-center md:justify-start">
-              <span>🕊️</span> Sin publicidad, para siempre
+              <span>🕊️</span> No ads, forever
             </li>
             <li className="flex items-center gap-3 justify-center md:justify-start">
-              <span>🔥</span> Crea una BioPage para tus redes
+              <span>🔥</span> Create a BioPage for your socials
             </li>
           </ul>
 
-          {/* Botón personalizado */}
+
+
           <Button
             title="Comenzar ahora!"
             customStyles={{
@@ -48,7 +49,7 @@ export default function Home() {
           />
         </section>
 
-        {/* Imagen y título secundario */}
+
         <section className="md:w-1/2 flex flex-col items-center mt-8 md:mt-0">
           <Image
             src="/hero.webp"
