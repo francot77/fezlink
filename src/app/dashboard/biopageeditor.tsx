@@ -4,25 +4,7 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import Button from '@/components/button'
-
-type LinkType = {
-    _id: string
-    shortUrl: string
-    originalUrl: string
-}
-
-type SelectedLink = {
-    shortUrl: string
-    label: string
-}
-
-type BiopageType = {
-    slug: string
-    links: SelectedLink[]
-    backgroundColor: string
-    textColor: string
-    avatarUrl?: string
-}
+import { BiopageType, LinkType, SelectedLink } from '@/types/globals'
 
 export default function BiopageEditor() {
     const { user } = useUser()
@@ -32,9 +14,18 @@ export default function BiopageEditor() {
     const [textColor, setTextColor] = useState('#ffffff')
     const [loading, setLoading] = useState(true)
     const [biopage, setBiopage] = useState<BiopageType | null>(null)
-
+    const [isPremium, setIsPremium] = useState<boolean>(false)
+    const [modal, setModal] = useState<boolean>(false)
+    const [inputSlug, setInputslug] = useState<string>('')
     // Cargar biopage del usuario
     const getUserBiopage = async () => {
+
+        const resAT = await fetch('/api/accounttype')
+        if (resAT.ok) {
+            const data = await resAT.json()
+            if (data.isPremium) setIsPremium(data.isPremium)
+        }
+
         setLoading(true)
         const res = await fetch('/api/biopage')
         if (res.ok) {
@@ -53,7 +44,7 @@ export default function BiopageEditor() {
         setLoading(false)
     }
 
-    // Cargar links disponibles para seleccionar
+
     const loadLinks = async () => {
         const res = await fetch('/api/links')
         const data = await res.json()
@@ -67,7 +58,7 @@ export default function BiopageEditor() {
         }
     }, [user])
 
-    // Manejar selección/des-selección de links
+
     const toggleSelect = (shortUrl: string) => {
         setSelected((prev) =>
             prev.some((l) => l.shortUrl === shortUrl)
@@ -76,7 +67,7 @@ export default function BiopageEditor() {
         )
     }
 
-    // Actualizar label del link seleccionado
+
     const updateLabel = (shortUrl: string, value: string) => {
         setSelected((prev) =>
             prev.map((link) =>
@@ -85,7 +76,7 @@ export default function BiopageEditor() {
         )
     }
 
-    // Crear biopage (POST /api/biopage/create)
+
     const createBiopage = async () => {
         const res = await fetch('/api/biopage/create', {
             method: 'POST',
@@ -102,7 +93,24 @@ export default function BiopageEditor() {
         }
     }
 
-    // Guardar cambios (PUT /api/biopage/update)
+    const handleChangeSlug = async () => {
+        try {
+            const res = await fetch('/api/biopage/changeslug', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slug: inputSlug }),
+            })
+            const data = await res.json()
+            if (res.ok) {
+                setBiopage(prev => prev ? { ...prev, slug: data.newslug } : prev)
+                alert('Guardado correctamente')
+            } else {
+                alert(`Error: ${data.error || 'Error al guardar'}`)
+            }
+        } catch (error) {
+            alert('Error al guardar biopage: ' + error)
+        }
+    }
     const saveBiopage = async () => {
         if (!biopage) {
             alert('No hay biopage para actualizar.')
@@ -142,20 +150,37 @@ export default function BiopageEditor() {
                 <Button title="Generar Biopage" onClick={createBiopage} />
             </div>
         )
+    if (modal) return <div className='flex bg-black/70 w-full h-full p-2 flex-col gap-2'>
+        <div className='flex flex-row justify-between'>
+            <h1>Desea cambiar su enlace de usuario?</h1>
+            <Button title='Cerrar' onClick={() => setModal(false)} className='shadow-md shadow-red-500 hover:bg-red-900 p-2' />
+        </div>
+        <div className='flex gap-2 flex-row'>
+            <input className='border-2 p-2 rounded-md w-1/3' placeholder='Inserte un nuevo usuario' value={inputSlug} onChange={(e) => setInputslug(e.target.value)}></input>
+            <Button title='Cambiar' className='border-green-500 hover:bg-green-900 shadow-md shadow-green-500 p-2' onClick={() => handleChangeSlug()} />
+        </div>
 
+        <span>Tenga en cuenta que el cambio puede hacerse cada 3 dias, elija bien</span>
+    </div>
     return (
-        <div className="p-4 max-w-md mx-auto text-white">
-            <h2 className="text-xl font-bold mb-4">Editar Biopage</h2>
-
-            <section className="mb-6">
-                <h3 className="font-semibold mb-2">Selecciona tus links:</h3>
+        <div className="p-4 max-w-md text-white">
+            <div className='flex flex-col mb-3'>
+                <h2 className="text-2xl font-bold mb-2 ">Editar Biopage</h2>
+                <div className='flex flex-row gap-2.5 items-center'>
+                    <h3 className='text-xl mb-2'>Tu usuario es: <span className='text-red-700'>@{biopage.slug}</span></h3>
+                    {isPremium ? <Button title='Cambiar' className='border-green-500 hover:bg-green-900 shadow-md shadow-green-500 p-2' onClick={() => setModal(true)} /> : null}
+                </div>
+                <span >Tipo de cuenta: {isPremium ? <span className='font-bold text-yellow-600'>Premium 🔥</span> : <span className='text-green-400'>Free</span>}</span>
+            </div>
+            <section className="mb-4">
+                <h3 className="font-semibold mb-1">Links para mostrar:</h3>
                 {links.length === 0 ? (
                     <p>No hay links disponibles</p>
                 ) : (
                     links.map((link) => {
                         const isSelected = selected.find((l) => l.shortUrl === link.shortUrl)
                         return (
-                            <div key={link.shortUrl} className="border-b py-2">
+                            <div key={link.shortUrl} className="border-b py-1">
                                 <label className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -208,22 +233,24 @@ export default function BiopageEditor() {
                     />
                 </div>
             </section>
+            <div className='flex flex-row gap-4 items-center justify-center'>
+                <button
+                    onClick={saveBiopage}
+                    className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded w-full text-nowrap"
+                >
+                    Guardar cambios
+                </button>
 
-            <button
-                onClick={saveBiopage}
-                className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded w-full"
-            >
-                Guardar cambios
-            </button>
+                <Link
+                    href={`/@${biopage.slug}`}
+                    className="block bg-green-500 hover:bg-green-600 px-4 py-2 rounded text-center text-nowrap"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Ver Biopage
+                </Link>
+            </div>
 
-            <Link
-                href={`/@${biopage.slug}`}
-                className="block mt-4 bg-green-500 hover:bg-green-600 px-4 py-2 rounded text-center"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Ver Biopage
-            </Link>
         </div>
     )
 }

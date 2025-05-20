@@ -3,6 +3,9 @@ import useLinks from "./useLinks";
 import { useRouter } from "next/navigation";
 import Profile from "@/app/dashboard/profile";
 import BiopageEditor from "@/app/dashboard/biopageeditor";
+import { PremiumFeatures } from "@/components/premiumfeatures";
+
+
 
 export const useDashboard = () => {
     const [activeLink, setActiveLink] = useState<number | null>(null);
@@ -25,6 +28,10 @@ export const useDashboard = () => {
             index: 3,
             title: "BioPage",
             function: () => setActiveLink(3)
+        }, {
+            index: 4,
+            title: "Get Premium 🔥",
+            function: () => setActiveLink(4)
         },
         {
             index: 20,
@@ -33,7 +40,7 @@ export const useDashboard = () => {
             function: () => { router.push("/") }
         }]
         return LINKS.map((e) => {
-            return <li key={e.index}><button onClick={e.function} style={{ color: e.color ? e.color : "white", cursor: "pointer" }}>{e.title}</button></li>
+            return <li key={e.index}><button onClick={e.function} style={{ color: e.color ? e.color : "white", cursor: "pointer", textWrap: "nowrap" }}>{e.title!}</button></li>
         })
     }
 
@@ -47,6 +54,8 @@ export const useDashboard = () => {
                 return <p>Mis Stats!</p>
             case 3:
                 return <BiopageEditor />
+            case 4:
+                return <PremiumFeatures />
             default:
                 return <p>Welcome to your dashboard!</p>
 

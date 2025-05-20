@@ -143,7 +143,7 @@ const useLinks = () => {
                     className="border-2 border-gray-500 rounded-md p-2 flex-1"
                 />
                 <Button
-                    title="Agregar Link ➕"
+                    title="Agregar Link"
                     onClick={async () => {
                         if (!newUrl.startsWith('http')) {
                             alert('URL inválida. Debe empezar con http o https');
@@ -152,22 +152,22 @@ const useLinks = () => {
                         await addLink(newUrl);
                         setNewUrl('');
                     }}
-                    customStyles={{ backgroundColor: 'green' }}
+                    className='shadow-green-500 hover:bg-green-900 shadow-md p-2'
                 />
             </div>
 
             {links.length > 0 && links.map((link) => (
-                <div key={link.id} className="p-2 flex flex-row gap-2 items-center">
+                <div key={link.id} className="p-1 flex flex-row gap-2 items-center">
                     <div className="border-2 border-gray-500 rounded-md p-2 max-w-30 md:max-w-full overflow-hidden">
                         <a href={link.shortUrl} target="_blank" rel="noopener noreferrer">
                             {link.shortUrl}
                         </a>
                     </div>
-                    <Button title="Stats 📊" onClick={() => getStats(link)} />
+                    <Button title="📊" onClick={() => getStats(link)} className='hover:shadow-blue-500 shadow-sm hover:bg-blue-900' />
                     <Button
-                        title="Borrar 🗑️"
+                        title="🗑️"
                         onClick={() => handleDelete(link)}
-                        customStyles={{ backgroundColor: 'red' }}
+                        className='hover:shadow-red-600 shadow-sm hover:bg-red-900'
                     />
                 </div>
             ))}

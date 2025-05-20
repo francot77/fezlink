@@ -1,26 +1,21 @@
 'use client'
 import React from 'react';
 
-interface ButtonProps {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     title: string;
-    onClick: () => void;
     customStyles?: React.CSSProperties;
 }
 
-const Button: React.FC<ButtonProps> = ({ title, onClick, customStyles }) => {
+const Button: React.FC<ButtonProps> = ({ title, customStyles, ...rest }) => {
     return (
         <button
-            onClick={onClick}
             style={{
-                padding: '5px 10px',
                 fontSize: '16px',
                 borderRadius: '5px',
-                border: 'none',
                 cursor: 'pointer',
-                backgroundColor: '#007BFF',
-                color: '#fff',
                 ...customStyles,
             }}
+            {...rest}
         >
             {title}
         </button>

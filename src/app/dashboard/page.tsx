@@ -1,35 +1,44 @@
 'use client'
 import React from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
-import { useUser } from "@clerk/nextjs";
-//import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import Spinner from '@/components/spinner';
 
 const DashboardPage: React.FC = () => {
-    const { renderButtons, renderSection, activeLink } = useDashboard()
-    //const router = useRouter();
-    const { isLoaded, } = useUser();
+    const { renderButtons, renderSection, activeLink } = useDashboard();
+    const { isLoaded } = useUser();
+
     if (!isLoaded) {
-        return <div className='flex justify-center items-center w-full h-screen flex-col gap-3'>
-            <span className='text-white'>Cargando...</span>
-            <Spinner color='white' />
-        </div>;
+        return (
+            <div className="flex justify-center items-center w-full h-screen flex-col gap-3 bg-gray-900">
+                <span className="text-white text-lg">Cargando...</span>
+                <Spinner color="white" />
+            </div>
+        );
     }
-    //if (!isSignedIn) return <div>No estás logueado</div>;
-    //if (!user) router.push("/")
+
     return (
-        <div className='flex justify-center items-center h-screen w-full flex-col text-white'>
-            {/* <div className="absolute bottom-10 left-20 w-50 h-50 bg-blue-600 rounded-full opacity-10 blur-2xl"></div> */}
-            <h1 className='m-3 text-4xl'>FezLink Dashboard</h1>
-            <div className='flex flex-row md:min-w-4xl rounded-md min-h-1/2 border-3 border-gray-900 shadow-2xl shadow-blue-800 '>
-                <section className='p-3 border-r-3 border-gray-900'>
-                    <ul className='space-y-5 m-2'>
-                        {renderButtons()}
-                    </ul>
-                </section>
-                <section className='p-3 w-full'>
-                    {renderSection(activeLink!)}
-                </section>
+        <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
+            <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                FezLink Dashboard
+            </h1>
+
+            <div className="w-full max-w-6xl rounded-xl bg-gray-800 shadow-2xl shadow-blue-900/20 overflow-hidden border border-gray-700">
+                <div className="flex flex-col md:flex-row">
+
+                    <aside className="md:w-64 p-4 border-b md:border-b-0 md:border-r border-gray-700">
+                        <ul className="space-y-3">
+                            {renderButtons()}
+                        </ul>
+                    </aside>
+
+
+                    <main className="flex-1 p-6">
+                        <div className="bg-gray-700/30 backdrop-blur-sm rounded-lg p-6 min-h-[60vh]">
+                            {renderSection(activeLink!)}
+                        </div>
+                    </main>
+                </div>
             </div>
         </div>
     );
