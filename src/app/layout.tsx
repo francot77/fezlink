@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Work_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
 import {
   ClerkProvider
@@ -24,9 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
+      <Analytics />
+      <SpeedInsights />
       <html lang="en">
         <body className={`${workSans.className} antialiased`}>
-
           {children}
         </body>
       </html>
