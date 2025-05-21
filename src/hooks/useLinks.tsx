@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
 import Spinner from '@/components/spinner';
 import ClicksGlobe from '@/components/Globe';
-
+import { toast } from 'sonner';
 interface Link {
     id: string;
     originalUrl: string;
@@ -24,7 +24,7 @@ export interface LinkStat {
 
 const useLinks = () => {
     const [links, setLinks] = useState<Link[]>([]);
-    const [newUrl, setNewUrl] = useState('');
+    const [newUrl, setNewUrl] = useState('https://');
     const [selectedLink, setSelectedLink] = useState<Link | null>(null);
     const [linkStats, setLinkStats] = useState<LinkStat | null>(null);
     const [modalType, setModalType] = useState<null | 'stats' | 'delete'>(null);
@@ -36,14 +36,27 @@ const useLinks = () => {
     }, []);
 
     const addLink = async (originalUrl: string) => {
-        const res = await fetch('/api/links', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ originalUrl })
-        });
-        const newLink = await res.json();
-        setLinks(prev => [...prev, newLink]);
+        toast.promise(
+            async () => {
+                const res = await fetch('/api/links', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ originalUrl })
+                });
+                const newLink = await res.json();
+                if (newLink.error) throw new Error(newLink.error);
+                setLinks(prev => [...prev, newLink]);
+            },
+            {
+                loading: 'Agregando link...',
+                success: 'Link added successfully',
+                error: (err) => `Error: ${err.message}`,
+                position: "top-center",
+                richColors: true
+            }
+        );
     };
+
 
     const getStats = async (link: Link) => {
         setSelectedLink(link);

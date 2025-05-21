@@ -29,7 +29,7 @@ const NavBar = () => {
 
 
     return <nav>
-        <div className="flex flex-row gap-5 fixed justify-center items-center left-0 top-2 w-full ">
+        <div className="flex flex-row gap-5 fixed justify-center items-center left-0 top-2 z-50 w-full ">
             {Routes.map((ne) => {
                 if (ne.isButton) return <Button key={ne.title} title={ne.title} onClick={ne.function!} customStyles={ne.styles!} />
                 return <div key={ne.path}>{ne.title}</div>

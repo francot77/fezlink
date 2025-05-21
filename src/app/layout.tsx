@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Work_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Toaster } from 'sonner';
 import "./globals.css";
 import {
   ClerkProvider
@@ -31,6 +32,7 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${workSans.className} antialiased`}>
           {children}
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>
