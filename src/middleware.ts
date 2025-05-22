@@ -10,6 +10,7 @@ const blockedPaths = [
     '/xmlrpc.php',
     '/wordpress',
     '/wordpress/wp-admin',
+    '/wp-admin/setup-config.php',
     '/wordpress/wp-admin/setup-config.php',
 ]
 
@@ -17,15 +18,14 @@ const blockedPaths = [
 export default clerkMiddleware(async (auth, req) => {
     const { pathname } = req.nextUrl
 
-    // Bloquear rutas maliciosas (WordPress scanners)
     if (blockedPaths.some((path) => pathname.startsWith(path))) {
         return new NextResponse('Forbidden', { status: 403 })
     }
 
-    // Aplicar protección de Clerk sólo a rutas protegidas
     if (isProtectedRoute(req)) {
         await auth.protect()
     }
+    return NextResponse.next()
 })
 
 export const config = {

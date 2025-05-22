@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import { useUser } from "@clerk/nextjs";
-import Spinner from '@/components/spinner';
-import Button from '@/components/button';
+import Spinner from '@/components/Spinner';
+import Button from '@/components/Button';
 
 const Profile: React.FC = () => {
     const { user } = useUser();
@@ -11,7 +11,7 @@ const Profile: React.FC = () => {
         return <div className='flex justify-center items-center w-full h-full flex-col gap-3'>
             <span>Cargando...</span>
             <Spinner color='white' />
-        </div>;
+        </div>
     }
 
     return (
@@ -21,7 +21,7 @@ const Profile: React.FC = () => {
                 <section>
                     <p><strong>Name:</strong> {user.firstName}</p>
                     <p><strong>Email:</strong> {user.primaryEmailAddress?.emailAddress || "No email available"}</p>
-                    <Button title='Cambiar contraseña' customStyles={{ backgroundColor: "red", margin: "1em" }} onClick={() => { }} />
+                    <Button title='Cambiar contraseña' className='bg-red-500 m-3 p-2 hover:bg-red-900' onClick={() => { }} />
                 </section>
                 <section>
                     <img className='w-25 rounded-full' src={user.imageUrl} alt="avatar" />

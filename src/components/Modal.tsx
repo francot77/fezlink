@@ -15,7 +15,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, description, onAccept, onC
 
     return (
         <div style={styles.overlay}>
-            <div style={styles.modal} className='shadow-blue-500 shadow-2xl border-2 border-gray-900'>
+            <div style={styles.modal} className='shadow-blue-700/30 bg-gray-800 shadow-2xl border-2 border-gray-900'>
                 <h2>{title}</h2>
                 <div>{description}</div>
                 <div style={styles.buttons}>
@@ -31,7 +31,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, description, onAccept, onC
 
 const styles = {
     overlay: { position: 'fixed' as const, top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' },
-    modal: { backgroundColor: '#000', padding: '20px', borderRadius: '8px', width: '400px', textAlign: 'center' as const },
+    modal: { padding: '20px', borderRadius: '8px', width: '400px', textAlign: 'center' as const },
     buttons: { marginTop: '20px', display: 'flex', justifyContent: 'center', gap: "10px" },
     acceptButton: { backgroundColor: '#4CAF50', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer' },
     cancelButton: { backgroundColor: '#f44336', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer' },

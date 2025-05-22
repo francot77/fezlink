@@ -2,7 +2,7 @@
 import React from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useUser } from '@clerk/nextjs';
-import Spinner from '@/components/spinner';
+import Spinner from '@/components/Spinner';
 
 const DashboardPage: React.FC = () => {
     const { renderButtons, renderSection, activeLink } = useDashboard();
@@ -23,7 +23,7 @@ const DashboardPage: React.FC = () => {
                 FezLink Dashboard
             </h1>
 
-            <div className="w-full max-w-6xl rounded-xl bg-gray-800 shadow-2xl shadow-blue-900/20 overflow-hidden border border-gray-700">
+            <div className="w-full max-w-6xl rounded-xl bg-gray-800 shadow-2xl shadow-blue-900/20 overflow-hidden border border-gray-700 min-h-1/2">
                 <div className="flex flex-col md:flex-row">
 
                     <aside className="md:w-64 p-4 border-b md:border-b-0 md:border-r border-gray-700">
@@ -33,7 +33,7 @@ const DashboardPage: React.FC = () => {
                     </aside>
 
 
-                    <main className="flex-1 p-6">
+                    <main className="p-6 w-full">
                         <div className="bg-gray-700/30 backdrop-blur-sm rounded-lg p-6 min-h-[60vh]">
                             {renderSection(activeLink!)}
                         </div>

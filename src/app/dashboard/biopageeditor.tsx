@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
-import Button from '@/components/button'
+import Button from '@/components/Button'
 import { BiopageType, LinkType, SelectedLink } from '@/types/globals'
 
 export default function BiopageEditor() {

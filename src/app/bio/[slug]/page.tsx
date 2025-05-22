@@ -1,6 +1,6 @@
 'use client'
 import QRButton from "@/components/QRButton";
-import Spinner from "@/components/spinner";
+import Spinner from "@/components/Spinner";
 import Image from 'next/image';
 import { use, useEffect, useState } from "react";
 
@@ -41,7 +41,7 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
         fetchFunc();
     }, [slug]);
 
-    if (isLoading) return <Spinner />;
+    if (isLoading) return <div className="w-full h-screen flex flex-col justify-center items-center text-white gap-2"><h1>Loading...</h1><Spinner color="white" /></div>;
     if (error) return <div className="text-red-400 p-4">{error}</div>;
     if (!bioPage) return null;
 
