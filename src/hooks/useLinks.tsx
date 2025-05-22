@@ -1,8 +1,8 @@
 'use client';
-import Button from '@/components/Button';
+import Button from '@/components/button';
 import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
-import Spinner from '@/components/Spinner';
+import Spinner from '@/components/spinner';
 import ClicksGlobe from '@/components/Globe';
 import { toast } from 'sonner';
 interface Link {

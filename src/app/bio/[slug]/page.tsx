@@ -1,6 +1,6 @@
 'use client'
 import QRButton from "@/components/QRButton";
-import Spinner from "@/components/Spinner";
+import Spinner from "@/components/spinner";
 import Image from 'next/image';
 import { use, useEffect, useState } from "react";
 

@@ -2,7 +2,7 @@
 
 import NavBar from '@/components/Navbar'
 import Image from 'next/image'
-import Button from '@/components/Button'
+import Button from '@/components/button'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {

@@ -2,7 +2,7 @@
 import React from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useUser } from '@clerk/nextjs';
-import Spinner from '@/components/Spinner';
+import Spinner from '@/components/spinner';
 
 const DashboardPage: React.FC = () => {
     const { renderButtons, renderSection, activeLink } = useDashboard();

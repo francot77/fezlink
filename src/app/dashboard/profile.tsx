@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import { useUser } from "@clerk/nextjs";
-import Spinner from '@/components/Spinner';
-import Button from '@/components/Button';
+import Spinner from '@/components/spinner';
+import Button from '@/components/button';
 
 const Profile: React.FC = () => {
     const { user } = useUser();
