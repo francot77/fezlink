@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -5,6 +6,8 @@ import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import Button from '@/components/button'
 import { BiopageType, LinkType, SelectedLink } from '@/types/globals'
+import { toast } from 'sonner'
+import { UploadButton } from '@/utils/uploadthings'
 
 export default function BiopageEditor() {
     const { user } = useUser()
@@ -16,6 +19,7 @@ export default function BiopageEditor() {
     const [biopage, setBiopage] = useState<BiopageType | null>(null)
     const [isPremium, setIsPremium] = useState<boolean>(false)
     const [modal, setModal] = useState<boolean>(false)
+    const [avatarModal, setAvatarModal] = useState<boolean>(false)
     const [inputSlug, setInputslug] = useState<string>('')
     // Cargar biopage del usuario
     const getUserBiopage = async () => {
@@ -87,9 +91,9 @@ export default function BiopageEditor() {
             setSelected(data.biopage.links || [])
             setBgColor(data.biopage.backgroundColor || '#000000')
             setTextColor(data.biopage.textColor || '#ffffff')
-            alert('Biopage creado correctamente.')
+            toast.success('Biopage creado correctamente.', { richColors: true, position: "bottom-center" })
         } else {
-            alert('Error al crear biopage')
+            toast.error('Error al crear biopage', { richColors: true, position: "bottom-center" })
         }
     }
 
@@ -103,17 +107,17 @@ export default function BiopageEditor() {
             const data = await res.json()
             if (res.ok) {
                 setBiopage(prev => prev ? { ...prev, slug: data.newslug } : prev)
-                alert('Guardado correctamente')
+                toast.success('Guardado correctamente', { richColors: true, position: "bottom-center" })
             } else {
-                alert(`Error: ${data.error || 'Error al guardar'}`)
+                toast.error(`Error: ${data.error || 'Error al guardar'}`, { richColors: true, position: "bottom-center" })
             }
         } catch (error) {
-            alert('Error al guardar biopage: ' + error)
+            toast.error('Error al guardar biopage: ' + error, { richColors: true, position: "bottom-center" })
         }
     }
     const saveBiopage = async () => {
         if (!biopage) {
-            alert('No hay biopage para actualizar.')
+            toast.error('No hay biopage para actualizar.', { richColors: true, position: "bottom-center" })
             return
         }
         try {
@@ -130,12 +134,12 @@ export default function BiopageEditor() {
             const data = await res.json()
             if (res.ok) {
                 setBiopage(data.biopage)
-                alert('Guardado correctamente')
+                toast.success("Guardado Correctamente", { richColors: true, position: "bottom-center" })
             } else {
-                alert(`Error: ${data.error || 'Error al guardar'}`)
+                toast.error(`Error: ${data.error || 'Error al guardar'}`, { richColors: true, position: "bottom-center" })
             }
         } catch (error) {
-            alert('Error al guardar biopage: ' + error)
+            toast.error(`Error al guardar biopage: '${error}`, { richColors: true, position: "bottom-center" })
         }
     }
 
@@ -147,7 +151,7 @@ export default function BiopageEditor() {
             <div className="flex flex-col justify-center items-center gap-2">
                 <h1>No existe una biopage para este usuario</h1>
                 <h2>¿Desea generarla?</h2>
-                <Button title="Generar Biopage" onClick={createBiopage} />
+                <Button title="Generar Biopage" onClick={createBiopage} className='shadow-lg shadow-green-600 p-2' />
             </div>
         )
     if (modal) return <div className='flex bg-black/70 w-full h-full p-2 flex-col gap-2'>
@@ -162,10 +166,49 @@ export default function BiopageEditor() {
 
         <span>Tenga en cuenta que el cambio puede hacerse cada 3 dias, elija bien</span>
     </div>
+    if (avatarModal) return <div className='flex bg-black/70 w-full p-2 flex-col gap-2'>
+        <div className='flex flex-col items-center'>
+            <h1>Desea cambiar su avatar?</h1>
+            <div className="w-30 h-30 rounded-full overflow-hidden">
+                <img
+                    src={biopage.avatarUrl}
+                    alt="avatar"
+                    className="w-full h-full object-cover"
+                />
+            </div>
+        </div>
+        <UploadButton
+            endpoint="imageUploader"
+            onClientUploadComplete={(res) => {
+                // Do something with the response
+                console.log("Files: ", res);
+                toast.success("Se cambio con exito su avatar", { richColors: true, position: "bottom-center" });
+            }}
+            onUploadError={(error: Error) => {
+                // Do something with the error.
+                toast.error(`Error! ${error.message}`, { richColors: true, position: "bottom-center" });
+            }}
+        />
+        <Button title='Cerrar' onClick={() => setAvatarModal(false)} className='bg-red-600 rounded-md p-2 hover:bg-red-900 w-fit self-center' />
+    </div>
+
+
+
     return (
         <div className="p-4 max-w-md text-white">
             <div className='flex flex-col mb-3'>
-                <h2 className="text-2xl font-bold mb-2 ">Editar Biopage</h2>
+                <div className='grid-cols-2 grid items-center my-3'>
+                    <h2 className="text-2xl font-bold mb-2 ">Editar Biopage</h2>
+                    <div className="w-30 h-30 rounded-full overflow-hidden">
+                        <img
+                            onClick={() => setAvatarModal(true)}
+                            src={biopage.avatarUrl}
+                            alt="avatar"
+                            className="w-full h-full object-cover cursor-pointer"
+                        />
+                    </div>
+
+                </div>
                 <div className='flex flex-row gap-2.5 items-center'>
                     <h3 className='text-xl mb-2'>Tu usuario es: <span className='text-red-700'>@{biopage.slug}</span></h3>
                     {isPremium ? <Button title='Cambiar' className='border-green-500 hover:bg-green-900 shadow-md shadow-green-500 p-2' onClick={() => setModal(true)} /> : null}

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/mongodb.js
+import Biopage from '@/app/models/bioPages';
 import mongoose from 'mongoose';
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -33,6 +34,18 @@ async function dbConnect() {
     }
     cached.conn = await cached.promise;
     return cached.conn;
+}
+export async function updateAvatarUrl(userId: string, avatarUrl: string) {
+    await dbConnect();
+
+    const result = await Biopage.updateOne(
+        { userId },
+        { $set: { avatarUrl } }
+    );
+
+    if (result.matchedCount === 0) {
+        throw new Error("Biopage no encontrado para el userId dado");
+    }
 }
 
 export default dbConnect;

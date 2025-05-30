@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 import QRButton from "@/components/QRButton";
 import Spinner from "@/components/spinner";
-import Image from 'next/image';
 import { use, useEffect, useState } from "react";
 
 interface Link {
@@ -54,12 +54,11 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
 
             {bioPage.avatarUrl && (
                 <div className="mb-6">
-                    <Image
+                    <img
                         src={bioPage.avatarUrl}
                         alt="Avatar"
-                        width={96}
-                        height={96}
-                        className="rounded-full border-4 border-current"
+                        className="rounded-full w-40 h-40"
+                        style={{ border: `4px solid ${bioPage.textColor}` }}
                     />
                 </div>
             )}
@@ -70,7 +69,7 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
             </h1>
 
 
-            <section
+            {bioPage.links.length == 0 ? <h1>No hay links para mostrar</h1> : <section
                 className="w-full max-w-md bg-white/10 backdrop-blur-sm p-6 rounded-xl shadow-lg"
                 style={{ boxShadow: `0 0 10px ${bioPage.textColor}80` }}
             >
@@ -93,7 +92,7 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
                         </li>
                     ))}
                 </ul>
-            </section>
+            </section>}
 
             <footer className="mt-10 text-sm text-gray-400">
                 © {new Date().getFullYear()} Fezlink - Tu Acortador de Links 🐍

@@ -159,11 +159,11 @@ const useLinks = () => {
                     title="Agregar Link"
                     onClick={async () => {
                         if (!newUrl.startsWith('http')) {
-                            alert('URL inválida. Debe empezar con http o https');
+                            toast('URL inválida. Debe empezar con http o https', { richColors: true, position: "bottom-center" });
                             return;
                         }
                         await addLink(newUrl);
-                        setNewUrl('');
+                        setNewUrl('https://');
                     }}
                     className='shadow-green-500 hover:bg-green-900 shadow-md p-2'
                 />

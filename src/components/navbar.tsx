@@ -16,10 +16,6 @@ const NavBar = () => {
         path: "/"
     },
     {
-        title: "Solutions",
-        path: "/solutions"
-    },
-    {
         title: "Pricing",
         path: "/pricing",
     }
