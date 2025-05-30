@@ -3,7 +3,7 @@ import useLinks from "./useLinks";
 import { useRouter } from "next/navigation";
 import Profile from "@/app/dashboard/profile";
 import BiopageEditor from "@/app/dashboard/biopageeditor";
-import { PremiumFeatures } from "@/components/Premiumfeatures";
+import { PremiumFeatures } from "@/components/premiumfeatures";
 
 
 

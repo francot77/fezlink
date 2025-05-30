@@ -1,6 +1,6 @@
 'use client'
 
-import NavBar from '@/components/Navbar'
+import NavBar from '@/components/navbar'
 import Image from 'next/image'
 import Button from '@/components/button'
 import { useRouter } from 'next/navigation'
