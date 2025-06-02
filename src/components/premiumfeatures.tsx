@@ -2,15 +2,16 @@ import { usePaddle } from "@/hooks/usePaddle";
 import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
-export const PremiumFeatures = () => {
+
+
+const PremiumFeatures = ({ priceId, time }: { priceId: string, time: string }) => {
     const auth = useAuth()
     const paddle = usePaddle()
     const handleCheckout = () => {
         if (!auth.userId) redirect("/")
         if (!paddle) return;
-
         paddle.Checkout.open({
-            items: [{ priceId: 'pri_01jwryd6rgxfdh50rknhcqh1aq', quantity: 1 }],
+            items: [{ priceId: priceId, quantity: 1 }],
             customer: {
                 email: 'user@example.com',
             },
@@ -45,12 +46,14 @@ export const PremiumFeatures = () => {
 
         <div className="mb-6">
             <h2 className="font-semibold text-gray-400 mb-2">Pricing</h2>
-            <p className="text-sm text-gray-500">$2/month - Billing Anual</p>
-            <p className="text-sm text-gray-500">$2.5/month - Billing Mensual</p>
+            {time == "anual" ? <p className="text-sm text-gray-500">$2/month - Billing Anual</p> : null}
+            {time == "mensual" ? <p className="text-sm text-gray-500">$2.5/month - Billing Mensual</p> : null}
         </div>
 
         <button onClick={handleCheckout} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300">
-            Upgrade to Premium
+            Upgrade {time == "mensual" ? "Monthly" : "Annually"}
         </button>
     </div></div>
 }
+
+export default PremiumFeatures;

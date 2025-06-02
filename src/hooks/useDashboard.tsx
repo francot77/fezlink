@@ -3,7 +3,7 @@ import useLinks from "./useLinks";
 import { useRouter } from "next/navigation";
 import Profile from "@/app/dashboard/profile";
 import BiopageEditor from "@/app/dashboard/biopageeditor";
-import { PremiumFeatures } from "@/components/premiumfeatures";
+import PremiumFeatures from "@/components/premiumfeatures";
 import Stats from "@/components/stats";
 
 // Íconos
@@ -86,7 +86,10 @@ export const useDashboard = () => {
             case 3:
                 return <BiopageEditor />;
             case 4:
-                return <PremiumFeatures />;
+                return <div className="flex justify-center items-center gap-4">
+                    <PremiumFeatures time={"mensual"} priceId={"pri_01jwryd6rgxfdh50rknhcqh1aq"} />
+                    <PremiumFeatures time={"anual"} priceId={"pri_01jwryfkyzp3jrbj7xw8hjp585"} />
+                </div>
             default:
                 return <p>Welcome to your dashboard!</p>;
         }

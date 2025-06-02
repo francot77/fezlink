@@ -28,7 +28,7 @@ export const FreeFeatures = () => {
         <div className="mb-6">
             <h2 className="font-semibold text-gray-400 mb-2">Pricing</h2>
             <p className="text-sm text-gray-500">$0/month - Free</p>
-            <br></br>
+
         </div>
 
         <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300">

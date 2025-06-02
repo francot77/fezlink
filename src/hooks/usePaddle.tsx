@@ -12,7 +12,6 @@ export function usePaddle() {
                     token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
                 });
                 instance?.Environment.set("sandbox")
-                console.log(instance)
                 setPaddle(instance ?? null);
             } catch (err) {
                 console.error('Error al inicializar Paddle:', err);
