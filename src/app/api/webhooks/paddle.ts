@@ -1,6 +1,17 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+
 // /pages/api/webhooks/paddle.js
 
-export default async function handler(req, res) {
+interface PaddleWebhookBody {
+    alert_name: string;
+    email?: string;
+    [key: string]: unknown;
+}
+
+export default async function handler(
+    req: NextApiRequest & { body: PaddleWebhookBody },
+    res: NextApiResponse
+): Promise<void> {
     if (req.method !== 'POST') {
         return res.status(405).send('Método no permitido');
     }
@@ -9,7 +20,7 @@ export default async function handler(req, res) {
     // const isValid = verifyPaddleSignature(req.body, req.headers['paddle-signature']);
     // if (!isValid) return res.status(403).send('Firma inválida');
 
-    const event = req.body.alert_name;
+    const event: string = req.body.alert_name;
 
     console.log('Webhook recibido:', event);
 
