@@ -1,11 +1,8 @@
 import { Link } from '@/app/models/links';
 import { LinkStats } from '../models/linkStats';
+import Click from '../models/clicks'; // <-- importá tu modelo nuevo
 import dbConnect from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
-
-interface RequestWithHeaders extends Request {
-    headers: Headers;
-}
 
 function getCountryCode(req: RequestWithHeaders): string {
     const country = req.headers.get('x-vercel-ip-country');
@@ -15,12 +12,16 @@ function sanitize(slug: string) {
     if (slug.startsWith("@")) return "@" + slug.replace(/[^\w-]/g, '')
     return slug.replace(/[^\w-]/g, '')
 }
+interface RequestWithHeaders extends Request {
+    headers: Headers;
+}
+
 export async function GET(req: Request, context: { params: Promise<{ slug?: string }> }) {
     const { slug } = await context.params;
-    const sanitizedSlug = sanitize(slug!)
-    if (sanitizedSlug?.startsWith("@")) return NextResponse.redirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.substring(1)}`)
-    const country = getCountryCode(req);
+    const sanitizedSlug = sanitize(slug!);
+    if (sanitizedSlug?.startsWith("@")) return NextResponse.redirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.substring(1)}`);
 
+    const country = getCountryCode(req);
     if (!slug) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
 
     await dbConnect();
@@ -28,6 +29,7 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     const link = await Link.findOne({ shortId: slug });
     if (!link) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
 
+    // Actualizar contador totalClicks
     const updatedLink = await Link.findOneAndUpdate(
         { _id: link._id },
         { $inc: { totalClicks: 1 } },
@@ -36,13 +38,12 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
 
     if (!updatedLink) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
 
-    // Paso 1: Intentar incrementar el país si ya existe en el array
+    // Actualizar clicks por país en linkStats
     const res = await LinkStats.updateOne(
         { linkId: link._id, 'countries.country': country },
         { $inc: { 'countries.$.clicksCount': 1 } }
     );
 
-    // Paso 2: Si no existía, pushear uno nuevo
     if (res.modifiedCount === 0) {
         await LinkStats.updateOne(
             { linkId: link._id },
@@ -52,6 +53,19 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
             },
             { upsert: true }
         );
+    }
+
+    // --- NUEVO: Registrar clic en colección clicks ---
+    try {
+        await Click.create({
+            linkId: link._id,
+            userId: link.userId,
+            country,
+            timestamp: new Date()
+        });
+    } catch (error) {
+        console.error('Error registrando clic en clicks:', error);
+        // No interrumpir la redirección si falla la inserción
     }
 
     return NextResponse.redirect(updatedLink.originalUrl, 301);

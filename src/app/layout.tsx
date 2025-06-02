@@ -30,6 +30,9 @@ export default function RootLayout({
       <Analytics />
       <SpeedInsights />
       <html lang="en">
+        <head>
+          <link rel="manifest" href="/manifest.json" />
+        </head>
         <body className={`${workSans.className} antialiased`}>
           {children}
           <Toaster />

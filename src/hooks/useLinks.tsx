@@ -2,7 +2,6 @@
 import Button from '@/components/button';
 import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
-import Spinner from '@/components/spinner';
 import ClicksGlobe from '@/components/Globe';
 import { toast } from 'sonner';
 interface Link {
@@ -28,7 +27,7 @@ const useLinks = () => {
     const [selectedLink, setSelectedLink] = useState<Link | null>(null);
     const [linkStats, setLinkStats] = useState<LinkStat | null>(null);
     const [modalType, setModalType] = useState<null | 'stats' | 'delete'>(null);
-
+    const [deleteInput, setDeleteInput] = useState<string>('')
     useEffect(() => {
         fetch('/api/links')
             .then(res => res.json())
@@ -62,16 +61,30 @@ const useLinks = () => {
         setSelectedLink(link);
         setLinkStats(null);
         setModalType('stats');
+        try {
+            const res = await fetch(`/api/stats/${link.id}`);
+            if (res.ok) {
+                const stats = await res.json();
+                if (!stats.error) {
+                    setLinkStats(stats);
+                    return
+                }
+                return toast.info("No hay clicks en este enlace aun", { richColors: true, position: "top-center" })
+            }
 
-        const res = await fetch(`/api/stats/${link.id}`);
-        const stats = await res.json();
-        setLinkStats(stats);
+        } catch (error) {
+            console.log(error)
+        }
     };
 
     const deleteLink = async (id: string) => {
-        await fetch(`/api/links/${id}`, { method: 'DELETE' });
-        setLinks(prev => prev.filter(link => link.id !== id));
-        closeModal();
+        if (deleteInput !== 'DELETE') toast.info("Debes escribir DELETE para borrar el link", { richColors: true, position: "top-center" })
+        else {
+            await fetch(`/api/links/${id}`, { method: 'DELETE' });
+            setLinks(prev => prev.filter(link => link.id !== id));
+            closeModal();
+            setDeleteInput("")
+        }
     };
 
     const handleDelete = (link: Link) => {
@@ -83,6 +96,7 @@ const useLinks = () => {
         setModalType(null);
         setSelectedLink(null);
         setLinkStats(null);
+        setDeleteInput("")
     };
 
     const renderModal = () => {
@@ -93,7 +107,7 @@ const useLinks = () => {
         return (
             <Modal
                 isOpen
-                title={isStats ? 'Estadísticas' : 'Borrar Link'}
+                title={isStats ? 'Informacion' : 'Borrar Link'}
                 isStats={isStats}
                 onCancel={closeModal}
                 onAccept={
@@ -125,17 +139,19 @@ const useLinks = () => {
                             </p>
                             <div className="mt-4 flex justify-center items-center h-[250px]">
                                 {!linkStats ? (
-                                    <Spinner color="white" />
+                                    <span>No se registraron click para este link aun!</span>
                                 ) : (
                                     <ClicksGlobe countries={linkStats.countries} />
                                 )}
                             </div>
                         </div>
                     ) : (
-                        <p>
-                            ¿Está seguro que desea borrar el link{' '}
-                            <strong>{selectedLink.shortUrl}</strong>?
-                        </p>
+                        <div className='flex flex-col justify-center items-center'>
+                            ¿Está seguro que desea borrar el link?
+                            <strong className='text-red-500'>{selectedLink.shortUrl}</strong>
+                            <span>Escribe DELETE para borrar</span>
+                            <input value={deleteInput} required onChange={e => setDeleteInput(e.target.value)} className='p-2 w-fit bg-gray-500 rounded-md' placeholder=''></input>
+                        </div>
                     )
                 }
             />
@@ -159,7 +175,7 @@ const useLinks = () => {
                     title="Agregar Link"
                     onClick={async () => {
                         if (!newUrl.startsWith('http')) {
-                            toast('URL inválida. Debe empezar con http o https', { richColors: true, position: "bottom-center" });
+                            toast('URL inválida. Debe empezar con http o https', { richColors: true, position: "top-center" });
                             return;
                         }
                         await addLink(newUrl);

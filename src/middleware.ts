@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 const isProtectedRoute = createRouteMatcher(['/dashboard'])
+const isAdminRoute = createRouteMatcher(['/admin(.*)'])
 
 // Lista de rutas que queremos bloquear
 const blockedPaths = [
@@ -18,10 +19,16 @@ const blockedPaths = [
 export default clerkMiddleware(async (auth, req) => {
     const { pathname } = req.nextUrl
 
+    //Check para admin cms
+    if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'admin') {
+        const url = new URL('/', req.url)
+        return NextResponse.redirect(url)
+    }
+    //Block para bots
     if (blockedPaths.some((path) => pathname.startsWith(path))) {
         return new NextResponse('Forbidden', { status: 403 })
     }
-
+    //Para protejer el dashboar sin auth
     if (isProtectedRoute(req)) {
         await auth.protect()
     }

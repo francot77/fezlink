@@ -17,6 +17,10 @@ export type LinkType = {
     shortUrl: string
     originalUrl: string
 }
+export type LinkStat = {
+    country: string,
+    clicksCount: number
+}
 
 export type SelectedLink = {
     shortUrl: string

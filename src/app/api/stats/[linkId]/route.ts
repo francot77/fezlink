@@ -21,6 +21,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ linkId: 
     }
 
     const stats = await LinkStats.find({ linkId });
-
-    return NextResponse.json(stats[0]);
+    if (stats.length > 0) return NextResponse.json(stats[0]);
+    return NextResponse.json({ error: "Not info for this link" })
 }

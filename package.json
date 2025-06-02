@@ -10,15 +10,18 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.19.1",
+    "@paddle/paddle-js": "^1.4.1",
     "@uploadthing/react": "^7.3.1",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
+    "lucide-react": "^0.511.0",
     "mongodb": "^6.16.0",
     "mongoose": "^8.14.2",
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-globe.gl": "^2.33.2",
+    "recharts": "^2.15.3",
     "sonner": "^2.0.3",
     "three": "^0.176.0",
     "uploadthing": "^7.7.2"

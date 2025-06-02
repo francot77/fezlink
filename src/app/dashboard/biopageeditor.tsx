@@ -91,9 +91,9 @@ export default function BiopageEditor() {
             setSelected(data.biopage.links || [])
             setBgColor(data.biopage.backgroundColor || '#000000')
             setTextColor(data.biopage.textColor || '#ffffff')
-            toast.success('Biopage creado correctamente.', { richColors: true, position: "bottom-center" })
+            toast.success('Biopage creado correctamente.', { richColors: true, position: "top-center" })
         } else {
-            toast.error('Error al crear biopage', { richColors: true, position: "bottom-center" })
+            toast.error('Error al crear biopage', { richColors: true, position: "top-center" })
         }
     }
 
@@ -107,17 +107,17 @@ export default function BiopageEditor() {
             const data = await res.json()
             if (res.ok) {
                 setBiopage(prev => prev ? { ...prev, slug: data.newslug } : prev)
-                toast.success('Guardado correctamente', { richColors: true, position: "bottom-center" })
+                toast.success('Guardado correctamente', { richColors: true, position: "top-center" })
             } else {
-                toast.error(`Error: ${data.error || 'Error al guardar'}`, { richColors: true, position: "bottom-center" })
+                toast.error(`Error: ${data.error || 'Error al guardar'}`, { richColors: true, position: "top-center" })
             }
         } catch (error) {
-            toast.error('Error al guardar biopage: ' + error, { richColors: true, position: "bottom-center" })
+            toast.error('Error al guardar biopage: ' + error, { richColors: true, position: "top-center" })
         }
     }
     const saveBiopage = async () => {
         if (!biopage) {
-            toast.error('No hay biopage para actualizar.', { richColors: true, position: "bottom-center" })
+            toast.error('No hay biopage para actualizar.', { richColors: true, position: "top-center" })
             return
         }
         try {
@@ -134,12 +134,12 @@ export default function BiopageEditor() {
             const data = await res.json()
             if (res.ok) {
                 setBiopage(data.biopage)
-                toast.success("Guardado Correctamente", { richColors: true, position: "bottom-center" })
+                toast.success("Guardado Correctamente", { richColors: true, position: "top-center" })
             } else {
-                toast.error(`Error: ${data.error || 'Error al guardar'}`, { richColors: true, position: "bottom-center" })
+                toast.error(`Error: ${data.error || 'Error al guardar'}`, { richColors: true, position: "top-center" })
             }
         } catch (error) {
-            toast.error(`Error al guardar biopage: '${error}`, { richColors: true, position: "bottom-center" })
+            toast.error(`Error al guardar biopage: '${error}`, { richColors: true, position: "top-center" })
         }
     }
 
@@ -182,11 +182,11 @@ export default function BiopageEditor() {
             onClientUploadComplete={(res) => {
                 // Do something with the response
                 console.log("Files: ", res);
-                toast.success("Se cambio con exito su avatar", { richColors: true, position: "bottom-center" });
+                toast.success("Se cambio con exito su avatar", { richColors: true, position: "top-center" });
             }}
             onUploadError={(error: Error) => {
                 // Do something with the error.
-                toast.error(`Error! ${error.message}`, { richColors: true, position: "bottom-center" });
+                toast.error(`Error! ${error.message}`, { richColors: true, position: "top-center" });
             }}
         />
         <Button title='Cerrar' onClick={() => setAvatarModal(false)} className='bg-red-600 rounded-md p-2 hover:bg-red-900 w-fit self-center' />
