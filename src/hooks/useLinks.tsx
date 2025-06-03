@@ -192,14 +192,14 @@ const useLinks = () => {
             {links.length > 0 && links.map((link) => (
                 <div key={link.id} className="p-1 flex flex-row gap-2 items-center">
                     <div className="flex flex-wrap items-center gap-2 p-2 border border-gray-700 rounded-lg bg-gray-800 hover:bg-gray-750 transition-colors">
-                        <span>{link.originalUrl.substring(8)}</span>
+                        <span>{link.shortUrl.match(/^https?:\/\/(.+)/)?.[1] ?? link.originalUrl}</span>
                         <a
                             href={link.shortUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-400 font-medium truncate max-w-xs hover:underline"
                         >
-                            {link.shortUrl}
+                            <span>{link.shortUrl.match(/^https?:\/\/(.+)/)?.[1] ?? link.shortUrl}</span>
                         </a>
 
                         <div className="flex gap-1 ml-auto">
