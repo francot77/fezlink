@@ -10,6 +10,7 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const { links, backgroundColor, textColor, avatarUrl } = body;
 
+
     await dbConnect();
 
     const updated = await Biopage.findOneAndUpdate(

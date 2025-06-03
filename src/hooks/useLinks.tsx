@@ -103,7 +103,7 @@ const useLinks = () => {
         if (!modalType || !selectedLink) return null;
 
         const isStats = modalType === 'stats';
-
+        console.log(selectedLink.id)
         return (
             <Modal
                 isOpen
@@ -168,36 +168,57 @@ const useLinks = () => {
                     type="text"
                     placeholder="https://example.com"
                     value={newUrl}
-                    onChange={(e) => setNewUrl(e.target.value)}
-                    className="border-2 border-gray-500 rounded-md p-2 flex-1"
+                    onChange={(e) => {
+                        let value = e.target.value;
+                        if (!value.startsWith('http')) {
+                            value = 'https://' + value.replace(/^https?:\/\//, '');
+                        }
+                        setNewUrl(value);
+                    }}
+                    className={`border p-2 rounded-md w-full focus:outline-none focus:ring-2 ${newUrl.startsWith('http') ? 'border-gray-500 focus:ring-green-500' : 'border-red-500 focus:ring-red-500'
+                        }`}
                 />
                 <Button
                     title="Agregar Link"
-                    onClick={async () => {
-                        if (!newUrl.startsWith('http')) {
-                            toast('URL inválida. Debe empezar con http o https', { richColors: true, position: "top-center" });
-                            return;
-                        }
-                        await addLink(newUrl);
-                        setNewUrl('https://');
-                    }}
-                    className='shadow-green-500 hover:bg-green-900 shadow-md p-2'
+                    disabled={!newUrl || !newUrl.startsWith('http')}
+                    onClick={() => addLink(newUrl)}
+                    className={`${newUrl && newUrl.startsWith('http')
+                        ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30'
+                        : 'bg-gray-600 cursor-not-allowed'
+                        } shadow-md px-4 py-2 rounded-md transition-all`}
                 />
             </div>
 
             {links.length > 0 && links.map((link) => (
                 <div key={link.id} className="p-1 flex flex-row gap-2 items-center">
-                    <div className="border-2 border-gray-500 rounded-md p-2 max-w-30 md:max-w-full overflow-hidden">
-                        <a href={link.shortUrl} target="_blank" rel="noopener noreferrer">
+                    <div className="flex flex-wrap items-center gap-2 p-2 border border-gray-700 rounded-lg bg-gray-800 hover:bg-gray-750 transition-colors">
+                        <span>{link.originalUrl.substring(8)}</span>
+                        <a
+                            href={link.shortUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 font-medium truncate max-w-xs hover:underline"
+                        >
                             {link.shortUrl}
                         </a>
+
+                        <div className="flex gap-1 ml-auto">
+                            <button
+                                onClick={() => getStats(link)}
+                                className="p-1 text-blue-400 hover:text-blue-300 hover:bg-gray-700 rounded-full transition-all"
+                                title="Ver estadísticas"
+                            >
+                                📊
+                            </button>
+                            <button
+                                onClick={() => handleDelete(link)}
+                                className="p-1 text-red-400 hover:text-red-300 hover:bg-gray-700 rounded-full transition-all"
+                                title="Eliminar"
+                            >
+                                🗑️
+                            </button>
+                        </div>
                     </div>
-                    <Button title="📊" onClick={() => getStats(link)} className='hover:shadow-blue-500 shadow-sm hover:bg-blue-900' />
-                    <Button
-                        title="🗑️"
-                        onClick={() => handleDelete(link)}
-                        className='hover:shadow-red-600 shadow-sm hover:bg-red-900'
-                    />
                 </div>
             ))}
         </div>

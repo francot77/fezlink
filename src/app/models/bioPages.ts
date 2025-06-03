@@ -16,6 +16,7 @@ const biopageSchema = new Schema<IBiopage>(
         userId: { type: String, required: true },
         links: [{
             shortUrl: { type: String, required: true },
+            shortId: { type: String, required: true },
             label: { type: String, default: "" }
         }],
         slug: { type: String, unique: true, required: true },

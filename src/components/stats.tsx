@@ -12,7 +12,7 @@ const Stats = () => {
     }, [links])
     return <div className="space-y-2">
         <h1>Links</h1>
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-2 overflow-auto p-1 ">
             {links && links.map(link => {
                 return <button className="border-2 border-blue-500 p-2 rounded-md" onClick={() => setSelectedLink(link.id)} key={link.id}>{link.originalUrl}</button>
             })}

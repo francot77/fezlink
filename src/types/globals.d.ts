@@ -9,12 +9,14 @@ declare global {
         metadata: {
             role?: Roles,
             accountType?: AccountType
+            expiresAt?: string
         }
     }
 }
 export type LinkType = {
     _id: string
     shortUrl: string
+    shortId?: string
     originalUrl: string
 }
 export type LinkStat = {
@@ -24,6 +26,7 @@ export type LinkStat = {
 
 export type SelectedLink = {
     shortUrl: string
+    shortId?: string
     label: string
 }
 

@@ -20,14 +20,14 @@ const DashboardPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center px-4 pb-24 md:pb-6">
-            <h1 className="text-4xl font-bold mt-6 mb-6 text-center bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-extrabold mt-6 mb-8 text-center bg-gradient-to-r from-blue-400 via-purple-400 to-pink-500 bg-clip-text text-transparent">
                 FezLink Dashboard
             </h1>
 
             <div className="w-full max-w-6xl rounded-xl bg-gray-800 shadow-2xl shadow-blue-900/20 overflow-hidden border border-gray-700 flex flex-col md:flex-row relative">
                 {/* Sidebar en mobile (bottom), en desktop (left) */}
-                <aside className="w-full md:w-64 bg-gray-900 border-t md:border-t-0 md:border-r border-gray-700 fixed md:static bottom-0 left-0 z-20">
-                    <ul className="flex md:flex-col justify-around md:justify-start items-center md:items-start py-3 md:py-6 md:px-4">
+                <aside className="w-full md:w-64 bg-gray-800 border-t md:border-t-0 md:border-r border-gray-700 z-10 transition-all duration-300 ease-in-out">
+                    <ul className="flex md:flex-col justify-around md:justify-start items-center md:items-stretch py-3 md:py-6 md:px-4 space-y-2">
                         {renderButtons()}
                     </ul>
                 </aside>
