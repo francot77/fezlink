@@ -55,7 +55,7 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
             {bioPage.avatarUrl && (
                 <div className="mb-6">
                     <img
-                        src={bioPage.avatarUrl}
+                        src={bioPage.avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}
                         alt="Avatar"
                         className="rounded-full w-40 h-40"
                         style={{ border: `4px solid ${bioPage.textColor}` }}

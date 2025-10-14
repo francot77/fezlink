@@ -184,7 +184,7 @@ export default function BiopageEditor() {
             <h1>Desea cambiar su avatar?</h1>
             <div className="w-30 h-30 rounded-full overflow-hidden">
                 <img
-                    src={biopage.avatarUrl}
+                    src={biopage.avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}
                     alt="avatar"
                     className="w-full h-full object-cover"
                 />
@@ -215,7 +215,7 @@ export default function BiopageEditor() {
                         onClick={() => setAvatarModal(true)}
                         className="w-26 h-26 rounded-full overflow-hidden cursor-pointer ring-3 ring-blue-500 hover:ring-blue-400 transition"
                     >
-                        <img src={biopage.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                        <img src={biopage.avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"} alt="avatar" className="w-full h-full object-cover" />
                     </div>
                     <div>
                         <h2 className="text-xl font-bold">@{biopage.slug}</h2>

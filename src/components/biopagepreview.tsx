@@ -20,7 +20,7 @@ const BiopagePreview = ({
             <div style={{ backgroundColor: bgColor, color: textColor }} className="p-4 text-center min-h-[300px] flex flex-col items-center justify-start">
 
                 <div className={`w-20 h-20 rounded-full overflow-hidden mb-3 ring-3 ring-[#${textColor}]`}>
-                    <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                    <img src={avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"} alt="avatar" className="w-full h-full object-cover" />
                 </div>
 
                 <h2 className="text-xl font-bold mb-4">@{slug}</h2>

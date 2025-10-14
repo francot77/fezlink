@@ -43,7 +43,7 @@ export default function Home() {
           </ul>
 
           <Button
-            title="Comenzar ahora!"
+            title="Start Now!"
             customStyles={{
               backgroundColor: '#10B981', // Verde brillante
               color: 'white',
@@ -72,12 +72,12 @@ export default function Home() {
             <div className="absolute inset-0 rounded-full bg-blue-500 opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
           </div>
           <span className="mt-6 text-2xl md:text-3xl font-semibold text-center md:text-left text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
-            Acorta tus enlaces en segundos
+            Short your links in seconds
           </span>
         </section>
       </div>
 
-      {/* Fondo decorativo suavizado */}
+
       <div className="absolute top-10 left-10 w-60 h-60 bg-blue-500 rounded-full opacity-10 blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-600 rounded-full opacity-10 blur-3xl pointer-events-none"></div>
     </main>

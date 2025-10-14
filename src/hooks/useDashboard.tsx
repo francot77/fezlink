@@ -1,7 +1,6 @@
 import { useState } from "react";
 import useLinks from "./useLinks";
 import { useRouter } from "next/navigation";
-import Profile from "@/app/dashboard/profile";
 import BiopageEditor from "@/app/dashboard/biopageeditor";
 import PremiumFeatures from "@/components/premiumfeatures";
 import Stats from "@/components/stats";
@@ -33,12 +32,12 @@ export const useDashboard = () => {
             title: "BioPage",
             icon: <Layout size={18} />,
             action: () => setActiveLink(3),
-        }, {
+        }, /* {
             index: 0,
             title: "Profile",
             icon: <User size={18} />,
             action: () => setActiveLink(0),
-        },
+        }, */
         {
             index: 4,
             title: "Get Premium ",
@@ -56,7 +55,7 @@ export const useDashboard = () => {
     ];
 
     const SECTIONS: Record<number, React.ReactNode> = {
-        0: <Profile />,
+        /*   0: <Profile />, */
         1: renderLinks(),
         2: <Stats />,
         3: <BiopageEditor />,
