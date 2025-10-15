@@ -6,7 +6,7 @@ import PremiumFeatures from "@/components/premiumfeatures";
 import Stats from "@/components/stats";
 
 // Íconos
-import { User, Link, BarChart, Layout, Flame, Home } from "lucide-react";
+import { Link, BarChart, Layout, Flame, Home } from "lucide-react";
 
 export const useDashboard = () => {
     const [activeLink, setActiveLink] = useState<number | null>(1);
