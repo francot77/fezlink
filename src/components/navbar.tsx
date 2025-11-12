@@ -24,7 +24,7 @@ const NavBar = () => {
                 {/* Navbar para usuarios no logueados */}
                 <SignedOut>
                     {Routes.map((ne) => (
-                        <Link key={ne.path} href={ne.path}>{ne.title}</Link>
+                        <Link className="hover:scale-105" key={ne.path} href={ne.path}>{ne.title}</Link>
                     ))}
                     <SignInButton mode="modal" />
                     <SignUpButton mode="modal" />
