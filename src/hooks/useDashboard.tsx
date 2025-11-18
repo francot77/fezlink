@@ -4,13 +4,14 @@ import { useRouter } from "next/navigation";
 import BiopageEditor from "@/app/dashboard/biopageeditor";
 import PremiumFeatures from "@/components/premiumfeatures";
 import Stats from "@/components/stats";
+import LinkManager from "@/components/link-manager";
 
 // Íconos
 import { Link, BarChart, Layout, Flame, Home } from "lucide-react";
 
 export const useDashboard = () => {
     const [activeLink, setActiveLink] = useState<number | null>(1);
-    const { renderLinks } = useLinks();
+    const linkState = useLinks();
     const router = useRouter();
 
     const LINKS = [
@@ -56,8 +57,8 @@ export const useDashboard = () => {
 
     const SECTIONS: Record<number, React.ReactNode> = {
         /*   0: <Profile />, */
-        1: renderLinks(),
-        2: <Stats />,
+        1: <LinkManager linkState={linkState} />,
+        2: <Stats links={linkState.links} />,
         3: <BiopageEditor />,
         4: (
             <div className="flex justify-center items-center gap-4 flex-wrap">
