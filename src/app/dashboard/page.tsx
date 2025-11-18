@@ -93,7 +93,7 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-[260px,1fr]">
-                    <aside className="sticky top-6 h-fit rounded-xl border border-gray-800/80 bg-gray-900/60 p-3 shadow-xl shadow-blue-900/10">
+                    <aside className="top-6 h-fit rounded-xl border border-gray-800/80 bg-gray-900/60 p-3 shadow-xl shadow-blue-900/10">
                         <ul className="flex flex-row gap-2 overflow-auto pb-2 md:flex-col md:pb-0">
                             {sections.map((section) => (
                                 <li key={section.id} className="flex-1 md:flex-none">
