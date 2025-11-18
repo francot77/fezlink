@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { BarChart3, Flame, Home, Link as LinkIcon, Loader2, Palette } from 'lucide-react';
+import { BarChart3, Flame, Home, Loader2, Palette } from 'lucide-react';
 import Spinner from '@/components/spinner';
 import Link from 'next/link';
 import useLinks from '@/hooks/useLinks';
@@ -24,13 +24,6 @@ const DashboardPage: React.FC = () => {
     const linkState = useLinks();
     const sections: Section[] = useMemo(
         () => [
-            {
-                id: 'links',
-                label: 'Links',
-                description: 'Crea y gestiona tus enlaces cortos con acciones rápidas',
-                icon: <LinkIcon size={18} />,
-                content: <LinkManager linkState={linkState} />,
-            },
             {
                 id: 'stats',
                 label: 'Estadísticas',
@@ -61,7 +54,7 @@ const DashboardPage: React.FC = () => {
         [linkState]
     );
 
-    const [activeSection, setActiveSection] = useState<string>(sections[0]?.id ?? 'links');
+    const [activeSection, setActiveSection] = useState<string>(sections[0]?.id ?? 'stats');
     const currentSection = sections.find((section) => section.id === activeSection) ?? sections[0];
 
     if (!isLoaded) {
@@ -92,40 +85,54 @@ const DashboardPage: React.FC = () => {
                     </Link>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-[260px,1fr]">
-                    <aside className="sticky top-6 h-fit rounded-xl border border-gray-800/80 bg-gray-900/60 p-3 shadow-xl shadow-blue-900/10">
-                        <ul className="flex flex-row gap-2 overflow-auto pb-2 md:flex-col md:pb-0">
-                            {sections.map((section) => (
-                                <li key={section.id} className="flex-1 md:flex-none">
-                                    <button
-                                        onClick={() => setActiveSection(section.id)}
-                                        className={`flex w-full items-start gap-3 rounded-lg border px-3 py-3 text-left transition md:flex-row ${
-                                            activeSection === section.id
-                                                ? 'border-blue-500/70 bg-blue-500/10 text-white shadow-md shadow-blue-500/20'
-                                                : 'border-transparent bg-gray-800/60 text-gray-300 hover:border-gray-600 hover:text-white'
-                                        }`}
-                                    >
-                                        <span className="mt-1 text-blue-300">{section.icon}</span>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-semibold">{section.label}</p>
-                                            <p className="text-xs text-gray-400">{section.description}</p>
-                                        </div>
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </aside>
+                <section className="rounded-xl border border-gray-800/80 bg-gray-900/70 p-5 shadow-2xl shadow-blue-900/20">
+                    <div className="mb-4 flex items-center justify-between gap-2">
+                        <div>
+                            <p className="text-sm text-gray-400">Gestión de links</p>
+                            <h2 className="text-xl font-semibold text-white">Crea, administra y consulta tus enlaces</h2>
+                        </div>
+                        <span className="hidden rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold uppercase text-blue-200 md:inline">Activo</span>
+                    </div>
+                    <LinkManager linkState={linkState} />
+                </section>
 
-                    <main className="rounded-xl border border-gray-800/80 bg-gray-900/70 p-4 shadow-2xl">
+                <section className="rounded-xl border border-gray-800/80 bg-gray-900/70 p-5 shadow-2xl shadow-blue-900/20">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-sm text-gray-400">Secciones</p>
+                            <h2 className="text-xl font-semibold text-white">Explora estadísticas, biopage y opciones premium</h2>
+                        </div>
+                        <div className="flex flex-wrap gap-2 overflow-auto pb-1">
+                            {sections.map((section) => (
+                                <button
+                                    key={section.id}
+                                    onClick={() => setActiveSection(section.id)}
+                                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+                                        activeSection === section.id
+                                            ? 'border-blue-500 bg-blue-500/10 text-white shadow-md shadow-blue-500/20'
+                                            : 'border-gray-700 bg-gray-800/70 text-gray-300 hover:border-gray-600 hover:text-white'
+                                    }`}
+                                >
+                                    <span className="text-blue-300">{section.icon}</span>
+                                    <div className="text-left">
+                                        <p className="font-semibold">{section.label}</p>
+                                        <p className="text-xs text-gray-400">{section.description}</p>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="mt-4 max-h-[70vh] space-y-4 overflow-y-auto rounded-lg border border-gray-800/80 bg-gray-900/60 p-4">
                         {!currentSection ? (
-                            <div className="flex min-h-[40vh] items-center justify-center text-gray-400">
+                            <div className="flex min-h-[30vh] items-center justify-center text-gray-400">
                                 <Loader2 className="h-5 w-5 animate-spin" />
                             </div>
                         ) : (
-                            <div className="min-h-[60vh] space-y-4">{currentSection.content}</div>
+                            currentSection.content
                         )}
-                    </main>
-                </div>
+                    </div>
+                </section>
             </div>
         </div>
     );
