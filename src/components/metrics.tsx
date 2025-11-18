@@ -2,6 +2,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import MetricsChart from './MetricsChart';
+import { SupportedLanguage } from '@/types/i18n';
 
 interface Stat {
     _id: { year: number; month: number; day: number };
@@ -12,7 +13,33 @@ interface StatsResponse {
     stats: Stat[];
 }
 
-export default function Metrics({ linkId }: { linkId: string }) {
+const translations: Record<SupportedLanguage, { [key: string]: string }> = {
+    en: {
+        title: 'Link metrics',
+        total: 'Total clicks',
+        from: 'From',
+        to: 'To',
+        country: 'Country',
+        all: 'All',
+        loading: 'Loading stats...',
+        noData: 'No data available to display.',
+        dateError: 'The date range is invalid',
+    },
+    es: {
+        title: 'Métricas del enlace',
+        total: 'Total de clics',
+        from: 'Desde',
+        to: 'Hasta',
+        country: 'País',
+        all: 'Todos',
+        loading: 'Cargando estadísticas...',
+        noData: 'No hay datos para mostrar.',
+        dateError: 'El rango de fechas es inválido',
+    },
+};
+
+export default function Metrics({ linkId, language = 'en' }: { linkId: string; language?: SupportedLanguage }) {
+    const t = translations[language];
     const [stats, setStats] = useState<Stat[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -37,7 +64,6 @@ export default function Metrics({ linkId }: { linkId: string }) {
                 const res = await fetch(`/api/metrics/summary?linkId=${linkId}`);
                 if (!res.ok) throw new Error('Error fetching summary');
                 const data = await res.json();
-                console.log(data)
                 setTotalClicks(data.totalClicks || 0);
                 setAvailableCountries(data.countries || []);
             } catch (err: any) {
@@ -75,17 +101,17 @@ export default function Metrics({ linkId }: { linkId: string }) {
             fetchStats();
         } else {
             setStats([]);
-            setError('El rango de fechas es inválido');
+            setError(t.dateError);
         }
-    }, [linkId, startDate, endDate, country]);
+    }, [linkId, startDate, endDate, country, t]);
 
     return (
         <div className="p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-            <h2 className="text-2xl font-bold mb-4 text-white">Métricas del enlace</h2>
+            <h2 className="text-2xl font-bold mb-4 text-white">{t.title}</h2>
 
 
             <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mb-6 backdrop-blur-sm w-fit">
-                <p className="text-lg text-gray-300">Total de clics:</p>
+                <p className="text-lg text-gray-300">{t.total}:</p>
                 <p className="text-4xl font-extrabold text-white">{totalClicks}</p>
             </div>
 
@@ -94,7 +120,7 @@ export default function Metrics({ linkId }: { linkId: string }) {
 
                 <div>
                     <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-1">
-                        Desde
+                        {t.from}
                     </label>
                     <input
                         id="startDate"
@@ -109,7 +135,7 @@ export default function Metrics({ linkId }: { linkId: string }) {
 
                 <div>
                     <label htmlFor="endDate" className="block text-sm font-medium text-gray-300 mb-1">
-                        Hasta
+                        {t.to}
                     </label>
                     <input
                         id="endDate"
@@ -125,7 +151,7 @@ export default function Metrics({ linkId }: { linkId: string }) {
 
                 <div>
                     <label htmlFor="country" className="block text-sm font-medium text-gray-300 mb-1">
-                        País
+                        {t.country}
                     </label>
                     <select
                         id="country"
@@ -133,7 +159,7 @@ export default function Metrics({ linkId }: { linkId: string }) {
                         onChange={(e) => setCountry(e.target.value)}
                         className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
                     >
-                        <option value="">Todos</option>
+                        <option value="">{t.all}</option>
                         {availableCountries.map((c) => (
                             <option key={c} value={c}>
                                 {c}
@@ -147,12 +173,12 @@ export default function Metrics({ linkId }: { linkId: string }) {
             {loading && (
                 <div className="py-8 text-center text-gray-400 flex justify-center items-center gap-2">
                     <span className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
-                    Cargando estadísticas...
+                    {t.loading}
                 </div>
             )}
             {error && <div className="text-red-400 text-sm my-4">{error}</div>}
             {!loading && !error && stats.length === 0 && (
-                <div className="text-gray-400 text-sm my-4">No hay datos para mostrar.</div>
+                <div className="text-gray-400 text-sm my-4">{t.noData}</div>
             )}
 
 

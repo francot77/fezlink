@@ -1,4 +1,5 @@
 import { SelectedLink } from "@/types/globals";
+import { SupportedLanguage } from "@/types/i18n";
 
 /* eslint-disable @next/next/no-img-element */
 const BiopagePreview = ({
@@ -6,14 +7,21 @@ const BiopagePreview = ({
   textColor,
   avatarUrl,
   slug,
-  links
+  links,
+  language = 'en'
 }: {
   bgColor: string;
   textColor: string;
   avatarUrl: string;
   slug: string;
   links: SelectedLink[];
+  language?: SupportedLanguage;
 }) => {
+  const translations: Record<SupportedLanguage, string> = {
+    en: 'No links selected',
+    es: 'No hay links seleccionados',
+  };
+
   return (
     <div className="rounded-xl overflow-hidden shadow-2xl border border-gray-700 max-w-xs mx-auto mt-6 transform transition-all hover:scale-[1.02] ">
 
@@ -42,7 +50,7 @@ const BiopagePreview = ({
             ))}
           </ul>
         ) : (
-          <p className="text-sm opacity-70">No hay links seleccionados</p>
+          <p className="text-sm opacity-70">{translations[language]}</p>
         )}
       </div>
     </div>

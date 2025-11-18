@@ -3,15 +3,35 @@ import { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Compass } from 'lucide-react';
 import useLinks, { Link } from '@/hooks/useLinks';
 import Metrics from './metrics';
+import { SupportedLanguage } from '@/types/i18n';
 
 interface StatsProps {
     links?: Link[];
+    language?: SupportedLanguage;
 }
 
-const Stats = ({ links: providedLinks }: StatsProps) => {
+const translations: Record<SupportedLanguage, { [key: string]: string }> = {
+    en: {
+        title: 'Link metrics',
+        subtitle: 'Analyze performance',
+        viewing: 'Viewing',
+        selectLink: 'Select a link',
+        empty: 'There are no links to show metrics yet.',
+    },
+    es: {
+        title: 'Métricas por link',
+        subtitle: 'Analiza el rendimiento',
+        viewing: 'Viendo',
+        selectLink: 'Selecciona un link',
+        empty: 'Aún no hay links para mostrar métricas.',
+    },
+};
+
+const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
     const linkStore = useLinks({ autoLoad: !providedLinks });
     const links = useMemo(() => providedLinks ?? linkStore.links, [providedLinks, linkStore.links]);
     const [selectedLink, setSelectedLink] = useState<string>('');
+    const t = translations[language];
 
     useEffect(() => {
         if (links.length > 0) setSelectedLink(links[0].id);
@@ -27,19 +47,19 @@ const Stats = ({ links: providedLinks }: StatsProps) => {
                         <BarChart3 />
                     </div>
                     <div>
-                        <p className="text-sm text-gray-400">Analiza el rendimiento</p>
-                        <h2 className="text-xl font-semibold text-white">Métricas por link</h2>
+                        <p className="text-sm text-gray-400">{t.subtitle}</p>
+                        <h2 className="text-xl font-semibold text-white">{t.title}</h2>
                     </div>
                 </div>
                 {selected && (
                     <div className="rounded-full bg-gray-800 px-4 py-2 text-sm text-gray-300">
-                        Viendo: <span className="font-semibold text-white">{selected.originalUrl}</span>
+                        {t.viewing}: <span className="font-semibold text-white">{selected.originalUrl}</span>
                     </div>
                 )}
             </div>
 
             <div className="space-y-3">
-                <p className="text-sm font-medium text-gray-200">Selecciona un link</p>
+                <p className="text-sm font-medium text-gray-200">{t.selectLink}</p>
                 <div className="flex flex-wrap gap-2">
                     {links.map((link) => (
                         <button
@@ -56,13 +76,13 @@ const Stats = ({ links: providedLinks }: StatsProps) => {
                     ))}
                     {links.length === 0 && (
                         <div className="flex items-center gap-2 rounded-lg border border-dashed border-gray-700 bg-gray-800/60 px-4 py-3 text-sm text-gray-400">
-                            <Compass size={16} /> Aún no hay links para mostrar métricas.
+                            <Compass size={16} /> {t.empty}
                         </div>
                     )}
                 </div>
             </div>
 
-            {selectedLink && <Metrics linkId={selectedLink} />}
+            {selectedLink && <Metrics linkId={selectedLink} language={language} />}
         </div>
     );
 };
