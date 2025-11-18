@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/mongodb.js
 import Biopage from '@/app/models/bioPages';
 import mongoose from 'mongoose';
@@ -9,7 +8,6 @@ if (!MONGODB_URI) {
 }
 
 declare global {
-    // eslint-disable-next-line no-var
     var mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } | undefined;
 }
 /** 
