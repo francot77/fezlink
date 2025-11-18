@@ -195,7 +195,7 @@ export default function ClicksGlobe({
     }, [countries]);
 
     return (
-        <div className="sm:w-[300px] md:w-[500px] h-[300px] flex justify-center items-center rounded-xl shadow-lg overflow-hidden">
+        <div className="flex h-full min-h-[260px] w-full items-center justify-center overflow-hidden rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 shadow-inner">
             <Globe
                 ref={globeEl}
                 globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"

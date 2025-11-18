@@ -10,31 +10,52 @@ export interface ModalProps {
     isStats?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, title, description, onAccept, onCancel, isStats }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, title, description, onAccept, onCancel }) => {
     if (!isOpen) return null;
 
     return (
-        <div style={styles.overlay}>
-            <div style={styles.modal} className='shadow-blue-700/30 bg-gray-800 shadow-2xl border-2 border-gray-900'>
-                <h2>{title}</h2>
-                <div>{description}</div>
-                <div style={styles.buttons}>
-                    {onAccept && <button onClick={onAccept} style={styles.acceptButton}>Aceptar</button>}
-                    {onCancel && isStats !== true && (
-                        <button onClick={onCancel} style={styles.cancelButton}>Cancelar</button>
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 overflow-y-auto">
+            <div className="relative w-full max-w-5xl rounded-2xl border border-gray-700 bg-gray-900 p-6 shadow-2xl shadow-blue-700/20">
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        {title && <h2 className="text-2xl font-semibold text-white">{title}</h2>}
+                    </div>
+                    {onCancel && (
+                        <button
+                            aria-label="Cerrar"
+                            onClick={onCancel}
+                            className="rounded-full border border-gray-700 bg-gray-800 p-2 text-gray-300 transition hover:border-gray-500 hover:text-white"
+                        >
+                            ✕
+                        </button>
                     )}
                 </div>
+
+                <div className="mt-4 text-gray-200">{description}</div>
+
+                {(onAccept || onCancel) && (
+                    <div className="mt-6 flex flex-wrap justify-end gap-3">
+                        {onCancel && (
+                            <button
+                                onClick={onCancel}
+                                className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-200 transition hover:border-gray-500 hover:text-white"
+                            >
+                                Cancelar
+                            </button>
+                        )}
+                        {onAccept && (
+                            <button
+                                onClick={onAccept}
+                                className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:brightness-110"
+                            >
+                                Aceptar
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
-};
-
-const styles = {
-    overlay: { position: 'fixed' as const, top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' },
-    modal: { padding: '20px', borderRadius: '8px', width: '400px', textAlign: 'center' as const },
-    buttons: { marginTop: '20px', display: 'flex', justifyContent: 'center', gap: "10px" },
-    acceptButton: { backgroundColor: '#4CAF50', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer' },
-    cancelButton: { backgroundColor: '#f44336', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer' },
 };
 
 export default Modal;
