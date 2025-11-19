@@ -200,7 +200,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
         setSelected((prev) =>
             prev.some((l) => l.shortId === slug)
                 ? prev.filter((l) => l.shortId !== slug)
-                : [...prev, { shortId: slug, shortUrl: link.shortUrl, label: '' }]
+                : [...prev, { shortId: slug, slug, shortUrl: link.shortUrl, label: '' }]
         );
     };
 
