@@ -33,6 +33,7 @@ export async function POST() {
         backgroundColor: '#000000',
         textColor: '#ffffff',
         avatarUrl: '',
+        description: 'Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.',
     });
 
     return NextResponse.json({ biopage: newBiopage }, { status: 201 });

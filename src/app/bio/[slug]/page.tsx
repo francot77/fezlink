@@ -15,6 +15,7 @@ interface BioPage {
     textColor: string;
     backgroundColor: string;
     avatarUrl: string;
+    description?: string;
 }
 
 export default function BioPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -85,7 +86,7 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
                             <div className="space-y-2">
                                 <h1 className="text-4xl font-bold tracking-tight">@{bioPage.slug}</h1>
                                 <p className="text-sm text-white/80 max-w-xl">
-                                    Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.
+                                    {bioPage.description || 'Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.'}
                                 </p>
                             </div>
                         </div>

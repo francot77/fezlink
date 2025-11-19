@@ -8,6 +8,7 @@ const BiopagePreview = ({
   avatarUrl,
   slug,
   links,
+  description,
   language = 'en'
 }: {
   bgColor: string;
@@ -15,6 +16,7 @@ const BiopagePreview = ({
   avatarUrl: string;
   slug: string;
   links: SelectedLink[];
+  description?: string;
   language?: SupportedLanguage;
 }) => {
   const translations: Record<SupportedLanguage, string> = {
@@ -48,6 +50,10 @@ const BiopagePreview = ({
         </div>
 
         <h2 className="text-2xl font-bold mb-3">@{slug}</h2>
+
+        <p className="text-sm opacity-80 mb-3 max-w-xs">
+          {description?.trim() || 'Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.'}
+        </p>
 
         {links.length > 0 ? (
           <ul className="space-y-2 w-full">

@@ -7,6 +7,7 @@ interface IBiopage extends Document {
     backgroundColor: string;
     textColor: string;
     avatarUrl?: string;
+    description?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const biopageSchema = new Schema<IBiopage>(
         backgroundColor: { type: String, default: "#000000" },
         textColor: { type: String, default: "#ffffff" },
         avatarUrl: { type: String, default: "" },
+        description: { type: String, default: "Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable." },
     },
     { timestamps: true }
 );
