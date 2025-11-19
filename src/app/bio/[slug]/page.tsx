@@ -34,11 +34,15 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 
     return {
         title,
-        description,
+        description, other: {
+            "fb:app_id": process.env.FB_APP_ID || "",
+        },
+
         openGraph: {
             title,
             description,
             url,
+            type: "profile",
             images: [
                 {
                     url: image,
