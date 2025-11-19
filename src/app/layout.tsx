@@ -27,14 +27,14 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <Analytics />
-      <SpeedInsights />
       <html lang="en">
         <head>
           <link rel="manifest" href="/manifest.json" />
         </head>
         <body className={`${workSans.className} antialiased`}>
           {children}
+          <Analytics />
+          <SpeedInsights />
           <Toaster />
         </body>
       </html>

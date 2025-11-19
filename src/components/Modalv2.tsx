@@ -1,4 +1,6 @@
-import { ReactNode } from "react";
+"use client";
+
+import { ReactNode, useEffect, useId, useRef } from "react";
 
 interface CustomModalProps {
     title: string;
@@ -15,12 +17,56 @@ const CustomModal = ({
     onAccept,
     acceptText = "Aceptar",
 }: CustomModalProps) => {
+    const dialogRef = useRef<HTMLDivElement>(null);
+    const headingId = useId();
+
+    useEffect(() => {
+        const previouslyFocused = document.activeElement as HTMLElement | null;
+        const focusableElements = dialogRef.current?.querySelectorAll<HTMLElement>(
+            'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'
+        );
+        focusableElements?.[0]?.focus();
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onClose();
+            }
+            if (event.key === 'Tab' && focusableElements && focusableElements.length > 0) {
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+                if (event.shiftKey && document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement.focus();
+                } else if (!event.shiftKey && document.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            previouslyFocused?.focus();
+        };
+    }, [onClose]);
+
     return (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">
-            <div className="bg-gray-900 rounded-xl shadow-2xl shadow-black/30 overflow-hidden w-full max-w-md mx-auto">
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4" role="presentation">
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={headingId}
+                className="bg-gray-900 rounded-xl shadow-2xl shadow-black/30 overflow-hidden w-full max-w-md mx-auto"
+                tabIndex={-1}
+            >
                 <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">×</button>
+                    <h3 id={headingId} className="text-lg font-semibold">{title}</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Cerrar">
+                        ×
+                    </button>
                 </div>
                 <div className="p-4">
                     {children}
@@ -40,4 +86,5 @@ const CustomModal = ({
         </div>
     );
 };
-export default CustomModal
+
+export default CustomModal;

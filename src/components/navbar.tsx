@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, SignOutButton } from "@clerk/nextjs"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type NavElement = {
     title: string
@@ -16,6 +16,25 @@ const NavBar = () => {
     ]
 
     const [showSignOutModal, setShowSignOutModal] = useState(false)
+    const dialogRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!showSignOutModal) return
+        const previouslyFocused = document.activeElement as HTMLElement | null
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault()
+                setShowSignOutModal(false)
+            }
+        }
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>('button')
+        focusable?.[0]?.focus()
+        document.addEventListener('keydown', handleKeyDown)
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown)
+            previouslyFocused?.focus()
+        }
+    }, [showSignOutModal])
 
     return (
         <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-black/75 backdrop-blur">
@@ -72,9 +91,16 @@ const NavBar = () => {
             </div>
 
             {showSignOutModal && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-4">
-                    <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-gray-900 shadow-xl">
-                        <p className="text-center text-base font-semibold text-gray-900">Cerrar sesión</p>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-4" role="presentation">
+                    <div
+                        ref={dialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="signout-heading"
+                        className="w-full max-w-sm rounded-2xl bg-white p-5 text-gray-900 shadow-xl"
+                        tabIndex={-1}
+                    >
+                        <p id="signout-heading" className="text-center text-base font-semibold text-gray-900">Cerrar sesión</p>
                         <p className="mt-2 text-center text-sm text-gray-600">¿Seguro que quieres salir de tu cuenta?</p>
                         <div className="mt-6 flex justify-center gap-3">
                             <SignOutButton redirectUrl="/">
