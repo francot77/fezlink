@@ -45,7 +45,7 @@ export const metadata: Metadata = {
         alt: "FezLink dashboard preview",
       },
     ],
-    type: "website",
+    type: "profile",
   },
   twitter: {
     card: "summary_large_image",
