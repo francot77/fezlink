@@ -3,7 +3,7 @@ import dbConnect from "@/lib/mongodb";
 import Biopage, { type IBiopage } from "@/app/models/bioPages";
 import type { Metadata } from "next";
 
-type PageParams = { params: { slug: string } };
+type PageParams = { params: Promise<{ slug: string }> };
 
 async function getBiopageBySlug(slug: string): Promise<BioPageData | null> {
     await dbConnect();
@@ -22,7 +22,7 @@ async function getBiopageBySlug(slug: string): Promise<BioPageData | null> {
 }
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
-    const { slug } = params;
+    const { slug } = await params;
     const biopage = await getBiopageBySlug(slug);
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL;
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 }
 
 export default async function BioPage({ params }: PageParams) {
-    const { slug } = params;
+    const { slug } = await params;
     const biopage = await getBiopageBySlug(slug);
 
     return <BioPageClient slug={slug} initialBioPage={biopage} />;
