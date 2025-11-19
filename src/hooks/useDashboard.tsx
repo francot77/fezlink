@@ -41,7 +41,7 @@ export const useDashboard = () => {
         }, */
         {
             index: 4,
-            title: "Get Premium ",
+            title: "Manage subscription",
             icon: <Flame color="#ff5900" size={18} />,
             action: () => setActiveLink(4),
         },

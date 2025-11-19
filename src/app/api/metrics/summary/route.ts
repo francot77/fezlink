@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { LinkStats } from '@/app/models/linkStats';
 import { LinkStat } from '@/types/globals';
+
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const linkId = searchParams.get('linkId');
@@ -16,11 +17,20 @@ export async function GET(req: Request) {
     const stats = await LinkStats.findOne({ linkId });
 
     if (!stats) {
-        return NextResponse.json({ totalClicks: 0, countries: [] });
+        return NextResponse.json({ totalClicks: 0, countries: [], countryMetrics: [] });
     }
 
-    const totalClicks = stats.countries.reduce((sum: number, entry: LinkStat) => sum + entry.clicksCount, 0);
-    const countries = stats.countries.map((entry: LinkStat) => entry.country);
+    const countryTotals = stats.countries.reduce<Record<string, number>>((acc, entry: LinkStat) => {
+        acc[entry.country] = (acc[entry.country] || 0) + entry.clicksCount;
+        return acc;
+    }, {});
 
-    return NextResponse.json({ totalClicks, countries });
+    const countryMetrics = Object.entries(countryTotals)
+        .map(([country, clicks]) => ({ country, clicks }))
+        .sort((a, b) => b.clicks - a.clicks);
+
+    const totalClicks = countryMetrics.reduce((sum, entry) => sum + entry.clicks, 0);
+    const countries = countryMetrics.map((entry) => entry.country);
+
+    return NextResponse.json({ totalClicks, countries, countryMetrics });
 }

@@ -2,9 +2,11 @@ import { usePaddle } from "@/hooks/usePaddle";
 import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { SupportedLanguage } from "@/types/i18n";
+
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
     en: {
-        benefits: 'Premium Benefits',
+        title: 'Manage subscription',
+        subtitle: 'Upgrade or review your billing preferences',
         customSlug: 'Custom slug',
         unlimited: 'Unlimited links',
         support: 'Priority support',
@@ -13,13 +15,16 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         pricing: 'Pricing',
         monthly: 'Monthly Billing',
         annual: 'Annual Billing',
-        upgradeMonthly: 'Upgrade Monthly',
-        upgradeAnnual: 'Upgrade Annually',
+        upgradeMonthly: 'Upgrade monthly',
+        upgradeAnnual: 'Upgrade annually',
         perMonth: '$2.5/month',
         perMonthAnnual: '$2/month',
+        cancel: 'Cancel subscription',
+        cancelHint: 'Cancel option coming soon',
     },
     es: {
-        benefits: 'Beneficios Premium',
+        title: 'Administrar suscripción',
+        subtitle: 'Mejora o revisa tus preferencias de facturación',
         customSlug: 'Slug personalizado',
         unlimited: 'Links ilimitados',
         support: 'Soporte prioritario',
@@ -32,15 +37,20 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         upgradeAnnual: 'Mejorar anualmente',
         perMonth: '$2.5/mes',
         perMonthAnnual: '$2/mes',
+        cancel: 'Cancelar suscripción',
+        cancelHint: 'La opción para cancelar llegará pronto',
     },
 };
 
+const BENEFITS = ['customSlug', 'unlimited', 'support', 'dashboard', 'adfree'] as const;
+
 const PremiumFeatures = ({ priceId, time, language = 'en' }: { priceId: string; time: string; language?: SupportedLanguage }) => {
     const t = translations[language];
-    const auth = useAuth()
-    const paddle = usePaddle()
+    const auth = useAuth();
+    const paddle = usePaddle();
+
     const handleCheckout = () => {
-        if (!auth.userId) redirect("/")
+        if (!auth.userId) redirect("/");
         if (!paddle) return;
         paddle.Checkout.open({
             items: [{ priceId: priceId, quantity: 1 }],
@@ -50,42 +60,54 @@ const PremiumFeatures = ({ priceId, time, language = 'en' }: { priceId: string; 
         });
     };
 
-    return <div className="grid place-items-center min-h-[50vh]"><div className="max-w-sm m-auto bg-gray-800 dark:bg-gray-800 shadow-lg rounded-xl p-6 transition-transform transform hover:scale-105">
-        <h1 className="text-2xl font-bold text-white mb-4">{t.benefits}</h1>
+    const billingCopy = time === 'anual'
+        ? { price: t.perMonthAnnual, cadence: t.annual, cta: t.upgradeAnnual }
+        : { price: t.perMonth, cadence: t.monthly, cta: t.upgradeMonthly };
 
-        <ul className="text-left space-y-2 mb-6">
-            <li className="flex items-center gap-2">
-                <span className="text-green-400">✔</span>
-                <span className="text-gray-300">{t.customSlug}</span>
-            </li>
-            <li className="flex items-center gap-2">
-                <span className="text-green-400">✔</span>
-                <span className="text-gray-300">{t.unlimited}</span>
-            </li>
-            <li className="flex items-center gap-2">
-                <span className="text-green-400">✔</span>
-                <span className="text-gray-300">{t.support}</span>
-            </li>
-            <li className="flex items-center gap-2">
-                <span className="text-green-400">✔</span>
-                <span className="text-gray-300">{t.dashboard}</span>
-            </li>
-            <li className="flex items-center gap-2">
-                <span className="text-green-400">✔</span>
-                <span className="text-gray-300">{t.adfree}</span>
-            </li>
-        </ul>
+    return (
+        <div className="min-h-[50vh] w-full max-w-sm">
+            <div className="m-auto rounded-xl border border-gray-800 bg-gray-800 p-6 shadow-lg transition-transform hover:scale-[1.01]">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                        <p className="text-sm text-gray-400">{t.subtitle}</p>
+                        <h1 className="text-2xl font-bold text-white">{t.title}</h1>
+                    </div>
+                    <span className="rounded-full bg-blue-500/20 px-3 py-1 text-xs uppercase text-blue-200">{billingCopy.cadence}</span>
+                </div>
 
-        <div className="mb-6">
-            <h2 className="font-semibold text-gray-400 mb-2">{t.pricing}</h2>
-            {time == "anual" ? <p className="text-sm text-gray-500">{t.perMonthAnnual} - {t.annual}</p> : null}
-            {time == "mensual" ? <p className="text-sm text-gray-500">{t.perMonth} - {t.monthly}</p> : null}
+                <ul className="mb-6 space-y-2">
+                    {BENEFITS.map((benefitKey) => (
+                        <li key={benefitKey} className="flex items-center gap-2 text-gray-300">
+                            <span className="text-green-400">✔</span>
+                            <span>{t[benefitKey]}</span>
+                        </li>
+                    ))}
+                </ul>
+
+                <div className="mb-4">
+                    <h2 className="text-sm font-semibold text-gray-400">{t.pricing}</h2>
+                    <p className="text-sm text-gray-300">{billingCopy.price}</p>
+                </div>
+
+                <div className="space-y-2">
+                    <button
+                        onClick={handleCheckout}
+                        className="w-full rounded-md bg-indigo-600 px-4 py-2 font-semibold text-white transition duration-300 hover:bg-indigo-700"
+                    >
+                        {billingCopy.cta}
+                    </button>
+                    <button
+                        type="button"
+                        className="w-full rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-300 transition hover:border-gray-500 hover:text-white"
+                        aria-label={t.cancelHint}
+                    >
+                        {t.cancel}
+                    </button>
+                    <p className="text-center text-xs text-gray-500">{t.cancelHint}</p>
+                </div>
+            </div>
         </div>
-
-        <button onClick={handleCheckout} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300">
-            {time == "mensual" ? t.upgradeMonthly : t.upgradeAnnual}
-        </button>
-    </div></div>
-}
+    );
+};
 
 export default PremiumFeatures;

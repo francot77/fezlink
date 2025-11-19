@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import MetricsChart from './MetricsChart';
 import { SupportedLanguage } from '@/types/i18n';
 
@@ -11,6 +11,17 @@ interface Stat {
 
 interface StatsResponse {
     stats: Stat[];
+}
+
+interface CountryMetric {
+    country: string;
+    clicks: number;
+}
+
+interface SummaryResponse {
+    totalClicks: number;
+    countries: string[];
+    countryMetrics?: CountryMetric[];
 }
 
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
@@ -24,6 +35,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         loading: 'Loading stats...',
         noData: 'No data available to display.',
         dateError: 'The date range is invalid',
+        countryMetrics: 'Top countries',
+        countryClicks: 'clicks',
+        emptyCountries: 'No country information yet',
     },
     es: {
         title: 'Métricas del enlace',
@@ -35,8 +49,13 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         loading: 'Cargando estadísticas...',
         noData: 'No hay datos para mostrar.',
         dateError: 'El rango de fechas es inválido',
+        countryMetrics: 'Principales países',
+        countryClicks: 'clics',
+        emptyCountries: 'Aún no hay información por país',
     },
 };
+
+const MAX_COUNTRY_ROWS = 5;
 
 export default function Metrics({ linkId, language = 'en' }: { linkId: string; language?: SupportedLanguage }) {
     const t = translations[language];
@@ -46,6 +65,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
 
     const [totalClicks, setTotalClicks] = useState(0);
     const [availableCountries, setAvailableCountries] = useState<string[]>([]);
+    const [countryMetrics, setCountryMetrics] = useState<CountryMetric[]>([]);
 
     const [startDate, setStartDate] = useState(() => {
         const d = new Date(Date.now() - 7 * 24 * 3600 * 1000);
@@ -57,22 +77,24 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
     });
     const [country, setCountry] = useState('');
 
+    const countryRows = useMemo(() => countryMetrics.slice(0, MAX_COUNTRY_ROWS), [countryMetrics]);
+
     // Fetch resumen total (totalClicks y countries)
     useEffect(() => {
         async function fetchSummary() {
             try {
                 const res = await fetch(`/api/metrics/summary?linkId=${linkId}`);
                 if (!res.ok) throw new Error('Error fetching summary');
-                const data = await res.json();
+                const data: SummaryResponse = await res.json();
                 setTotalClicks(data.totalClicks || 0);
                 setAvailableCountries(data.countries || []);
+                setCountryMetrics(data.countryMetrics || []);
             } catch (err: any) {
                 console.error(err.message);
             }
         }
         fetchSummary();
     }, [linkId]);
-
 
     useEffect(() => {
         async function fetchStats() {
@@ -106,20 +128,20 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
     }, [linkId, startDate, endDate, country, t]);
 
     return (
-        <div className="p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-            <h2 className="text-2xl font-bold mb-4 text-white">{t.title}</h2>
-
-
-            <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mb-6 backdrop-blur-sm w-fit">
-                <p className="text-lg text-gray-300">{t.total}:</p>
-                <p className="text-4xl font-extrabold text-white">{totalClicks}</p>
+        <div className="space-y-6 rounded-xl border border-gray-700 bg-gray-900/70 p-6 shadow-lg">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-sm text-gray-400">{t.title}</p>
+                    <h2 className="text-2xl font-bold text-white">{t.total}</h2>
+                </div>
+                <div className="rounded-lg bg-blue-600/15 px-4 py-2 text-3xl font-black text-white shadow-inner shadow-blue-500/30">
+                    {totalClicks}
+                </div>
             </div>
 
-
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-
-                <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-1">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-300">
                         {t.from}
                     </label>
                     <input
@@ -128,13 +150,12 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                         value={startDate}
                         max={endDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
 
-
-                <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-300 mb-1">
+                <div className="space-y-2">
+                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-300">
                         {t.to}
                     </label>
                     <input
@@ -144,20 +165,19 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                         min={startDate}
                         max={new Date().toISOString().slice(0, 10)}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
 
-
-                <div>
-                    <label htmlFor="country" className="block text-sm font-medium text-gray-300 mb-1">
+                <div className="space-y-2">
+                    <label htmlFor="country" className="block text-sm font-medium text-gray-300">
                         {t.country}
                     </label>
                     <select
                         id="country"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
-                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                        className="w-full appearance-none rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="">{t.all}</option>
                         {availableCountries.map((c) => (
@@ -169,24 +189,53 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                 </div>
             </div>
 
+            <div className="grid gap-4 md:grid-cols-[2fr,1fr]">
+                <div className="rounded-lg bg-gray-900 p-4 shadow-inner">
+                    {loading && (
+                        <div className="flex items-center justify-center gap-2 py-8 text-gray-400">
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
+                            {t.loading}
+                        </div>
+                    )}
+                    {error && <div className="my-4 text-sm text-red-400">{error}</div>}
+                    {!loading && !error && stats.length === 0 && (
+                        <div className="my-4 text-sm text-gray-400">{t.noData}</div>
+                    )}
 
-            {loading && (
-                <div className="py-8 text-center text-gray-400 flex justify-center items-center gap-2">
-                    <span className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
-                    {t.loading}
+                    {!loading && !error && stats.length > 0 && (
+                        <div className="mt-2 rounded-lg bg-gray-900 p-2">
+                            <MetricsChart stats={stats} />
+                        </div>
+                    )}
                 </div>
-            )}
-            {error && <div className="text-red-400 text-sm my-4">{error}</div>}
-            {!loading && !error && stats.length === 0 && (
-                <div className="text-gray-400 text-sm my-4">{t.noData}</div>
-            )}
 
-
-            {!loading && !error && stats.length > 0 && (
-                <div className="mt-6 bg-gray-900 p-4 rounded-lg shadow-inner">
-                    <MetricsChart stats={stats} />
+                <div className="flex flex-col gap-3 rounded-lg border border-gray-800 bg-gray-900/50 p-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-white">{t.countryMetrics}</h3>
+                        <span className="rounded-full bg-blue-500/20 px-3 py-1 text-xs text-blue-200">
+                            {countryMetrics.length}
+                        </span>
+                    </div>
+                    {countryRows.length === 0 && <p className="text-sm text-gray-400">{t.emptyCountries}</p>}
+                    {countryRows.map((entry) => (
+                        <div key={entry.country} className="rounded-md border border-gray-800 bg-gray-900/70 p-3">
+                            <div className="flex items-center justify-between text-sm text-gray-200">
+                                <span className="font-semibold">{entry.country}</span>
+                                <span className="text-xs uppercase text-gray-400">{t.countryClicks}</span>
+                            </div>
+                            <div className="mt-2 flex items-center gap-2">
+                                <div className="h-2 flex-1 rounded-full bg-gray-800">
+                                    <div
+                                        className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                                        style={{ width: `${Math.min(100, (entry.clicks / (countryMetrics[0]?.clicks || 1)) * 100)}%` }}
+                                    />
+                                </div>
+                                <span className="w-14 text-right text-sm text-white">{entry.clicks}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            )}
+            </div>
         </div>
     );
 }

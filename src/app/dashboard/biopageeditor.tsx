@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import Button from '@/components/button'
@@ -38,6 +38,7 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         saveBiopage: 'Save',
         viewBiopage: 'View Biopage',
         preview: 'Biopage Preview',
+        appearance: 'Appearance',
         created: 'Biopage created successfully.',
         createError: 'Error creating biopage',
         saved: 'Saved successfully',
@@ -73,6 +74,7 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         saveBiopage: 'Guardar',
         viewBiopage: 'Ver Biopage',
         preview: 'Biopage Preview',
+        appearance: 'Apariencia',
         created: 'Biopage creado correctamente.',
         createError: 'Error al crear biopage',
         saved: 'Guardado correctamente',
@@ -85,8 +87,78 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
     },
 }
 
+const SectionCard = ({ title, actions, children, className = '' }: { title?: string; actions?: ReactNode; children: ReactNode; className?: string }) => (
+    <section className={`rounded-lg border border-gray-800 bg-gray-900/50 p-4 shadow-lg ${className}`}>
+        {(title || actions) && (
+            <div className="mb-3 flex items-center justify-between gap-3">
+                {title && <h3 className="text-lg font-semibold">{title}</h3>}
+                {actions}
+            </div>
+        )}
+        {children}
+    </section>
+);
+
+const ColorInput = ({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (val: string) => void }) => (
+    <div className="space-y-2">
+        <label htmlFor={id} className="block text-sm text-gray-300">
+            {label}
+        </label>
+        <input
+            id={id}
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="h-12 w-12 cursor-pointer rounded border border-gray-600 bg-transparent"
+        />
+    </div>
+);
+
+const LinksSelector = ({
+    links,
+    selected,
+    onToggle,
+    onLabelChange,
+    placeholder,
+    emptyLabel,
+}: {
+    links: LinkType[];
+    selected: SelectedLink[];
+    onToggle: (link: LinkType) => void;
+    onLabelChange: (shortUrl: string, value: string) => void;
+    placeholder: string;
+    emptyLabel: string;
+}) => (
+    <div className="space-y-3">
+        {links.length === 0 ? (
+            <p className="text-gray-400">{emptyLabel}</p>
+        ) : (
+            links.map((link) => {
+                const isSelected = selected.find((l) => l.shortUrl === link.shortUrl);
+                return (
+                    <div key={link.shortUrl} className="rounded-lg border border-gray-800 bg-gray-900/50 p-3">
+                        <label className="flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={!!isSelected} onChange={() => onToggle(link)} className="h-4 w-4 cursor-pointer" />
+                            <span className="text-gray-200">{link.originalUrl}</span>
+                        </label>
+                        {isSelected && (
+                            <input
+                                type="text"
+                                placeholder={placeholder}
+                                value={isSelected.label}
+                                onChange={(e) => onLabelChange(link.shortUrl, e.target.value)}
+                                className="mt-2 w-full rounded border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+                            />
+                        )}
+                    </div>
+                );
+            })
+        )}
+    </div>
+);
+
 export default function BiopageEditor({ language = 'en' }: { language?: SupportedLanguage }) {
-    const t = translations[language]
+    const t = useMemo(() => translations[language], [language])
     const { user } = useUser()
     const [links, setLinks] = useState<LinkType[]>([])
     const [selected, setSelected] = useState<SelectedLink[]>([])
@@ -284,109 +356,73 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
     return (
         <div className="p-4 text-white flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
             <div className="flex flex-col gap-4 mb-6 flex-1">
-                {/* Header con Avatar */}
-                <div className="grid grid-cols-[auto_1fr] items-center gap-4 bg-gray-800/50 p-4 rounded-lg">
-                    <div
-                        onClick={() => setAvatarModal(true)}
-                        className="w-26 h-26 rounded-full overflow-hidden cursor-pointer ring-3 ring-blue-500 hover:ring-blue-400 transition"
-                    >
-                        <img src={biopage.avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"} alt="avatar" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-bold">@{biopage.slug}</h2>
-                        <span className={`inline-block mt-1 px-2 py-1 text-xs rounded ${isPremium ? 'bg-yellow-600 text-black font-semibold' : 'bg-green-700'
-                            }`}>
-                            {isPremium ? t.premiumBadge : t.freeBadge}
-                        </span>
-                    </div>
-                    {isPremium && (
-                        <button
-                            onClick={() => setModal(true)}
-                            className="ml-auto text-sm text-blue-400 hover:text-blue-300"
-                        >
+                <SectionCard
+                    className="grid grid-cols-[auto,1fr] items-center gap-4"
+                    actions={isPremium && (
+                        <button onClick={() => setModal(true)} className="text-sm text-blue-400 hover:text-blue-300">
                             {t.changeName}
                         </button>
                     )}
-                </div>
-
-
-                <section className="bg-gray-800/50 p-4 rounded-lg">
-                    <h3 className="font-semibold mb-2">{t.linksTitle}</h3>
-                    {links.length === 0 ? (
-                        <p className="text-gray-400">{t.noLinks}</p>
-                    ) : (
-                        links.map((link) => {
-                            const isSelected = selected.find((l) => l.shortUrl === link.shortUrl);
-                            return (
-                                <div key={link.shortUrl} className="border-b border-gray-700 py-2">
-                                    <label className="flex items-center gap-2 mb-1">
-                                        <input
-                                            type="checkbox"
-                                            checked={!!isSelected}
-                                            onChange={() => toggleSelect(link)}
-                                            className="cursor-pointer"
-                                        />
-                                        <span>{link.originalUrl}</span>
-                                    </label>
-                                    {isSelected && (
-                                        <input
-                                            type="text"
-                                            placeholder={t.displayName}
-                                            value={isSelected.label}
-                                            onChange={(e) => updateLabel(link.shortUrl, e.target.value)}
-                                            className="bg-gray-700 px-3 py-1 rounded w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
-                                    )}
-                                </div>
-                            );
-                        })
-                    )}
-                </section>
-
-
-                <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="bg-gray-800/50 p-4 rounded-lg">
-                        <label htmlFor="bg-color" className="block text-sm mb-2">{t.background}</label>
-                        <input
-                            id="bg-color"
-                            type="color"
-                            value={bgColor}
-                            onChange={(e) => setBgColor(e.target.value)}
-                            className="cursor-pointer w-12 h-12 border border-gray-600 rounded"
+                >
+                    <div
+                        onClick={() => setAvatarModal(true)}
+                        className="h-24 w-24 cursor-pointer overflow-hidden rounded-full ring-4 ring-blue-500 transition hover:ring-blue-400"
+                    >
+                        <img
+                            src={biopage.avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}
+                            alt="avatar"
+                            className="h-full w-full object-cover"
                         />
                     </div>
-                    <div className="bg-gray-800/50 p-4 rounded-lg">
-                        <label htmlFor="text-color" className="block text-sm mb-2">{t.textColor}</label>
-                        <input
-                            id="text-color"
-                            type="color"
-                            value={textColor}
-                            onChange={(e) => setTextColor(e.target.value)}
-                            className="cursor-pointer w-12 h-12 border border-gray-600 rounded"
-                        />
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-bold">@{biopage.slug}</h2>
+                        <span className={`inline-block rounded px-2 py-1 text-xs ${isPremium ? 'bg-yellow-600 text-black font-semibold' : 'bg-green-700'}`}>
+                            {isPremium ? t.premiumBadge : t.freeBadge}
+                        </span>
+                        <p className="text-xs text-gray-400">{t.changeNote}</p>
                     </div>
-                </section>
+                </SectionCard>
 
+                <SectionCard title={t.linksTitle}>
+                    <LinksSelector
+                        links={links}
+                        selected={selected}
+                        onToggle={toggleSelect}
+                        onLabelChange={updateLabel}
+                        placeholder={t.displayName}
+                        emptyLabel={t.noLinks}
+                    />
+                </SectionCard>
 
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    <button
-                        onClick={saveBiopage}
-                        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md transition flex-1 my-auto"
-                    >
-                        {t.saveBiopage}
-                    </button>
-                    <Link
-                        href={`/@${biopage.slug}`}
-                        className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md transition flex-1 text-center my-auto"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {t.viewBiopage}
-                    </Link>
-                </div>
+                <SectionCard title={t.appearance}>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <ColorInput id="bg-color" label={t.background} value={bgColor} onChange={setBgColor} />
+                        <ColorInput id="text-color" label={t.textColor} value={textColor} onChange={setTextColor} />
+                    </div>
+                </SectionCard>
+
+                <SectionCard>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        <button
+                            onClick={saveBiopage}
+                            className="flex-1 rounded-md bg-blue-600 px-4 py-2 transition hover:bg-blue-700"
+                        >
+                            {t.saveBiopage}
+                        </button>
+                        <Link
+                            href={`/@${biopage.slug}`}
+                            className="flex-1 rounded-md bg-green-600 px-4 py-2 text-center transition hover:bg-green-700"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {t.viewBiopage}
+                        </Link>
+                    </div>
+                </SectionCard>
             </div>
-            <div className="md:w-1/2 flex-1 h-fit flex justify-center flex-col items-center bg-gray-800/50 rounded-md p-3">
-                <span>{t.preview}</span>
+
+            <SectionCard className="md:w-1/2 flex-1 h-fit flex flex-col items-center">
+                <span className="text-sm text-gray-300">{t.preview}</span>
                 <BiopagePreview
                     bgColor={bgColor}
                     textColor={textColor}
@@ -395,7 +431,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                     links={selected}
                     language={language}
                 />
-            </div>
+            </SectionCard>
         </div>
     )
 }
