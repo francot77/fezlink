@@ -12,7 +12,16 @@ function getCountryCode(req: RequestWithHeaders): string {
     return country || 'UNKNOWN';
 }
 
-function detectDeviceType(userAgent: string | null): DeviceType {
+function detectDeviceType(userAgent: string | null, headers: Headers): DeviceType {
+    const hintedType = headers.get('x-device-type')?.toLowerCase();
+    if (hintedType === 'mobile' || hintedType === 'tablet' || hintedType === 'desktop') {
+        return hintedType;
+    }
+
+    const chUaMobile = headers.get('sec-ch-ua-mobile');
+    if (chUaMobile === '?1') return 'mobile';
+    if (chUaMobile === '?0') return 'desktop';
+
     if (!userAgent) return 'unknown';
 
     const ua = userAgent.toLowerCase();
@@ -40,7 +49,7 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
 
     const country = getCountryCode(req);
     const userAgent = req.headers.get('user-agent');
-    const deviceType = detectDeviceType(userAgent);
+    const deviceType = detectDeviceType(userAgent, req.headers);
     if (!slug) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
 
     await dbConnect();

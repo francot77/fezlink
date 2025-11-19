@@ -34,13 +34,20 @@ export async function GET(req: NextRequest) {
     }
 
     try {
+        const parsedStart = new Date(startDate);
+        const parsedEnd = new Date(endDate);
+        if (Number.isNaN(parsedStart.getTime()) || Number.isNaN(parsedEnd.getTime())) {
+            return NextResponse.json({ error: 'Invalid date range' }, { status: 400 });
+        }
 
+        parsedStart.setUTCHours(0, 0, 0, 0);
+        parsedEnd.setUTCHours(23, 59, 59, 999);
 
         const matchFilter: MatchFilter = {
             linkId: new mongoose.Types.ObjectId(linkId),
             timestamp: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
+                $gte: parsedStart,
+                $lte: parsedEnd,
             },
         };
         if (country) matchFilter.country = country;
