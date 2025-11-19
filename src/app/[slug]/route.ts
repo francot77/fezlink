@@ -5,22 +5,33 @@ import GlobalClicks from '../models/globalClicks';
 import dbConnect from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
 
-type DeviceType = 'mobile' | 'desktop' | 'tablet';
+type DeviceType = 'mobile' | 'desktop' | 'tablet' | 'unknown';
 
 function getCountryCode(req: RequestWithHeaders): string {
     const country = req.headers.get('x-vercel-ip-country');
     return country || 'UNKNOWN';
 }
 
-function detectDeviceType(userAgent: string | null): DeviceType {
-    if (!userAgent) return 'desktop';
+function detectDeviceType(userAgent: string | null, headers: Headers): DeviceType {
+    const hintedType = headers.get('x-device-type')?.toLowerCase();
+    if (hintedType === 'mobile' || hintedType === 'tablet' || hintedType === 'desktop') {
+        return hintedType;
+    }
+
+    const chUaMobile = headers.get('sec-ch-ua-mobile');
+    if (chUaMobile === '?1') return 'mobile';
+    if (chUaMobile === '?0') return 'desktop';
+
+    if (!userAgent) return 'unknown';
 
     const ua = userAgent.toLowerCase();
-    const isTablet = /ipad|tablet|playbook|silk|kindle|sm\-t|tab\s+\d/i.test(ua);
+    const isTablet = /(ipad|tablet|playbook|silk|kindle|sm\-t|tab\s+\d|android(?!.*mobile))/i.test(ua);
     if (isTablet) return 'tablet';
 
-    const isMobile = /mobile|iphone|ipod|android|blackberry|iemobile|opera mini/i.test(ua);
-    return isMobile ? 'mobile' : 'desktop';
+    const isMobile = /(mobile|iphone|ipod|blackberry|iemobile|opera mini|fennec|windows phone|webos|palm|bada|series60|symbian|nokia|android)/i.test(ua);
+    if (isMobile) return 'mobile';
+
+    return 'desktop';
 }
 
 function sanitize(slug: string) {
@@ -38,7 +49,7 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
 
     const country = getCountryCode(req);
     const userAgent = req.headers.get('user-agent');
-    const deviceType = detectDeviceType(userAgent);
+    const deviceType = detectDeviceType(userAgent, req.headers);
     if (!slug) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
 
     await dbConnect();
