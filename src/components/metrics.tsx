@@ -12,6 +12,7 @@ interface Stat {
 interface StatsResponse {
     stats: Stat[];
     deviceTotals?: { deviceType: string; clicks: number }[];
+    sourceTotals?: { source: string; clicks: number }[];
 }
 
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
@@ -22,6 +23,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         to: 'To',
         country: 'Country',
         all: 'All',
+        source: 'Source',
+        allSources: 'All sources',
         deviceType: 'Device type',
         allDevices: 'All devices',
         deviceHint: 'Use the device filter to compare mobile vs desktop traffic.',
@@ -34,6 +37,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         deviceMetrics: 'Device insights',
         unknownDevice: 'Unknown device',
         deviceTotalsEmpty: 'No device data captured for this range yet.',
+        sourceMetrics: 'Source insights',
+        sourceTotalsEmpty: 'No source data captured for this range yet.',
     },
     es: {
         title: 'Métricas del enlace',
@@ -42,6 +47,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         to: 'Hasta',
         country: 'País',
         all: 'Todos',
+        source: 'Fuente',
+        allSources: 'Todas las fuentes',
         deviceType: 'Tipo de dispositivo',
         allDevices: 'Todos los dispositivos',
         deviceHint: 'Usa el filtro por dispositivo para comparar tráfico móvil y desktop.',
@@ -54,6 +61,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         deviceMetrics: 'Detalles por dispositivo',
         unknownDevice: 'Dispositivo desconocido',
         deviceTotalsEmpty: 'Aún no hay datos por dispositivo en este rango.',
+        sourceMetrics: 'Detalles por fuente',
+        sourceTotalsEmpty: 'Aún no hay datos por fuente en este rango.',
     },
 };
 
@@ -65,9 +74,11 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
 
     const [totalClicks, setTotalClicks] = useState(0);
     const [availableCountries, setAvailableCountries] = useState<string[]>([]);
+    const [availableSources, setAvailableSources] = useState<string[]>([]);
     const [countryTotals, setCountryTotals] = useState<Record<string, number>>({});
     const [countryLoading, setCountryLoading] = useState(false);
     const [deviceTotals, setDeviceTotals] = useState<{ deviceType: string; clicks: number }[]>([]);
+    const [sourceTotals, setSourceTotals] = useState<{ source: string; clicks: number }[]>([]);
 
     const [startDate, setStartDate] = useState(() => {
         const d = new Date(Date.now() - 7 * 24 * 3600 * 1000);
@@ -79,6 +90,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
     });
     const [country, setCountry] = useState('');
     const [deviceType, setDeviceType] = useState('');
+    const [source, setSource] = useState('');
 
     const formatDeviceLabel = (type: string) => {
         switch (type) {
@@ -102,6 +114,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                 const data = await res.json();
                 setTotalClicks(data.totalClicks || 0);
                 setAvailableCountries(data.countries || []);
+                setAvailableSources(Object.keys(data.clicksBySource || {}));
             } catch (err: any) {
                 console.error(err.message);
             }
@@ -122,12 +135,15 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                 });
                 if (country) params.append('country', country);
                 if (deviceType) params.append('deviceType', deviceType);
+                if (source) params.append('source', source);
+                params.append('groupBySource', 'true');
 
                 const res = await fetch(`/api/metrics?${params.toString()}`);
                 if (!res.ok) throw new Error('Error fetching stats');
                 const data: StatsResponse = await res.json();
                 setStats(data.stats);
                 setDeviceTotals(data.deviceTotals ?? []);
+                setSourceTotals(data.sourceTotals ?? []);
             } catch (err: any) {
                 setError(err.message);
                 setDeviceTotals([]);
@@ -143,7 +159,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
             setError(t.dateError);
             setDeviceTotals([]);
         }
-    }, [linkId, startDate, endDate, country, deviceType, t]);
+    }, [linkId, startDate, endDate, country, deviceType, source, t]);
 
     useEffect(() => {
         const fetchCountryTotals = async () => {
@@ -163,6 +179,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                             endDate: new Date(endDate).toISOString(),
                             country: code,
                         });
+                        if (source) params.append('source', source);
                         const res = await fetch(`/api/metrics?${params.toString()}`);
                         if (!res.ok) return;
                         const data: StatsResponse = await res.json();
@@ -177,7 +194,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
         };
 
         fetchCountryTotals();
-    }, [availableCountries, endDate, linkId, startDate]);
+    }, [availableCountries, endDate, linkId, source, startDate]);
 
     return (
         <div className="p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
@@ -190,7 +207,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
             </div>
 
 
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
 
                 <div>
                     <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-1">
@@ -260,6 +277,25 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                     </select>
                     <p className="mt-2 text-xs text-gray-400">{t.deviceHint}</p>
                 </div>
+
+                <div>
+                    <label htmlFor="source" className="block text-sm font-medium text-gray-300 mb-1">
+                        {t.source}
+                    </label>
+                    <select
+                        id="source"
+                        value={source}
+                        onChange={(e) => setSource(e.target.value)}
+                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                    >
+                        <option value="">{t.allSources}</option>
+                        {availableSources.map((src) => (
+                            <option key={src} value={src}>
+                                {src}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
 
@@ -297,6 +333,28 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                                 <p className="text-sm font-semibold">{formatDeviceLabel(device.deviceType)}</p>
                                 <p className="text-xs text-gray-400">{t.deviceType}</p>
                                 <p className="mt-1 text-2xl font-bold text-white">{device.clicks.toLocaleString()}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div className="mt-6 space-y-2">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-white">{t.sourceMetrics}</h3>
+                </div>
+                {sourceTotals.length === 0 ? (
+                    <p className="text-sm text-gray-400">{t.sourceTotalsEmpty}</p>
+                ) : (
+                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                        {sourceTotals.map((entry) => (
+                            <div
+                                key={entry.source}
+                                className="rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 shadow-sm text-gray-100"
+                            >
+                                <p className="text-sm font-semibold">{entry.source}</p>
+                                <p className="text-xs text-gray-400">{t.source}</p>
+                                <p className="mt-1 text-2xl font-bold text-white">{entry.clicks.toLocaleString()}</p>
                             </div>
                         ))}
                     </div>

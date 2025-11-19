@@ -6,6 +6,7 @@ import { LinkStats } from '@/app/models/linkStats';
 import { LinkStat } from '@/types/globals';
 import { auth } from '@clerk/nextjs/server';
 import { Link } from '@/app/models/links';
+import Clicks from '@/app/models/clicks';
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const linkId = searchParams.get('linkId');
@@ -30,14 +31,32 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Link not found' }, { status: 404 });
     }
 
-    const stats = await LinkStats.findOne({ linkId: new mongoose.Types.ObjectId(linkId) });
+    const [stats, clicksBySourceAggregation] = await Promise.all([
+        LinkStats.findOne({ linkId: new mongoose.Types.ObjectId(linkId) }),
+        Clicks.aggregate([
+            { $match: { linkId: new mongoose.Types.ObjectId(linkId) } },
+            {
+                $group: {
+                    _id: { $ifNull: ['$source', 'default'] },
+                    clicks: { $sum: 1 },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    source: '$_id',
+                    clicks: 1,
+                },
+            },
+        ]),
+    ]);
 
-    if (!stats) {
-        return NextResponse.json({ totalClicks: 0, countries: [] });
-    }
+    const totalClicks = stats?.countries?.reduce((sum: number, entry: LinkStat) => sum + entry.clicksCount, 0) ?? 0;
+    const countries = stats?.countries?.map((entry: LinkStat) => entry.country) ?? [];
+    const clicksBySource = clicksBySourceAggregation.reduce((acc: Record<string, number>, entry) => {
+        acc[entry.source] = entry.clicks;
+        return acc;
+    }, {} as Record<string, number>);
 
-    const totalClicks = stats.countries.reduce((sum: number, entry: LinkStat) => sum + entry.clicksCount, 0);
-    const countries = stats.countries.map((entry: LinkStat) => entry.country);
-
-    return NextResponse.json({ totalClicks, countries });
+    return NextResponse.json({ totalClicks, countries, clicksBySource });
 }

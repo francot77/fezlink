@@ -17,7 +17,8 @@ export type LinkType = {
     _id: string
     shortUrl: string
     shortId?: string
-    originalUrl: string
+    slug?: string
+    destinationUrl: string
 }
 export type LinkStat = {
     country: string,
@@ -27,6 +28,7 @@ export type LinkStat = {
 export type SelectedLink = {
     shortUrl: string
     shortId?: string
+    slug?: string
     label: string
 }
 

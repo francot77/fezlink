@@ -55,7 +55,7 @@ const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
                     <div className="max-w-full overflow-hidden rounded-full bg-gray-800 px-4 py-2 text-sm text-gray-300">
                         {t.viewing}:{' '}
                         <span className="inline-block max-w-full truncate align-middle font-semibold text-white md:max-w-2xl">
-                            {selected.originalUrl}
+                            {selected.destinationUrl}
                         </span>
                     </div>
                 )}
@@ -74,7 +74,7 @@ const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
                                     : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-500'
                             }`}
                         >
-                            {link.originalUrl}
+                            {link.destinationUrl}
                         </button>
                     ))}
                     {links.length === 0 && (

@@ -31,6 +31,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         placeholder: 'https://example.com',
         copy: 'Copy link',
         copied: 'Copied',
+        copyInstagram: 'Copy link for Instagram bio',
+        copyWhatsapp: 'Copy link for WhatsApp',
+        copyQr: 'Copy link for QR',
     },
     es: {
         clicks: 'clicks',
@@ -50,6 +53,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         placeholder: 'https://example.com',
         copy: 'Copiar link',
         copied: 'Copiado',
+        copyInstagram: 'Copiar enlace para bio de Instagram',
+        copyWhatsapp: 'Copiar enlace para WhatsApp',
+        copyQr: 'Copiar enlace para QR',
     },
 };
 
@@ -64,17 +70,25 @@ const LinkCard = ({
     onDelete: () => void;
     language?: SupportedLanguage;
 }) => {
-    const hostname = useMemo(() => link.shortUrl.match(/^https?:\/\/(.+)/)?.[1] ?? link.shortUrl, [link.shortUrl]);
+    const safeShortUrl = link.shortUrl ?? '';
+    const hostname = useMemo(
+        () => safeShortUrl.match(/^https?:\/\/(.+)/)?.[1] ?? safeShortUrl,
+        [safeShortUrl]
+    );
     const originalHost = useMemo(
-        () => link.originalUrl.match(/^https?:\/\/([^/]+)/)?.[1] ?? link.originalUrl,
-        [link.originalUrl]
+        () => link.destinationUrl.match(/^https?:\/\/([^/]+)/)?.[1] ?? link.destinationUrl,
+        [link.destinationUrl]
     );
     const t = translations[language];
     const [copied, setCopied] = useState(false);
+    const [channelCopied, setChannelCopied] = useState<string | null>(null);
 
-    const handleCopy = async () => {
+    const buildChannelUrl = (source: string) => `${safeShortUrl}?src=${source}`;
+
+    const handleCopy = async (value?: string) => {
+        const textToCopy = value ?? safeShortUrl;
         try {
-            await navigator.clipboard.writeText(link.shortUrl);
+            await navigator.clipboard.writeText(textToCopy);
             setCopied(true);
             toast.success(t.copied, { position: 'top-center', richColors: true });
             setTimeout(() => setCopied(false), 1600);
@@ -82,6 +96,12 @@ const LinkCard = ({
             console.error('Failed to copy link:', error);
             toast.error('Unable to copy link', { position: 'top-center', richColors: true });
         }
+    };
+
+    const handleChannelCopy = async (label: string, value: string) => {
+        setChannelCopied(label);
+        await handleCopy(value);
+        setTimeout(() => setChannelCopied((current) => (current === label ? null : current)), 1600);
     };
 
     return (
@@ -96,14 +116,14 @@ const LinkCard = ({
                         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
                             <a
                                 className="truncate text-lg font-semibold text-white hover:text-blue-300"
-                                href={link.shortUrl}
+                                href={safeShortUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
                                 {hostname}
                             </a>
                             <button
-                                onClick={handleCopy}
+                                onClick={() => handleCopy()}
                                 className={`flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
                                     copied
                                         ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
@@ -134,7 +154,7 @@ const LinkCard = ({
                     {t.stats}
                 </Button>
                 <a
-                    href={link.shortUrl}
+                    href={safeShortUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 rounded-lg border border-gray-700 px-4 py-2 font-semibold text-gray-200 transition hover:border-blue-500 hover:text-white"
@@ -147,6 +167,26 @@ const LinkCard = ({
                 >
                     <Trash2 size={16} /> {t.delete}
                 </button>
+                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
+                    {[{ label: t.copyInstagram, src: 'instagram_bio' }, { label: t.copyWhatsapp, src: 'whatsapp' }, { label: t.copyQr, src: 'qr_local' }].map((channel) => {
+                        const url = buildChannelUrl(channel.src);
+                        const isCopied = channelCopied === channel.src;
+                        return (
+                            <button
+                                key={channel.src}
+                                onClick={() => handleChannelCopy(channel.src, url)}
+                                className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                                    isCopied
+                                        ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                                        : 'border-gray-700 bg-gray-800/60 text-gray-200 hover:border-blue-500 hover:text-white'
+                                }`}
+                            >
+                                {isCopied ? <Check size={14} /> : <Copy size={14} />}
+                                {isCopied ? t.copied : channel.label}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
