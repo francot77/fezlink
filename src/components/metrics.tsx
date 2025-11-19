@@ -11,6 +11,7 @@ interface Stat {
 
 interface StatsResponse {
     stats: Stat[];
+    deviceTotals?: { deviceType: string; clicks: number }[];
 }
 
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
@@ -21,12 +22,18 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         to: 'To',
         country: 'Country',
         all: 'All',
+        deviceType: 'Device type',
+        allDevices: 'All devices',
+        deviceHint: 'Use the device filter to compare mobile vs desktop traffic.',
         loading: 'Loading stats...',
         noData: 'No data available to display.',
         dateError: 'The date range is invalid',
         countryMetrics: 'Country insights',
         countryTotalsEmpty: 'No country data yet. Start sharing your link to see more!',
         countryClicks: 'clicks',
+        deviceMetrics: 'Device insights',
+        unknownDevice: 'Unknown device',
+        deviceTotalsEmpty: 'No device data captured for this range yet.',
     },
     es: {
         title: 'Métricas del enlace',
@@ -35,12 +42,18 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         to: 'Hasta',
         country: 'País',
         all: 'Todos',
+        deviceType: 'Tipo de dispositivo',
+        allDevices: 'Todos los dispositivos',
+        deviceHint: 'Usa el filtro por dispositivo para comparar tráfico móvil y desktop.',
         loading: 'Cargando estadísticas...',
         noData: 'No hay datos para mostrar.',
         dateError: 'El rango de fechas es inválido',
         countryMetrics: 'Detalles por país',
         countryTotalsEmpty: 'Aún no hay datos por país. ¡Comparte tu enlace para ver más!',
         countryClicks: 'clics',
+        deviceMetrics: 'Detalles por dispositivo',
+        unknownDevice: 'Dispositivo desconocido',
+        deviceTotalsEmpty: 'Aún no hay datos por dispositivo en este rango.',
     },
 };
 
@@ -54,6 +67,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
     const [availableCountries, setAvailableCountries] = useState<string[]>([]);
     const [countryTotals, setCountryTotals] = useState<Record<string, number>>({});
     const [countryLoading, setCountryLoading] = useState(false);
+    const [deviceTotals, setDeviceTotals] = useState<{ deviceType: string; clicks: number }[]>([]);
 
     const [startDate, setStartDate] = useState(() => {
         const d = new Date(Date.now() - 7 * 24 * 3600 * 1000);
@@ -64,6 +78,20 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
         return d.toISOString().slice(0, 10);
     });
     const [country, setCountry] = useState('');
+    const [deviceType, setDeviceType] = useState('');
+
+    const formatDeviceLabel = (type: string) => {
+        switch (type) {
+            case 'mobile':
+                return 'Mobile';
+            case 'desktop':
+                return 'Desktop';
+            case 'tablet':
+                return 'Tablet';
+            default:
+                return t.unknownDevice;
+        }
+    };
 
     // Fetch resumen total (totalClicks y countries)
     useEffect(() => {
@@ -90,15 +118,19 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                     linkId,
                     startDate: new Date(startDate).toISOString(),
                     endDate: new Date(endDate).toISOString(),
+                    groupByDevice: 'true',
                 });
                 if (country) params.append('country', country);
+                if (deviceType) params.append('deviceType', deviceType);
 
                 const res = await fetch(`/api/metrics?${params.toString()}`);
                 if (!res.ok) throw new Error('Error fetching stats');
                 const data: StatsResponse = await res.json();
                 setStats(data.stats);
+                setDeviceTotals(data.deviceTotals ?? []);
             } catch (err: any) {
                 setError(err.message);
+                setDeviceTotals([]);
             } finally {
                 setLoading(false);
             }
@@ -109,8 +141,9 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
         } else {
             setStats([]);
             setError(t.dateError);
+            setDeviceTotals([]);
         }
-    }, [linkId, startDate, endDate, country, t]);
+    }, [linkId, startDate, endDate, country, deviceType, t]);
 
     useEffect(() => {
         const fetchCountryTotals = async () => {
@@ -157,7 +190,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
             </div>
 
 
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
 
                 <div>
                     <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-1">
@@ -208,6 +241,25 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                         ))}
                     </select>
                 </div>
+
+
+                <div>
+                    <label htmlFor="deviceType" className="block text-sm font-medium text-gray-300 mb-1">
+                        {t.deviceType}
+                    </label>
+                    <select
+                        id="deviceType"
+                        value={deviceType}
+                        onChange={(e) => setDeviceType(e.target.value)}
+                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                    >
+                        <option value="">{t.allDevices}</option>
+                        <option value="mobile">Mobile</option>
+                        <option value="desktop">Desktop</option>
+                        <option value="tablet">Tablet</option>
+                    </select>
+                    <p className="mt-2 text-xs text-gray-400">{t.deviceHint}</p>
+                </div>
             </div>
 
 
@@ -228,6 +280,28 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                     <MetricsChart stats={stats} />
                 </div>
             )}
+
+            <div className="mt-6 space-y-2">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-white">{t.deviceMetrics}</h3>
+                </div>
+                {deviceTotals.length === 0 ? (
+                    <p className="text-sm text-gray-400">{t.deviceTotalsEmpty}</p>
+                ) : (
+                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                        {deviceTotals.map((device) => (
+                            <div
+                                key={device.deviceType}
+                                className="rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 shadow-sm text-gray-100"
+                            >
+                                <p className="text-sm font-semibold">{formatDeviceLabel(device.deviceType)}</p>
+                                <p className="text-xs text-gray-400">{t.deviceType}</p>
+                                <p className="mt-1 text-2xl font-bold text-white">{device.clicks.toLocaleString()}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
 
             <div className="mt-6 space-y-2">
                 <div className="flex items-center justify-between">
