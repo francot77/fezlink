@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server'
 const isProtectedRoute = createRouteMatcher(['/dashboard'])
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
 
-// Lista de rutas que queremos bloquear
 const blockedPaths = [
     '/wp-admin',
     '/wp-login.php',
@@ -15,31 +14,50 @@ const blockedPaths = [
     '/wordpress/wp-admin/setup-config.php',
 ]
 
-// Middleware principal
+// 👇 NUEVO: User-Agents que NO deben ser bloqueados nunca
+const ALLOWED_BOTS = [
+    "facebookexternalhit",
+    "WhatsApp",
+    "TelegramBot",
+    "Twitterbot",
+    "LinkedInBot",
+    "Discordbot",
+    "Googlebot",
+]
+
 export default clerkMiddleware(async (auth, req) => {
     const { pathname } = req.nextUrl
+    const ua = req.headers.get("user-agent") || ""
 
-    //Check para admin cms
+    // 👇 1) Permitir crawlers confiables SIN restricciones
+    for (const bot of ALLOWED_BOTS) {
+        if (ua.includes(bot)) {
+            return NextResponse.next()
+        }
+    }
+
+    // 2) Bloqueos falsos positivos estilo WordPress
+    if (blockedPaths.some((path) => pathname.startsWith(path))) {
+        return new NextResponse('Forbidden', { status: 403 })
+    }
+
+    // 3) Admin para Fezlink
     if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'admin') {
         const url = new URL('/', req.url)
         return NextResponse.redirect(url)
     }
-    //Block para bots
-    if (blockedPaths.some((path) => pathname.startsWith(path))) {
-        return new NextResponse('Forbidden', { status: 403 })
-    }
-    //Para protejer el dashboar sin auth
+
+    // 4) Dashboard requiere login
     if (isProtectedRoute(req)) {
         await auth.protect()
     }
+
     return NextResponse.next()
 })
 
 export const config = {
     matcher: [
-        // Skip Next.js internals and all static files, unless found in search params
         '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-        // Always run for API routes
         '/(api|trpc)(.*)',
     ],
 }
