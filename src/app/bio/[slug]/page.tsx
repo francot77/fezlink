@@ -45,17 +45,21 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
     if (error) return <div className="text-red-400 p-4">{error}</div>;
     if (!bioPage) return null;
 
-    const isGradient = bioPage.backgroundColor?.includes("gradient")
-    const qrButtonTextColor = isGradient ? '#0f172a' : bioPage.backgroundColor
+    const backgroundValue = bioPage.backgroundColor || '#000000'
+    const isGradient = backgroundValue.toLowerCase().includes('gradient')
+    const qrButtonTextColor = isGradient ? '#0f172a' : backgroundValue
+
+    const backgroundStyle = {
+        background: backgroundValue,
+        color: bioPage.textColor,
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+    }
 
     return (
         <main
             className="min-h-screen bg-gray-950 text-white flex items-center justify-center px-4 py-10"
-            style={
-                isGradient
-                    ? { backgroundImage: bioPage.backgroundColor, color: bioPage.textColor }
-                    : { backgroundColor: bioPage.backgroundColor, color: bioPage.textColor }
-            }
+            style={backgroundStyle}
         >
             <div className="w-full max-w-4xl">
                 <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl shadow-2xl">

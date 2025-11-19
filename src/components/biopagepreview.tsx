@@ -22,16 +22,18 @@ const BiopagePreview = ({
     es: 'No hay links seleccionados',
   };
 
-  const isGradient = bgColor?.includes("gradient")
+  const backgroundValue = bgColor || '#000000'
+  const backgroundStyle = {
+    background: backgroundValue,
+    color: textColor,
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat'
+  }
 
   return (
     <div className="rounded-xl overflow-hidden shadow-2xl border border-gray-700 max-w-xs mx-auto mt-6 transform transition-all hover:scale-[1.02] bg-gray-900/40">
       <div
-        style={
-          isGradient
-            ? { backgroundImage: bgColor, color: textColor }
-            : { backgroundColor: bgColor, color: textColor }
-        }
+        style={backgroundStyle}
         className="p-5 text-center min-h-[320px] flex flex-col items-center justify-start backdrop-blur-sm"
       >
         <div

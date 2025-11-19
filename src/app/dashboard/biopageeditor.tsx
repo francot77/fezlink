@@ -118,6 +118,10 @@ const gradientPresets = [
     { label: 'Forest', value: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #0f766e 100%)' },
     { label: 'Midnight', value: 'linear-gradient(135deg, #0ea5e9 0%, #312e81 50%, #111827 100%)' },
     { label: 'Candy', value: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%)' },
+    { label: 'Tropical', value: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 35%, #10b981 100%)' },
+    { label: 'Cosmic', value: 'linear-gradient(135deg, #4f46e5 0%, #9333ea 45%, #ec4899 100%)' },
+    { label: 'Lagoon', value: 'linear-gradient(135deg, #06b6d4 0%, #0ea5e9 50%, #22c55e 100%)' },
+    { label: 'Steel', value: 'linear-gradient(135deg, #94a3b8 0%, #475569 50%, #0f172a 100%)' },
 ]
 
 const SectionCard = ({ title, description, children }: { title: string, description?: string, children: ReactNode }) => (
