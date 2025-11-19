@@ -18,9 +18,15 @@ export type LinkType = {
     shortUrl: string
     shortId?: string
     originalUrl: string
+    source?: string
 }
 export type LinkStat = {
     country: string,
+    clicksCount: number
+}
+
+export type SourceStat = {
+    source: string,
     clicksCount: number
 }
 

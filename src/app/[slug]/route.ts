@@ -58,6 +58,7 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     const country = getCountryCode(req);
     const userAgent = req.headers.get('user-agent');
     const deviceType = detectDeviceType(userAgent, req.headers);
+    const referrer = req.headers.get('referer') || req.headers.get('referrer');
 
     await dbConnect();
 
@@ -68,6 +69,8 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     );
 
     if (!updatedLink) return cacheableRedirect(`${process.env.BASE_URL}/404`);
+
+    const source = updatedLink.source?.trim() || 'default';
 
     const linkStatsPromise = (async () => {
         try {
@@ -82,6 +85,22 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
                     {
                         $setOnInsert: { linkId: updatedLink._id },
                         $push: { countries: { country, clicksCount: 1 } }
+                    },
+                    { upsert: true }
+                );
+            }
+
+            const sourceUpdate = await LinkStats.updateOne(
+                { linkId: updatedLink._id, 'sources.source': source },
+                { $inc: { 'sources.$.clicksCount': 1 } }
+            );
+
+            if (sourceUpdate.modifiedCount === 0) {
+                await LinkStats.updateOne(
+                    { linkId: updatedLink._id },
+                    {
+                        $setOnInsert: { linkId: updatedLink._id },
+                        $push: { sources: { source, clicksCount: 1 } }
                     },
                     { upsert: true }
                 );
@@ -102,6 +121,8 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
         timestamp: new Date(),
         userAgent,
         deviceType,
+        source,
+        referrer
     }).catch((error) => {
         console.error('Error registrando clic en clicks:', error);
         // No interrumpir la redirección si falla la inserción

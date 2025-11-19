@@ -4,6 +4,7 @@ const LinkSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     originalUrl: { type: String, required: true },
     shortId: { type: String, required: true, unique: true },
+    source: { type: String, default: 'default' },
     totalClicks: { type: Number, default: 0 }
 });
 

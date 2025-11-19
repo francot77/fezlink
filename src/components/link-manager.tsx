@@ -31,6 +31,10 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         placeholder: 'https://example.com',
         copy: 'Copy link',
         copied: 'Copied',
+        sourceLabel: 'Channel/source (optional)',
+        presetTitle: 'Quick channel links',
+        presetAction: 'Generate',
+        sourceTag: 'Source',
     },
     es: {
         clicks: 'clicks',
@@ -50,6 +54,10 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         placeholder: 'https://example.com',
         copy: 'Copiar link',
         copied: 'Copiado',
+        sourceLabel: 'Canal/origen (opcional)',
+        presetTitle: 'Links rápidos por canal',
+        presetAction: 'Generar',
+        sourceTag: 'Canal',
     },
 };
 
@@ -117,7 +125,10 @@ const LinkCard = ({
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-300">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-300">
+                    <span className="rounded-full bg-gray-800/70 px-3 py-1 text-xs font-semibold text-blue-200">
+                        {t.sourceTag}: {link.source || 'default'}
+                    </span>
                     <span className="rounded-full bg-blue-500/10 px-4 py-1 text-xs font-semibold text-blue-200 ring-1 ring-blue-500/30">
                         {link.clicks} {t.clicks}
                     </span>
@@ -158,6 +169,8 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
         links,
         newUrl,
         setNewUrl,
+        newSource,
+        setNewSource,
         loading,
         addLink,
         getStats,
@@ -170,8 +183,16 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
 
     const handleAdd = () => {
         if (!newUrl || !newUrl.startsWith('http')) return;
-        addLink(newUrl.trim());
+        addLink(newUrl.trim(), newSource.trim() || undefined);
     };
+
+    const presets = [
+        { label: 'Instagram bio', value: 'instagram_bio' },
+        { label: 'Instagram story', value: 'instagram_story' },
+        { label: 'WhatsApp', value: 'whatsapp' },
+        { label: 'QR local', value: 'qr_local' },
+        { label: 'Direct', value: 'direct' },
+    ];
 
     return (
         <div className="space-y-6">
@@ -225,6 +246,35 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                         <PlusCircle size={16} />
                         {t.add}
                     </Button>
+                </div>
+                <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="w-full md:max-w-xs">
+                        <label className="mb-1 block text-xs font-medium text-gray-300">{t.sourceLabel}</label>
+                        <input
+                            type="text"
+                            value={newSource}
+                            onChange={(e) => setNewSource(e.target.value)}
+                            placeholder="instagram_bio, qr_local, whatsapp"
+                            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <p className="w-full text-xs font-medium text-gray-300">{t.presetTitle}</p>
+                        {presets.map((preset) => (
+                            <button
+                                key={preset.value}
+                                onClick={() => {
+                                    setNewSource(preset.value);
+                                    if (newUrl && newUrl.startsWith('http')) {
+                                        addLink(newUrl.trim(), preset.value);
+                                    }
+                                }}
+                                className="rounded-full border border-blue-500/40 bg-blue-600/10 px-3 py-2 text-xs font-semibold text-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-600/20"
+                            >
+                                {t.presetAction}: {preset.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 

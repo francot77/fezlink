@@ -35,10 +35,12 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (links.length >= 2 && !isPremiumActive(sessionClaims as CustomJwtSessionClaims)) {
         return NextResponse.json({ error: "Limited Account" }, { status: 401 });
     }
-    const { originalUrl } = await req.json();
+    const { originalUrl, source } = await req.json();
     if (!isValidHttpUrl(originalUrl)) {
         return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }
+
+    const normalizedSource = typeof source === 'string' && source.trim() ? source.trim() : undefined;
 
     const normalizedUrl = new URL(originalUrl).toString();
 
@@ -50,13 +52,14 @@ export async function POST(req: Request): Promise<NextResponse> {
         existingLink = await Link.findOne({ shortId });
     } while (existingLink);
 
-    const newLink = await Link.create({ originalUrl: normalizedUrl, shortId, userId });
+    const newLink = await Link.create({ originalUrl: normalizedUrl, shortId, userId, source: normalizedSource });
 
     return NextResponse.json({
         id: newLink._id.toString(),
         originalUrl: newLink.originalUrl,
         shortUrl: buildShortUrl(newLink.shortId, req),
-        clicks: newLink.totalClicks
+        clicks: newLink.totalClicks,
+        source: newLink.source ?? 'default'
     });
 }
 
@@ -69,7 +72,8 @@ export async function GET() {
         originalUrl: link.originalUrl,
         shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || ''}/${link.shortId}`,
         shortId: link.shortId,
-        clicks: link.totalClicks
+        clicks: link.totalClicks,
+        source: link.source ?? 'default'
     }));
 
     return NextResponse.json({ links: response });

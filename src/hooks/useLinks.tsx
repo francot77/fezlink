@@ -9,6 +9,7 @@ export interface Link {
     originalUrl: string;
     shortUrl: string;
     clicks: number;
+    source?: string;
 }
 
 export interface LinkStat {
@@ -26,6 +27,7 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
     const [links, setLinks] = useState<Link[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [newUrl, setNewUrl] = useState('https://');
+    const [newSource, setNewSource] = useState('');
     const [selectedLink, setSelectedLink] = useState<Link | null>(null);
     const [linkStats, setLinkStats] = useState<LinkStat | null>(null);
     const [modalType, setModalType] = useState<null | 'stats' | 'delete'>(null);
@@ -49,18 +51,19 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
     }, [refreshLinks, autoLoad]);
 
     const addLink = useCallback(
-        async (originalUrl: string) => {
+        async (originalUrl: string, source?: string) => {
             toast.promise(
                 async () => {
                     const res = await fetch('/api/links', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ originalUrl }),
+                        body: JSON.stringify({ originalUrl, source }),
                     });
                     const newLink = await res.json();
                     if (newLink.error) throw new Error(newLink.error);
                     setLinks((prev) => [...prev, newLink]);
                     setNewUrl('https://');
+                    setNewSource('');
                 },
                 {
                     loading: 'Agregando link...',
@@ -271,6 +274,8 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
         loading,
         newUrl,
         setNewUrl,
+        newSource,
+        setNewSource,
         addLink,
         getStats,
         deleteLink,

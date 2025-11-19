@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import mongoose from 'mongoose';
 import { LinkStats } from '@/app/models/linkStats';
-import { LinkStat } from '@/types/globals';
+import { LinkStat, SourceStat } from '@/types/globals';
 import { auth } from '@clerk/nextjs/server';
 import { Link } from '@/app/models/links';
 export async function GET(req: Request) {
@@ -36,8 +36,11 @@ export async function GET(req: Request) {
         return NextResponse.json({ totalClicks: 0, countries: [] });
     }
 
-    const totalClicks = stats.countries.reduce((sum: number, entry: LinkStat) => sum + entry.clicksCount, 0);
-    const countries = stats.countries.map((entry: LinkStat) => entry.country);
+    const totalClicks = (stats.countries ?? []).reduce((sum: number, entry: LinkStat) => sum + entry.clicksCount, 0)
+        || stats.sources?.reduce((sum: number, entry: SourceStat) => sum + entry.clicksCount, 0)
+        || 0;
+    const countries = (stats.countries ?? []).map((entry: LinkStat) => entry.country);
+    const sources = (stats.sources ?? []).map((entry: SourceStat) => entry.source);
 
-    return NextResponse.json({ totalClicks, countries });
+    return NextResponse.json({ totalClicks, countries, sources });
 }
