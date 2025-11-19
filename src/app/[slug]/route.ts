@@ -5,10 +5,24 @@ import GlobalClicks from '../models/globalClicks';
 import dbConnect from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
 
+type DeviceType = 'mobile' | 'desktop' | 'tablet';
+
 function getCountryCode(req: RequestWithHeaders): string {
     const country = req.headers.get('x-vercel-ip-country');
     return country || 'UNKNOWN';
 }
+
+function detectDeviceType(userAgent: string | null): DeviceType {
+    if (!userAgent) return 'desktop';
+
+    const ua = userAgent.toLowerCase();
+    const isTablet = /ipad|tablet|playbook|silk|kindle|sm\-t|tab\s+\d/i.test(ua);
+    if (isTablet) return 'tablet';
+
+    const isMobile = /mobile|iphone|ipod|android|blackberry|iemobile|opera mini/i.test(ua);
+    return isMobile ? 'mobile' : 'desktop';
+}
+
 function sanitize(slug: string) {
     if (slug.startsWith("@")) return "@" + slug.replace(/[^\w-]/g, '')
     return slug.replace(/[^\w-]/g, '')
@@ -23,6 +37,8 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     if (sanitizedSlug?.startsWith("@")) return NextResponse.redirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.substring(1)}`);
 
     const country = getCountryCode(req);
+    const userAgent = req.headers.get('user-agent');
+    const deviceType = detectDeviceType(userAgent);
     if (!slug) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
 
     await dbConnect();
@@ -69,7 +85,9 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
             linkId: link._id,
             userId: link.userId,
             country,
-            timestamp: new Date()
+            timestamp: new Date(),
+            userAgent,
+            deviceType,
         });
     } catch (error) {
         console.error('Error registrando clic en clicks:', error);

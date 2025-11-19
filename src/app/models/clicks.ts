@@ -5,6 +5,8 @@ export interface ClickDocument extends Document {
     userId: string;
     country: string;
     timestamp: Date;
+    userAgent?: string;
+    deviceType?: 'mobile' | 'desktop' | 'tablet';
 }
 
 const ClickSchema = new Schema<ClickDocument>({
@@ -12,6 +14,8 @@ const ClickSchema = new Schema<ClickDocument>({
     userId: { type: String, ref: 'User', required: true },
     country: { type: String, required: true },
     timestamp: { type: Date, default: () => new Date(), index: true },
+    userAgent: { type: String },
+    deviceType: { type: String, enum: ['mobile', 'desktop', 'tablet'] },
 });
 
 // Índice compuesto para búsquedas rápidas por link y fecha

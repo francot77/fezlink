@@ -10,6 +10,7 @@ interface MatchFilter {
         $lte: Date;
     };
     country?: string;
+    deviceType?: string;
 }
 
 export async function GET(req: NextRequest) {
@@ -20,6 +21,13 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const country = searchParams.get('country'); // opcional
+    const deviceType = searchParams.get('deviceType'); // opcional
+    const groupByDevice = searchParams.get('groupByDevice') === 'true';
+
+    const allowedDeviceTypes = ['mobile', 'desktop', 'tablet'];
+    if (deviceType && !allowedDeviceTypes.includes(deviceType)) {
+        return NextResponse.json({ error: 'Invalid deviceType' }, { status: 400 });
+    }
 
     if (!linkId || !startDate || !endDate) {
         return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
@@ -36,6 +44,7 @@ export async function GET(req: NextRequest) {
             },
         };
         if (country) matchFilter.country = country;
+        if (deviceType) matchFilter.deviceType = deviceType;
 
         const stats = await clicks.aggregate([
             { $match: matchFilter },
@@ -54,7 +63,29 @@ export async function GET(req: NextRequest) {
             },
         ]);
 
-        return NextResponse.json({ stats });
+        let deviceTotals: { deviceType: string; clicks: number }[] = [];
+
+        if (groupByDevice) {
+            deviceTotals = await clicks.aggregate([
+                { $match: matchFilter },
+                {
+                    $group: {
+                        _id: '$deviceType',
+                        clicks: { $sum: 1 },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        deviceType: { $ifNull: ['$_id', 'unknown'] },
+                        clicks: 1,
+                    },
+                },
+                { $sort: { clicks: -1 } },
+            ]);
+        }
+
+        return NextResponse.json({ stats, deviceTotals });
     } catch (error) {
         console.error('Error fetching stats:', error);
         return NextResponse.json({ error: 'Server error' }, { status: 500 });
