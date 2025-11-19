@@ -114,7 +114,7 @@ const DashboardPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-[#0b1224] to-black px-4 pb-16 text-white">
+        <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-gray-900 via-[#0b1224] to-black px-4 pb-16 text-white">
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 pt-10">
                 <div className="flex flex-col gap-4 rounded-2xl border border-gray-800/80 bg-gray-900/60 p-6 shadow-2xl shadow-blue-900/20 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-1">
@@ -155,9 +155,9 @@ const DashboardPage: React.FC = () => {
 
                 <div className="grid items-start gap-4 md:grid-cols-[minmax(0,260px),1fr] lg:grid-cols-[minmax(0,280px),1fr]">
                     <aside className="top-6 h-fit rounded-xl border border-gray-800/80 bg-gray-900/60 p-3 shadow-xl shadow-blue-900/10 md:self-start">
-                        <ul className="flex flex-row gap-2 overflow-x-auto pb-2 md:flex-col md:pb-0">
+                        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
                             {sections.map((section) => (
-                                <li key={section.id} className="flex-1 min-w-[160px] md:min-w-0 md:flex-none">
+                                <li key={section.id} className="min-w-0">
                                     <button
                                         onClick={() => setActiveSection(section.id)}
                                         className={`flex w-full min-w-0 items-start gap-3 rounded-lg border px-3 py-3 text-left transition md:flex-row ${
