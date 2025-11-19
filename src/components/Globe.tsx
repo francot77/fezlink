@@ -13,7 +13,28 @@ export default function ClicksGlobe({
 }) {
     type PointData = { lat: number; lng: number; size: number };
     const [arcsData, setArcsData] = useState<PointData[]>([]);
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
     const globeEl = useRef<any>(null);
+
+    useLayoutEffect(() => {
+        const updateSize = () => {
+            const el = containerRef.current;
+            if (!el) return;
+            setDimensions({ width: el.clientWidth, height: el.clientHeight });
+        };
+
+        updateSize();
+
+        const resizeObserver = new ResizeObserver(updateSize);
+        const current = containerRef.current;
+        if (current) resizeObserver.observe(current);
+
+        return () => {
+            if (current) resizeObserver.unobserve(current);
+            resizeObserver.disconnect();
+        };
+    }, []);
 
     // 🧠 Delay hasta que ref esté disponible
     useLayoutEffect(() => {
@@ -195,9 +216,14 @@ export default function ClicksGlobe({
     }, [countries]);
 
     return (
-        <div className="sm:w-[300px] md:w-[500px] h-[300px] flex justify-center items-center rounded-xl shadow-lg overflow-hidden">
+        <div
+            ref={containerRef}
+            className="flex h-full min-h-[260px] w-full items-center justify-center overflow-hidden rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 shadow-inner"
+        >
             <Globe
                 ref={globeEl}
+                width={dimensions.width}
+                height={dimensions.height}
                 globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
                 backgroundColor="rgba(0,0,0,0)"
                 pointsData={arcsData}
