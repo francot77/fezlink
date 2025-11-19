@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface IBiopage extends Document {
+export interface IBiopage extends Document {
     userId: string;
     links: { shortUrl: string; label: string }[]; // ID del link y nombre visible
     slug: string;
