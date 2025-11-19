@@ -4,6 +4,7 @@ import NavBar from '@/components/navbar'
 import Button from '@/components/button'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 const highlights = [
   'Track clicks and geographic reach with real-time analytics.',
@@ -47,6 +48,22 @@ const steps = [
 
 export default function Home() {
   const router = useRouter()
+  const [globalClicks, setGlobalClicks] = useState<number | null>(null)
+
+  useEffect(() => {
+    const fetchGlobalClicks = async () => {
+      try {
+        const response = await fetch('/api/metrics/global')
+        if (!response.ok) return
+        const data: { count?: number } = await response.json()
+        setGlobalClicks(data.count ?? 0)
+      } catch (error) {
+        console.error('Error fetching global clicks', error)
+      }
+    }
+
+    fetchGlobalClicks()
+  }, [])
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
@@ -120,7 +137,9 @@ export default function Home() {
                 <div className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
                   <div className="space-y-1">
                     <p className="text-sm text-gray-300">Total clicks</p>
-                    <p className="text-2xl font-bold">48,213</p>
+                    <p className="text-2xl font-bold">
+                      {globalClicks === null ? '—' : globalClicks.toLocaleString()}
+                    </p>
                   </div>
                   <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-sm text-emerald-300">+14% this week</span>
                 </div>
