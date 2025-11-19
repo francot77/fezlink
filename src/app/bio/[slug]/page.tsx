@@ -58,7 +58,7 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
 
     return (
         <main
-            className="min-h-screen bg-gray-950 text-white flex items-center justify-center px-4 py-10"
+            className="min-h-screen text-white flex items-center justify-center px-4 py-10"
             style={backgroundStyle}
         >
             <div className="w-full max-w-4xl">
