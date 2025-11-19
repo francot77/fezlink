@@ -70,7 +70,11 @@ const LinkCard = ({
     onDelete: () => void;
     language?: SupportedLanguage;
 }) => {
-    const hostname = useMemo(() => link.shortUrl.match(/^https?:\/\/(.+)/)?.[1] ?? link.shortUrl, [link.shortUrl]);
+    const safeShortUrl = link.shortUrl ?? '';
+    const hostname = useMemo(
+        () => safeShortUrl.match(/^https?:\/\/(.+)/)?.[1] ?? safeShortUrl,
+        [safeShortUrl]
+    );
     const originalHost = useMemo(
         () => link.destinationUrl.match(/^https?:\/\/([^/]+)/)?.[1] ?? link.destinationUrl,
         [link.destinationUrl]
@@ -79,10 +83,10 @@ const LinkCard = ({
     const [copied, setCopied] = useState(false);
     const [channelCopied, setChannelCopied] = useState<string | null>(null);
 
-    const buildChannelUrl = (source: string) => `${link.shortUrl}?src=${source}`;
+    const buildChannelUrl = (source: string) => `${safeShortUrl}?src=${source}`;
 
     const handleCopy = async (value?: string) => {
-        const textToCopy = value ?? link.shortUrl;
+        const textToCopy = value ?? safeShortUrl;
         try {
             await navigator.clipboard.writeText(textToCopy);
             setCopied(true);
@@ -112,7 +116,7 @@ const LinkCard = ({
                         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
                             <a
                                 className="truncate text-lg font-semibold text-white hover:text-blue-300"
-                                href={link.shortUrl}
+                                href={safeShortUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -150,7 +154,7 @@ const LinkCard = ({
                     {t.stats}
                 </Button>
                 <a
-                    href={link.shortUrl}
+                    href={safeShortUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 rounded-lg border border-gray-700 px-4 py-2 font-semibold text-gray-200 transition hover:border-blue-500 hover:text-white"
