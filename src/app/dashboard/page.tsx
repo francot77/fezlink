@@ -32,8 +32,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         statsDescription: 'Monitor performance and reach for every link',
         biopageLabel: 'BioPage',
         biopageDescription: 'Customize your public profile and color palette',
-        premiumLabel: 'Premium',
-        premiumDescription: 'Unlock advanced features and more capabilities',
+        subscriptionLabel: 'Manage subscription',
+        subscriptionDescription: 'Keep your premium benefits up to date and adjust your plan',
         loading: 'Loading...',
         viewing: 'Viewing',
         language: 'Language',
@@ -49,8 +49,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         statsDescription: 'Monitorea el rendimiento y el alcance de cada enlace',
         biopageLabel: 'BioPage',
         biopageDescription: 'Personaliza tu perfil público y la paleta de colores',
-        premiumLabel: 'Premium',
-        premiumDescription: 'Desbloquea funciones avanzadas y más capacidades',
+        subscriptionLabel: 'Gestionar suscripción',
+        subscriptionDescription: 'Mantén tus beneficios premium al día y ajusta tu plan',
         loading: 'Cargando...',
         viewing: 'Viendo',
         language: 'Idioma',
@@ -87,8 +87,8 @@ const DashboardPage: React.FC = () => {
             },
             {
                 id: 'premium',
-                label: t.premiumLabel,
-                description: t.premiumDescription,
+                label: t.subscriptionLabel,
+                description: t.subscriptionDescription,
                 icon: <Flame size={18} color="#ff5900" />,
                 content: (
                     <div className="flex flex-wrap justify-center gap-4">

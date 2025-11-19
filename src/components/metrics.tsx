@@ -24,6 +24,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         loading: 'Loading stats...',
         noData: 'No data available to display.',
         dateError: 'The date range is invalid',
+        countryMetrics: 'Country insights',
+        countryTotalsEmpty: 'No country data yet. Start sharing your link to see more!',
+        countryClicks: 'clicks',
     },
     es: {
         title: 'Métricas del enlace',
@@ -35,6 +38,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         loading: 'Cargando estadísticas...',
         noData: 'No hay datos para mostrar.',
         dateError: 'El rango de fechas es inválido',
+        countryMetrics: 'Detalles por país',
+        countryTotalsEmpty: 'Aún no hay datos por país. ¡Comparte tu enlace para ver más!',
+        countryClicks: 'clics',
     },
 };
 
@@ -46,6 +52,8 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
 
     const [totalClicks, setTotalClicks] = useState(0);
     const [availableCountries, setAvailableCountries] = useState<string[]>([]);
+    const [countryTotals, setCountryTotals] = useState<Record<string, number>>({});
+    const [countryLoading, setCountryLoading] = useState(false);
 
     const [startDate, setStartDate] = useState(() => {
         const d = new Date(Date.now() - 7 * 24 * 3600 * 1000);
@@ -72,7 +80,6 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
         }
         fetchSummary();
     }, [linkId]);
-
 
     useEffect(() => {
         async function fetchStats() {
@@ -104,6 +111,40 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
             setError(t.dateError);
         }
     }, [linkId, startDate, endDate, country, t]);
+
+    useEffect(() => {
+        const fetchCountryTotals = async () => {
+            if (!availableCountries.length || !startDate || !endDate || new Date(startDate) > new Date(endDate)) {
+                setCountryTotals({});
+                return;
+            }
+
+            setCountryLoading(true);
+            const totals: Record<string, number> = {};
+            await Promise.all(
+                availableCountries.map(async (code) => {
+                    try {
+                        const params = new URLSearchParams({
+                            linkId,
+                            startDate: new Date(startDate).toISOString(),
+                            endDate: new Date(endDate).toISOString(),
+                            country: code,
+                        });
+                        const res = await fetch(`/api/metrics?${params.toString()}`);
+                        if (!res.ok) return;
+                        const data: StatsResponse = await res.json();
+                        totals[code] = data.stats.reduce((acc, stat) => acc + stat.clicks, 0);
+                    } catch (err) {
+                        console.error('Error fetching country stats', err);
+                    }
+                })
+            );
+            setCountryTotals(totals);
+            setCountryLoading(false);
+        };
+
+        fetchCountryTotals();
+    }, [availableCountries, endDate, linkId, startDate]);
 
     return (
         <div className="p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
@@ -187,6 +228,38 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                     <MetricsChart stats={stats} />
                 </div>
             )}
+
+            <div className="mt-6 space-y-2">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-white">{t.countryMetrics}</h3>
+                    {countryLoading && <span className="text-xs text-gray-400 animate-pulse">{t.loading}</span>}
+                </div>
+                {availableCountries.length === 0 ? (
+                    <p className="text-sm text-gray-400">{t.countryTotalsEmpty}</p>
+                ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {availableCountries.map((code) => (
+                            <button
+                                key={code}
+                                onClick={() => setCountry(code === country ? '' : code)}
+                                className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left transition ${
+                                    country === code
+                                        ? 'border-blue-500 bg-blue-500/10 text-white'
+                                        : 'border-gray-700 bg-gray-900 text-gray-200 hover:border-gray-500'
+                                }`}
+                            >
+                                <div className="space-y-1">
+                                    <p className="text-sm font-semibold">{code}</p>
+                                    <p className="text-xs text-gray-400">{country === code ? t.loading : t.country}</p>
+                                </div>
+                                <span className="text-lg font-bold text-white">
+                                    {countryTotals[code] ?? 0} {t.countryClicks}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

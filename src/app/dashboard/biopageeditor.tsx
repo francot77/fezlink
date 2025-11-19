@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import Button from '@/components/button'
@@ -29,11 +29,14 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         close: 'Close',
         premiumBadge: 'Premium 🔥',
         freeBadge: 'Free',
-        changeName: 'Change name',
-        linksTitle: 'Links to show:',
+        changeName: 'Update username',
+        linksTitle: 'Links to show',
+        linksDescription: 'Pick the links that will be visible on your BioPage and customize their labels.',
         noLinks: 'No links available',
         displayName: 'Display name',
         background: 'Background color',
+        appearanceTitle: 'Appearance',
+        appearanceDescription: 'Adjust the palette so your BioPage matches your personal brand.',
         textColor: 'Text color',
         saveBiopage: 'Save',
         viewBiopage: 'View Biopage',
@@ -47,6 +50,11 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         slugErrorPrefix: 'Error:',
         avatarPrompt: 'Do you want to change your avatar?',
         avatarUploadSuccess: 'Your avatar was updated successfully',
+        profileTitle: 'Profile & identity',
+        profileDescription: 'Manage the essentials of your public BioPage profile.',
+        premiumHint: 'Premium users can personalize their username.',
+        cancel: 'Cancel',
+        selectLanguage: 'Language',
     },
     es: {
         loading: 'Cargando...',
@@ -64,11 +72,14 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         close: 'Cerrar',
         premiumBadge: 'Premium 🔥',
         freeBadge: 'Free',
-        changeName: 'Cambiar nombre',
-        linksTitle: 'Links para mostrar:',
+        changeName: 'Actualizar usuario',
+        linksTitle: 'Links para mostrar',
+        linksDescription: 'Selecciona los enlaces que se verán en tu BioPage y personaliza sus etiquetas.',
         noLinks: 'No hay links disponibles',
         displayName: 'Nombre para mostrar',
         background: 'Color de fondo',
+        appearanceTitle: 'Apariencia',
+        appearanceDescription: 'Ajusta la paleta para que tu BioPage coincida con tu marca personal.',
         textColor: 'Color de texto',
         saveBiopage: 'Guardar',
         viewBiopage: 'Ver Biopage',
@@ -82,11 +93,29 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         slugErrorPrefix: 'Error:',
         avatarPrompt: 'Desea cambiar su avatar?',
         avatarUploadSuccess: 'Se cambio con exito su avatar',
+        profileTitle: 'Perfil e identidad',
+        profileDescription: 'Administra lo esencial de tu perfil público de BioPage.',
+        premiumHint: 'Los usuarios Premium pueden personalizar su usuario.',
+        cancel: 'Cancelar',
+        selectLanguage: 'Idioma',
     },
 }
 
+const defaultAvatar =
+    'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541'
+
+const SectionCard = ({ title, description, children }: { title: string, description?: string, children: ReactNode }) => (
+    <section className="rounded-xl border border-gray-800/60 bg-gray-900/50 p-5 shadow-lg shadow-blue-900/10">
+        <header className="mb-3 space-y-1">
+            <h3 className="text-lg font-semibold text-white">{title}</h3>
+            {description && <p className="text-sm text-gray-400">{description}</p>}
+        </header>
+        <div className="space-y-3">{children}</div>
+    </section>
+)
+
 export default function BiopageEditor({ language = 'en' }: { language?: SupportedLanguage }) {
-    const t = translations[language]
+    const t = useMemo(() => translations[language], [language])
     const { user } = useUser()
     const [links, setLinks] = useState<LinkType[]>([])
     const [selected, setSelected] = useState<SelectedLink[]>([])
@@ -98,9 +127,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
     const [modal, setModal] = useState<boolean>(false)
     const [avatarModal, setAvatarModal] = useState<boolean>(false)
     const [inputSlug, setInputslug] = useState<string>('')
-    // Cargar biopage del usuario
-    const getUserBiopage = async () => {
-
+    const getUserBiopage = useCallback(async () => {
         const resAT = await fetch('/api/accounttype')
         if (resAT.ok) {
             const data = await resAT.json()
@@ -123,21 +150,20 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
             setBiopage(null)
         }
         setLoading(false)
-    }
+    }, [])
 
-
-    const loadLinks = async () => {
+    const loadLinks = useCallback(async () => {
         const res = await fetch('/api/links')
         const data = await res.json()
         if (res.ok) setLinks(data.links || [])
-    }
+    }, [])
 
     useEffect(() => {
         if (user) {
             getUserBiopage()
             loadLinks()
         }
-    }, [user])
+    }, [getUserBiopage, loadLinks, user])
 
 
     const toggleSelect = (link: LinkType) => {
@@ -225,176 +251,223 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
         }
     }
 
-    if (loading) return <div>{t.loading}</div>
-    if (!user) return <div>{t.unauthorized}</div>
+    if (loading) return <div className="p-6 text-gray-300">{t.loading}</div>
+    if (!user) return <div className="p-6 text-red-300">{t.unauthorized}</div>
 
     if (!biopage)
         return (
-            <div className="flex flex-col justify-center items-center gap-2">
-                <h1>{t.noBiopage}</h1>
-                <h2>{t.wantGenerate}</h2>
-                <Button title={t.generate} onClick={createBiopage} className='shadow-lg shadow-green-600 p-2' />
+            <div className="flex flex-col justify-center items-center gap-3 rounded-xl border border-gray-800/60 bg-gray-900/60 p-6 text-center">
+                <h1 className="text-xl font-semibold text-white">{t.noBiopage}</h1>
+                <p className="text-gray-400">{t.wantGenerate}</p>
+                <Button title={t.generate} onClick={createBiopage} className='shadow-lg shadow-green-600 px-4 py-2 rounded-md bg-green-600 hover:bg-green-700' />
             </div>
         )
-    if (modal) return <CustomModal
-        title={t.changeUsername}
-        onClose={() => setModal(false)}
-        onAccept={handleChangeSlug}
-        acceptText={t.save}
-    >
-        <div className='flex gap-2 flex-col'>
-            <input
-                className='border border-gray-600 bg-gray-800 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
-                placeholder={t.usernamePlaceholder}
-                value={inputSlug}
-                onChange={(e) => setInputslug(e.target.value)}
-            />
-            <span className="text-xs text-gray-400">
-                {t.changeNote}
-            </span>
-        </div>
-    </CustomModal>
-    if (avatarModal) return <div className='flex bg-black/70 w-full p-2 flex-col gap-2'>
-        <div className='flex flex-col items-center'>
-            <h1>{t.avatarPrompt}</h1>
-            <div className="w-30 h-30 rounded-full overflow-hidden">
-                <img
-                    src={biopage.avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}
-                    alt="avatar"
-                    className="w-full h-full object-cover"
-                />
-            </div>
-        </div>
-        <UploadButton
-            endpoint="imageUploader"
-            onClientUploadComplete={(res) => {
-                console.log("Files: ", res);
-                toast.success(t.avatarUploadSuccess, { richColors: true, position: "top-center" });
-            }}
-            onUploadError={(error: Error) => {
-
-                toast.error(`${t.avatarError} ${error.message}`, { richColors: true, position: "top-center" });
-            }}
-        />
-        <Button title={t.close} onClick={() => setAvatarModal(false)} className='bg-red-600 rounded-md p-2 hover:bg-red-900 w-fit self-center' />
-    </div>
-
-
 
     return (
-        <div className="p-4 text-white flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
-            <div className="flex flex-col gap-4 mb-6 flex-1">
-                {/* Header con Avatar */}
-                <div className="grid grid-cols-[auto_1fr] items-center gap-4 bg-gray-800/50 p-4 rounded-lg">
-                    <div
-                        onClick={() => setAvatarModal(true)}
-                        className="w-26 h-26 rounded-full overflow-hidden cursor-pointer ring-3 ring-blue-500 hover:ring-blue-400 transition"
-                    >
-                        <img src={biopage.avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"} alt="avatar" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-bold">@{biopage.slug}</h2>
-                        <span className={`inline-block mt-1 px-2 py-1 text-xs rounded ${isPremium ? 'bg-yellow-600 text-black font-semibold' : 'bg-green-700'
-                            }`}>
-                            {isPremium ? t.premiumBadge : t.freeBadge}
+        <div className="space-y-4 text-white">
+            {modal && (
+                <CustomModal
+                    title={t.changeUsername}
+                    onClose={() => setModal(false)}
+                    onAccept={handleChangeSlug}
+                    acceptText={t.save}
+                >
+                    <div className='flex gap-2 flex-col'>
+                        <input
+                            className='border border-gray-600 bg-gray-800 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            placeholder={t.usernamePlaceholder}
+                            value={inputSlug}
+                            onChange={(e) => setInputslug(e.target.value)}
+                        />
+                        <span className="text-xs text-gray-400">
+                            {t.changeNote}
                         </span>
                     </div>
-                    {isPremium && (
-                        <button
-                            onClick={() => setModal(true)}
-                            className="ml-auto text-sm text-blue-400 hover:text-blue-300"
-                        >
-                            {t.changeName}
-                        </button>
-                    )}
+                </CustomModal>
+            )}
+
+            {avatarModal && (
+                <div className='fixed inset-0 z-30 flex items-center justify-center bg-black/70 p-4'>
+                    <div className='w-full max-w-md rounded-xl border border-gray-800 bg-gray-900 p-5 shadow-2xl shadow-blue-900/30 space-y-4'>
+                        <div className='flex flex-col items-center gap-3 text-center'>
+                            <h1 className="text-lg font-semibold">{t.avatarPrompt}</h1>
+                            <div className="w-28 h-28 rounded-full overflow-hidden ring-2 ring-blue-500/60">
+                                <img
+                                    src={biopage.avatarUrl || defaultAvatar}
+                                    alt="avatar"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        </div>
+                        <UploadButton
+                            endpoint="imageUploader"
+                            onClientUploadComplete={(res) => {
+                                console.log("Files: ", res);
+                                toast.success(t.avatarUploadSuccess, { richColors: true, position: "top-center" });
+                            }}
+                            onUploadError={(error: Error) => {
+                                toast.error(`${t.avatarError} ${error.message}`, { richColors: true, position: "top-center" });
+                            }}
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setAvatarModal(false)}
+                                className='rounded-md px-4 py-2 text-sm text-gray-200 border border-gray-700 hover:bg-gray-800'
+                            >
+                                {t.cancel}
+                            </button>
+                            <Button title={t.close} onClick={() => setAvatarModal(false)} className='bg-blue-600 rounded-md px-4 py-2 hover:bg-blue-700' />
+                        </div>
+                    </div>
                 </div>
+            )}
 
-
-                <section className="bg-gray-800/50 p-4 rounded-lg">
-                    <h3 className="font-semibold mb-2">{t.linksTitle}</h3>
-                    {links.length === 0 ? (
-                        <p className="text-gray-400">{t.noLinks}</p>
-                    ) : (
-                        links.map((link) => {
-                            const isSelected = selected.find((l) => l.shortUrl === link.shortUrl);
-                            return (
-                                <div key={link.shortUrl} className="border-b border-gray-700 py-2">
-                                    <label className="flex items-center gap-2 mb-1">
-                                        <input
-                                            type="checkbox"
-                                            checked={!!isSelected}
-                                            onChange={() => toggleSelect(link)}
-                                            className="cursor-pointer"
-                                        />
-                                        <span>{link.originalUrl}</span>
-                                    </label>
-                                    {isSelected && (
-                                        <input
-                                            type="text"
-                                            placeholder={t.displayName}
-                                            value={isSelected.label}
-                                            onChange={(e) => updateLabel(link.shortUrl, e.target.value)}
-                                            className="bg-gray-700 px-3 py-1 rounded w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
-                                    )}
+            <div className="grid gap-6 xl:grid-cols-[1.4fr,1fr]">
+                <div className="space-y-5">
+                    <SectionCard title={t.profileTitle} description={t.profileDescription}>
+                        <div className="grid gap-4 md:grid-cols-[auto,1fr] md:items-center">
+                            <button
+                                type="button"
+                                onClick={() => setAvatarModal(true)}
+                                className="relative w-28 h-28 rounded-full overflow-hidden ring-2 ring-blue-500/60 transition hover:ring-blue-400"
+                            >
+                                <img src={biopage.avatarUrl || defaultAvatar} alt="avatar" className="w-full h-full object-cover" />
+                                <span className="absolute inset-0 grid place-items-center bg-black/50 text-sm font-semibold opacity-0 transition hover:opacity-100">
+                                    {t.avatarQuestion}
+                                </span>
+                            </button>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                    <h2 className="text-2xl font-bold">@{biopage.slug}</h2>
+                                    <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${isPremium ? 'bg-yellow-500/20 text-yellow-200 border border-yellow-500/40' : 'bg-green-700/30 text-green-200 border border-green-500/40'}`}>
+                                        {isPremium ? t.premiumBadge : t.freeBadge}
+                                    </span>
                                 </div>
-                            );
-                        })
-                    )}
-                </section>
+                                <p className="text-sm text-gray-400">{t.premiumHint}</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {isPremium && (
+                                        <button
+                                            onClick={() => setModal(true)}
+                                            className="rounded-md border border-blue-500/50 px-4 py-2 text-sm text-blue-200 transition hover:bg-blue-500/10"
+                                        >
+                                            {t.changeName}
+                                        </button>
+                                    )}
+                                    <Link
+                                        href={`/@${biopage.slug}`}
+                                        className="inline-flex items-center justify-center rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-200 transition hover:border-blue-500 hover:text-white"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {t.viewBiopage}
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </SectionCard>
 
+                    <SectionCard title={t.linksTitle} description={t.linksDescription}>
+                        {links.length === 0 ? (
+                            <p className="text-gray-400">{t.noLinks}</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {links.map((link) => {
+                                    const isSelected = selected.find((l) => l.shortUrl === link.shortUrl)
+                                    return (
+                                        <div key={link.shortUrl} className="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+                                            <label className="flex items-start gap-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!isSelected}
+                                                    onChange={() => toggleSelect(link)}
+                                                    className="mt-1 h-4 w-4 cursor-pointer rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500"
+                                                />
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium text-white break-all">{link.originalUrl}</p>
+                                                    <p className="text-xs text-gray-400">{link.shortUrl}</p>
+                                                </div>
+                                            </label>
+                                            {isSelected && (
+                                                <input
+                                                    type="text"
+                                                    placeholder={t.displayName}
+                                                    value={isSelected.label}
+                                                    onChange={(e) => updateLabel(link.shortUrl, e.target.value)}
+                                                    className="mt-2 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </SectionCard>
 
-                <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="bg-gray-800/50 p-4 rounded-lg">
-                        <label htmlFor="bg-color" className="block text-sm mb-2">{t.background}</label>
-                        <input
-                            id="bg-color"
-                            type="color"
-                            value={bgColor}
-                            onChange={(e) => setBgColor(e.target.value)}
-                            className="cursor-pointer w-12 h-12 border border-gray-600 rounded"
-                        />
-                    </div>
-                    <div className="bg-gray-800/50 p-4 rounded-lg">
-                        <label htmlFor="text-color" className="block text-sm mb-2">{t.textColor}</label>
-                        <input
-                            id="text-color"
-                            type="color"
-                            value={textColor}
-                            onChange={(e) => setTextColor(e.target.value)}
-                            className="cursor-pointer w-12 h-12 border border-gray-600 rounded"
-                        />
-                    </div>
-                </section>
+                    <SectionCard title={t.appearanceTitle} description={t.appearanceDescription}>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2 rounded-lg border border-gray-800 bg-gray-900/60 p-4">
+                                <label htmlFor="bg-color" className="block text-sm text-gray-300">{t.background}</label>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        id="bg-color"
+                                        type="color"
+                                        value={bgColor}
+                                        onChange={(e) => setBgColor(e.target.value)}
+                                        className="h-12 w-12 cursor-pointer rounded border border-gray-600"
+                                    />
+                                    <span className="text-xs text-gray-400">{bgColor}</span>
+                                </div>
+                            </div>
+                            <div className="space-y-2 rounded-lg border border-gray-800 bg-gray-900/60 p-4">
+                                <label htmlFor="text-color" className="block text-sm text-gray-300">{t.textColor}</label>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        id="text-color"
+                                        type="color"
+                                        value={textColor}
+                                        onChange={(e) => setTextColor(e.target.value)}
+                                        className="h-12 w-12 cursor-pointer rounded border border-gray-600"
+                                    />
+                                    <span className="text-xs text-gray-400">{textColor}</span>
+                                </div>
+                            </div>
+                        </div>
 
-
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    <button
-                        onClick={saveBiopage}
-                        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md transition flex-1 my-auto"
-                    >
-                        {t.saveBiopage}
-                    </button>
-                    <Link
-                        href={`/@${biopage.slug}`}
-                        className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md transition flex-1 text-center my-auto"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {t.viewBiopage}
-                    </Link>
+                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                            <button
+                                onClick={saveBiopage}
+                                className="flex-1 rounded-md bg-blue-600 px-4 py-2 font-semibold transition hover:bg-blue-700"
+                            >
+                                {t.saveBiopage}
+                            </button>
+                            <Link
+                                href={`/@${biopage.slug}`}
+                                className="flex-1 rounded-md border border-gray-700 px-4 py-2 text-center text-sm text-gray-200 transition hover:border-blue-500 hover:text-white"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {t.viewBiopage}
+                            </Link>
+                        </div>
+                    </SectionCard>
                 </div>
-            </div>
-            <div className="md:w-1/2 flex-1 h-fit flex justify-center flex-col items-center bg-gray-800/50 rounded-md p-3">
-                <span>{t.preview}</span>
-                <BiopagePreview
-                    bgColor={bgColor}
-                    textColor={textColor}
-                    avatarUrl={biopage?.avatarUrl || ''}
-                    slug={biopage?.slug || 'usuario'}
-                    links={selected}
-                    language={language}
-                />
+
+                <div className="h-fit rounded-xl border border-gray-800/60 bg-gray-900/60 p-4 shadow-lg shadow-blue-900/10">
+                    <div className="mb-3 flex items-center justify-between">
+                        <span className="text-sm text-gray-400">{t.preview}</span>
+                        <div className="rounded-full border border-gray-700 px-3 py-1 text-xs text-gray-300">
+                            {t.selectLanguage}: {language.toUpperCase()}
+                        </div>
+                    </div>
+                    <BiopagePreview
+                        bgColor={bgColor}
+                        textColor={textColor}
+                        avatarUrl={biopage?.avatarUrl || ''}
+                        slug={biopage?.slug || 'usuario'}
+                        links={selected}
+                        language={language}
+                    />
+                </div>
             </div>
         </div>
     )
