@@ -5,6 +5,15 @@ import mongoose from 'mongoose';
 import { auth } from '@clerk/nextjs/server';
 import { Link } from '@/app/models/links';
 
+interface Trend {
+    key: string;
+    thisWeek: number;
+    lastWeek: number;
+    changePercent: number | null;
+    hasEnoughData: boolean;
+    label?: string;
+}
+
 interface MatchFilter {
     linkId: mongoose.Types.ObjectId;
     timestamp: {
@@ -62,8 +71,10 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Link not found' }, { status: 404 });
         }
 
+        const linkObjectId = new mongoose.Types.ObjectId(linkId);
+
         const matchFilter: MatchFilter = {
-            linkId: new mongoose.Types.ObjectId(linkId),
+            linkId: linkObjectId,
             timestamp: {
                 $gte: parsedStart,
                 $lte: parsedEnd,
@@ -133,7 +144,107 @@ export async function GET(req: NextRequest) {
             ]);
         }
 
-        return NextResponse.json({ stats, deviceTotals, sourceTotals });
+        const now = new Date();
+        const startOfThisWeek = new Date(now);
+        startOfThisWeek.setUTCHours(0, 0, 0, 0);
+        const dayOfWeek = startOfThisWeek.getUTCDay();
+        const diffToMonday = (dayOfWeek + 6) % 7;
+        startOfThisWeek.setUTCDate(startOfThisWeek.getUTCDate() - diffToMonday);
+
+        const startOfLastWeek = new Date(startOfThisWeek);
+        startOfLastWeek.setUTCDate(startOfLastWeek.getUTCDate() - 7);
+
+        const weeklyAggregation = await clicks.aggregate([
+            {
+                $match: {
+                    linkId: linkObjectId,
+                    timestamp: { $gte: startOfLastWeek, $lte: now },
+                },
+            },
+            {
+                $project: {
+                    source: { $ifNull: ['$source', 'default'] },
+                    deviceType: { $ifNull: ['$deviceType', 'unknown'] },
+                    isThisWeek: { $gte: ['$timestamp', startOfThisWeek] },
+                },
+            },
+            {
+                $facet: {
+                    bySource: [
+                        {
+                            $group: {
+                                _id: { source: '$source', isThisWeek: '$isThisWeek' },
+                                clicks: { $sum: 1 },
+                            },
+                        },
+                    ],
+                    byDevice: [
+                        {
+                            $group: {
+                                _id: { deviceType: '$deviceType', isThisWeek: '$isThisWeek' },
+                                clicks: { $sum: 1 },
+                            },
+                        },
+                    ],
+                },
+            },
+        ]);
+
+        const [weeklyResult] = weeklyAggregation as unknown as [
+            { bySource: { _id: { source: string; isThisWeek: boolean }; clicks: number }[]; byDevice: { _id: { deviceType: string; isThisWeek: boolean }; clicks: number }[] }?,
+        ];
+
+        const buildTrends = <T extends 'source' | 'deviceType'>(groups: { _id: Record<T | 'isThisWeek', string | boolean>; clicks: number }[], key: T, defaultKey: string): Trend[] => {
+            const trendMap = new Map<string, { thisWeek: number; lastWeek: number }>();
+
+            groups.forEach(({ _id, clicks }) => {
+                const trendKey = (typeof _id[key] === 'string' ? (_id[key] as string) : defaultKey) || defaultKey;
+                const current = trendMap.get(trendKey) ?? { thisWeek: 0, lastWeek: 0 };
+
+                if (_id.isThisWeek) {
+                    current.thisWeek += clicks;
+                } else {
+                    current.lastWeek += clicks;
+                }
+
+                trendMap.set(trendKey, current);
+            });
+
+            return Array.from(trendMap.entries()).map(([trendKey, { thisWeek, lastWeek }]) => {
+                let changePercent: number | null = null;
+                let hasEnoughData = true;
+                let label: string | undefined;
+
+                if (lastWeek === 0 && thisWeek === 0) {
+                    hasEnoughData = false;
+                    label = 'Not enough data yet';
+                } else if (lastWeek === 0 && thisWeek > 0) {
+                    changePercent = 100;
+                    label = 'New this week';
+                } else if (lastWeek > 0) {
+                    changePercent = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
+                }
+
+                const trend: Trend = {
+                    key: trendKey,
+                    thisWeek,
+                    lastWeek,
+                    changePercent,
+                    hasEnoughData,
+                };
+
+                if (label) {
+                    trend.label = label;
+                }
+
+                return trend;
+            });
+        };
+
+        const sourceTrends = buildTrends(weeklyResult?.bySource ?? [], 'source', 'default');
+        const deviceTrends = buildTrends(weeklyResult?.byDevice ?? [], 'deviceType', 'unknown');
+
+        return NextResponse.json({ stats, deviceTotals, sourceTotals, sourceTrends, deviceTrends });
     } catch (error) {
         console.error('Error fetching stats:', error);
         return NextResponse.json({ error: 'Server error' }, { status: 500 });

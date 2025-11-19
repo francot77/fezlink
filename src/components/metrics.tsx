@@ -13,6 +13,17 @@ interface StatsResponse {
     stats: Stat[];
     deviceTotals?: { deviceType: string; clicks: number }[];
     sourceTotals?: { source: string; clicks: number }[];
+    deviceTrends?: Trend[];
+    sourceTrends?: Trend[];
+}
+
+interface Trend {
+    key: string;
+    thisWeek: number;
+    lastWeek: number;
+    changePercent: number | null;
+    hasEnoughData: boolean;
+    label?: string;
 }
 
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
@@ -40,6 +51,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         sourceMetrics: 'Source insights',
         sourceTotalsEmpty: 'No source data captured for this range yet.',
         clickTrend: 'Click performance',
+        weeklyChange: 'this week',
+        trendNew: 'New this week',
+        trendNoData: 'No data this week yet',
     },
     es: {
         title: 'Métricas del enlace',
@@ -65,6 +79,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         sourceMetrics: 'Detalles por fuente',
         sourceTotalsEmpty: 'Aún no hay datos por fuente en este rango.',
         clickTrend: 'Evolución de clics',
+        weeklyChange: 'esta semana',
+        trendNew: 'Nuevo esta semana',
+        trendNoData: 'Sin datos esta semana',
     },
 };
 
@@ -81,6 +98,8 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
     const [countryLoading, setCountryLoading] = useState(false);
     const [deviceTotals, setDeviceTotals] = useState<{ deviceType: string; clicks: number }[]>([]);
     const [sourceTotals, setSourceTotals] = useState<{ source: string; clicks: number }[]>([]);
+    const [deviceTrends, setDeviceTrends] = useState<Trend[]>([]);
+    const [sourceTrends, setSourceTrends] = useState<Trend[]>([]);
 
     const [startDate, setStartDate] = useState(() => {
         const d = new Date(Date.now() - 7 * 24 * 3600 * 1000);
@@ -170,9 +189,13 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                 setStats(data.stats);
                 setDeviceTotals(data.deviceTotals ?? []);
                 setSourceTotals(data.sourceTotals ?? []);
+                setDeviceTrends(data.deviceTrends ?? []);
+                setSourceTrends(data.sourceTrends ?? []);
             } catch (err: any) {
                 setError(err.message);
                 setDeviceTotals([]);
+                setDeviceTrends([]);
+                setSourceTrends([]);
             } finally {
                 setLoading(false);
             }
@@ -221,6 +244,23 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
 
         fetchCountryTotals();
     }, [availableCountries, endDate, linkId, source, startDate]);
+
+    const renderTrendBadge = (trend?: Trend) => {
+        if (!trend) return null;
+
+        const baseClasses = 'rounded-full px-3 py-1 text-xs font-semibold';
+
+        if (!trend.hasEnoughData) {
+            return <span className={`${baseClasses} bg-gray-700/40 text-gray-200`}>{t.trendNoData}</span>;
+        }
+
+        const percentText = trend.changePercent ?? 0;
+        const isNegative = percentText < 0;
+        const colorClasses = isNegative ? 'bg-red-500/20 text-red-300' : 'bg-emerald-500/20 text-emerald-300';
+        const labelText = trend.changePercent === null ? t.trendNew : `${percentText > 0 ? '+' : ''}${percentText}% ${t.weeklyChange}`;
+
+        return <span className={`${baseClasses} ${colorClasses}`}>{labelText}</span>;
+    };
 
     return (
         <div className="space-y-6 rounded-2xl border border-gray-800/80 bg-gradient-to-b from-gray-900/80 via-[#0c1428] to-black/70 p-6 shadow-2xl shadow-blue-900/20">
@@ -363,16 +403,25 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                     <p className="text-sm text-gray-400">{t.deviceTotalsEmpty}</p>
                 ) : (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                        {deviceTotals.map((device) => (
+                        {deviceTotals.map((device) => {
+                            const trend = deviceTrends.find((entry) => entry.key === device.deviceType);
+
+                            return (
                             <div
                                 key={device.deviceType}
                                 className="rounded-lg border border-gray-800 bg-gradient-to-br from-gray-900/80 to-black/60 px-4 py-3 shadow-md"
                             >
-                                <p className="text-sm font-semibold text-white">{formatDeviceLabel(device.deviceType)}</p>
-                                <p className="text-xs text-gray-400">{t.deviceType}</p>
-                                <p className="mt-1 text-2xl font-bold text-white">{device.clicks.toLocaleString()}</p>
+                                <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                        <p className="text-sm font-semibold text-white">{formatDeviceLabel(device.deviceType)}</p>
+                                        <p className="text-xs text-gray-400">{t.deviceType}</p>
+                                    </div>
+                                    {renderTrendBadge(trend)}
+                                </div>
+                                <p className="mt-2 text-2xl font-bold text-white">{device.clicks.toLocaleString()}</p>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -385,16 +434,25 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                     <p className="text-sm text-gray-400">{t.sourceTotalsEmpty}</p>
                 ) : (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                        {sourceTotals.map((entry) => (
+                        {sourceTotals.map((entry) => {
+                            const trend = sourceTrends.find((item) => item.key === entry.source);
+
+                            return (
                             <div
                                 key={entry.source}
                                 className="rounded-lg border border-gray-800 bg-gradient-to-br from-gray-900/80 to-black/60 px-4 py-3 shadow-md"
                             >
-                                <p className="text-sm font-semibold text-white">{formatSourceLabel(entry.source)}</p>
-                                <p className="text-xs text-gray-400">{t.source}</p>
-                                <p className="mt-1 text-2xl font-bold text-white">{entry.clicks.toLocaleString()}</p>
+                                <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                        <p className="text-sm font-semibold text-white">{formatSourceLabel(entry.source)}</p>
+                                        <p className="text-xs text-gray-400">{t.source}</p>
+                                    </div>
+                                    {renderTrendBadge(trend)}
+                                </div>
+                                <p className="mt-2 text-2xl font-bold text-white">{entry.clicks.toLocaleString()}</p>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
