@@ -1,6 +1,6 @@
 import { Link } from '@/app/models/links';
 import { LinkStats } from '../models/linkStats';
-import Click from '../models/clicks'; // <-- importá tu modelo nuevo
+import Click from '../models/clicks';
 import GlobalClicks from '../models/globalClicks';
 import dbConnect from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
@@ -55,6 +55,8 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     if (!sanitizedSlug) return cacheableRedirect(`${process.env.BASE_URL}/404`);
     if (sanitizedSlug.startsWith("@")) return cacheableRedirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.substring(1)}`);
 
+    const { searchParams } = new URL(req.url);
+    const src = searchParams.get('src') ?? 'default';
     const country = getCountryCode(req);
     const userAgent = req.headers.get('user-agent');
     const deviceType = detectDeviceType(userAgent, req.headers);
@@ -62,7 +64,7 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     await dbConnect();
 
     const updatedLink = await Link.findOneAndUpdate(
-        { shortId: sanitizedSlug },
+        { slug: sanitizedSlug },
         { $inc: { totalClicks: 1 } },
         { new: true }
     );
@@ -102,6 +104,7 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
         timestamp: new Date(),
         userAgent,
         deviceType,
+        source: src,
     }).catch((error) => {
         console.error('Error registrando clic en clicks:', error);
         // No interrumpir la redirección si falla la inserción
@@ -109,5 +112,5 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
 
     await Promise.all([linkStatsPromise, globalClicksPromise, clickLogPromise]);
 
-    return cacheableRedirect(updatedLink.originalUrl, 301);
+    return cacheableRedirect(updatedLink.destinationUrl, 301);
 }

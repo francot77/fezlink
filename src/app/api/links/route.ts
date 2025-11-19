@@ -23,8 +23,8 @@ const isValidHttpUrl = (value: unknown): value is string => {
     }
 }
 
-const buildShortUrl = (shortId: string, req: Request) => {
-    return `${process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || req.headers.get('origin') || ''}/${shortId}`;
+const buildShortUrl = (slug: string, req: Request) => {
+    return `${process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || req.headers.get('origin') || ''}/${slug}`;
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
@@ -35,27 +35,28 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (links.length >= 2 && !isPremiumActive(sessionClaims as CustomJwtSessionClaims)) {
         return NextResponse.json({ error: "Limited Account" }, { status: 401 });
     }
-    const { originalUrl } = await req.json();
-    if (!isValidHttpUrl(originalUrl)) {
+    const { destinationUrl } = await req.json();
+    if (!isValidHttpUrl(destinationUrl)) {
         return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }
 
-    const normalizedUrl = new URL(originalUrl).toString();
+    const normalizedUrl = new URL(destinationUrl).toString();
 
-    // Generate unique shortId
-    let shortId: string;
+    // Generate unique slug
+    let slug: string;
     let existingLink;
     do {
-        shortId = crypto.randomBytes(4).toString('hex');
-        existingLink = await Link.findOne({ shortId });
+        slug = crypto.randomBytes(4).toString('hex');
+        existingLink = await Link.findOne({ slug });
     } while (existingLink);
 
-    const newLink = await Link.create({ originalUrl: normalizedUrl, shortId, userId });
+    const newLink = await Link.create({ destinationUrl: normalizedUrl, slug, userId });
 
     return NextResponse.json({
         id: newLink._id.toString(),
-        originalUrl: newLink.originalUrl,
-        shortUrl: buildShortUrl(newLink.shortId, req),
+        destinationUrl: newLink.destinationUrl,
+        shortUrl: buildShortUrl(newLink.slug, req),
+        slug: newLink.slug,
         clicks: newLink.totalClicks
     });
 }
@@ -66,9 +67,9 @@ export async function GET() {
     const links = await Link.find({ userId });
     const response = links.map(link => ({
         id: link._id,
-        originalUrl: link.originalUrl,
-        shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || ''}/${link.shortId}`,
-        shortId: link.shortId,
+        destinationUrl: link.destinationUrl,
+        shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || ''}/${link.slug}`,
+        slug: link.slug,
         clicks: link.totalClicks
     }));
 

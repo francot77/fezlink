@@ -195,11 +195,12 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
 
 
     const toggleSelect = (link: LinkType) => {
-        if (!link.shortId) return;
+        const slug = link.slug ?? link.shortId;
+        if (!slug) return;
         setSelected((prev) =>
-            prev.some((l) => l.shortId === link.shortId)
-                ? prev.filter((l) => l.shortId !== link.shortId)
-                : [...prev, { shortId: link.shortId, shortUrl: link.shortUrl, label: '' }]
+            prev.some((l) => l.shortId === slug)
+                ? prev.filter((l) => l.shortId !== slug)
+                : [...prev, { shortId: slug, shortUrl: link.shortUrl, label: '' }]
         );
     };
 
@@ -439,7 +440,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                                                     className="mt-1 h-4 w-4 cursor-pointer rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500"
                                                 />
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-medium text-white break-all">{link.originalUrl}</p>
+                                                    <p className="text-sm font-medium text-white break-all">{link.destinationUrl}</p>
                                                     <p className="text-xs text-gray-400">{link.shortUrl}</p>
                                                 </div>
                                             </label>
