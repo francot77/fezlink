@@ -53,7 +53,7 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         clickTrend: 'Click performance',
         weeklyChange: 'this week',
         trendNew: 'New this week',
-        trendNoData: 'No data this week yet',
+        trendNoData: 'Not enough data',
     },
     es: {
         title: 'Métricas del enlace',
@@ -81,7 +81,7 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         clickTrend: 'Evolución de clics',
         weeklyChange: 'esta semana',
         trendNew: 'Nuevo esta semana',
-        trendNoData: 'Sin datos esta semana',
+        trendNoData: 'No hay datos suficientes',
     },
 };
 
@@ -250,8 +250,10 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
 
         const baseClasses = 'rounded-full px-3 py-1 text-xs font-semibold';
 
-        if (!trend.hasEnoughData) {
-            return <span className={`${baseClasses} bg-gray-700/40 text-gray-200`}>{t.trendNoData}</span>;
+        const hasPreviousWeekData = trend.hasEnoughData && trend.lastWeek > 0;
+
+        if (!hasPreviousWeekData) {
+            return <span className={`${baseClasses} border border-gray-700 bg-gray-800 text-gray-200`}>{t.trendNoData}</span>;
         }
 
         const percentText = trend.changePercent ?? 0;
