@@ -1,6 +1,7 @@
 // /app/api/metrics/summary/route.ts
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
+import mongoose from 'mongoose';
 import { LinkStats } from '@/app/models/linkStats';
 import { LinkStat } from '@/types/globals';
 export async function GET(req: Request) {
@@ -13,7 +14,11 @@ export async function GET(req: Request) {
 
     await dbConnect();
 
-    const stats = await LinkStats.findOne({ linkId });
+    if (!mongoose.Types.ObjectId.isValid(linkId)) {
+        return NextResponse.json({ error: 'Invalid linkId' }, { status: 400 });
+    }
+
+    const stats = await LinkStats.findOne({ linkId: new mongoose.Types.ObjectId(linkId) });
 
     if (!stats) {
         return NextResponse.json({ totalClicks: 0, countries: [] });
