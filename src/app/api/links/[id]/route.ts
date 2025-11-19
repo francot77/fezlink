@@ -9,10 +9,10 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     const { id } = await context.params;
     const { userId } = await auth()
     const link = await Link.findById(id)
-    if (link.userId !== userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     if (!link) {
         return NextResponse.json({ success: false, message: 'Link no encontrado' }, { status: 404 });
     }
+    if (link.userId !== userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     await Biopage.findOneAndUpdate(
         { userId: link.userId },
         { $pull: { links: { shortId: link.shortId } } }

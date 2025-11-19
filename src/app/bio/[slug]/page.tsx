@@ -57,6 +57,8 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
         backgroundRepeat: 'no-repeat',
     }
 
+    const publicBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
+
     return (
         <main
             className="min-h-screen text-white flex items-center justify-center px-4 py-10"
@@ -122,7 +124,7 @@ export default function BioPage({ params }: { params: Promise<{ slug: string }> 
                                                         <p className="text-xs text-white/60 break-all">{link.shortUrl}</p>
                                                     </div>
                                                     <QRButton
-                                                        url={`${process.env.BASE_URL}/${bioPage.slug}`}
+                                                        url={`${publicBaseUrl}/@${bioPage.slug}`}
                                                         backgroundColor={bioPage.textColor}
                                                         textColor={qrButtonTextColor}
                                                     />

@@ -4,17 +4,17 @@ import { SearchUsers } from './SearchUsers'
 import { clerkClient } from '@clerk/nextjs/server'
 import { RoleButtons } from './RolButton'
 
-export default async function AdminDashboard(params: {
+export default async function AdminDashboard({
+    searchParams,
+}: {
     searchParams: Promise<{ search?: string }>
 }) {
-    if (!checkRole('admin')) {
+    const isAdmin = await checkRole('admin')
+    if (!isAdmin) {
         redirect('/')
     }
 
-
-
-
-    const query = (await params.searchParams).search
+    const query = (await searchParams).search
 
     const client = await clerkClient()
 

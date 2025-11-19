@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import clicks from '@/app/models/clicks';
 import mongoose from 'mongoose';
+import { auth } from '@clerk/nextjs/server';
+import { Link } from '@/app/models/links';
 
 interface MatchFilter {
     linkId: mongoose.Types.ObjectId;
@@ -14,6 +16,11 @@ interface MatchFilter {
 }
 
 export async function GET(req: NextRequest) {
+    const { userId } = await auth();
+    if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     await dbConnect();
 
     const { searchParams } = new URL(req.url);
@@ -42,6 +49,15 @@ export async function GET(req: NextRequest) {
 
         parsedStart.setUTCHours(0, 0, 0, 0);
         parsedEnd.setUTCHours(23, 59, 59, 999);
+
+        if (!mongoose.Types.ObjectId.isValid(linkId)) {
+            return NextResponse.json({ error: 'Invalid linkId' }, { status: 400 });
+        }
+
+        const ownedLink = await Link.exists({ _id: linkId, userId });
+        if (!ownedLink) {
+            return NextResponse.json({ error: 'Link not found' }, { status: 404 });
+        }
 
         const matchFilter: MatchFilter = {
             linkId: new mongoose.Types.ObjectId(linkId),
