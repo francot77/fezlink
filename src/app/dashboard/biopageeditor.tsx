@@ -38,6 +38,10 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         appearanceTitle: 'Appearance',
         appearanceDescription: 'Adjust the palette so your BioPage matches your personal brand.',
         textColor: 'Text color',
+        gradients: 'Gradient themes',
+        customColor: 'Custom solid color',
+        colorHelp: 'Hex or CSS color values are supported.',
+        avatarLabel: 'Avatar image URL',
         saveBiopage: 'Save',
         viewBiopage: 'View Biopage',
         preview: 'Biopage Preview',
@@ -81,6 +85,10 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         appearanceTitle: 'Apariencia',
         appearanceDescription: 'Ajusta la paleta para que tu BioPage coincida con tu marca personal.',
         textColor: 'Color de texto',
+        gradients: 'Temas degradados',
+        customColor: 'Color sólido personalizado',
+        colorHelp: 'Puedes usar valores Hex o cualquier color CSS.',
+        avatarLabel: 'URL de la imagen del avatar',
         saveBiopage: 'Guardar',
         viewBiopage: 'Ver Biopage',
         preview: 'Biopage Preview',
@@ -104,6 +112,18 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
 const defaultAvatar =
     'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541'
 
+const gradientPresets = [
+    { label: 'Aurora', value: 'linear-gradient(135deg, #a855f7 0%, #22d3ee 50%, #0ea5e9 100%)' },
+    { label: 'Sunset', value: 'linear-gradient(135deg, #ff6b6b 0%, #f8c146 50%, #f97316 100%)' },
+    { label: 'Forest', value: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #0f766e 100%)' },
+    { label: 'Midnight', value: 'linear-gradient(135deg, #0ea5e9 0%, #312e81 50%, #111827 100%)' },
+    { label: 'Candy', value: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%)' },
+    { label: 'Tropical', value: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 35%, #10b981 100%)' },
+    { label: 'Cosmic', value: 'linear-gradient(135deg, #4f46e5 0%, #9333ea 45%, #ec4899 100%)' },
+    { label: 'Lagoon', value: 'linear-gradient(135deg, #06b6d4 0%, #0ea5e9 50%, #22c55e 100%)' },
+    { label: 'Steel', value: 'linear-gradient(135deg, #94a3b8 0%, #475569 50%, #0f172a 100%)' },
+]
+
 const SectionCard = ({ title, description, children }: { title: string, description?: string, children: ReactNode }) => (
     <section className="rounded-xl border border-gray-800/60 bg-gray-900/50 p-5 shadow-lg shadow-blue-900/10">
         <header className="mb-3 space-y-1">
@@ -121,6 +141,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
     const [selected, setSelected] = useState<SelectedLink[]>([])
     const [bgColor, setBgColor] = useState('#000000')
     const [textColor, setTextColor] = useState('#ffffff')
+    const [avatarUrl, setAvatarUrl] = useState('')
     const [loading, setLoading] = useState(true)
     const [biopage, setBiopage] = useState<BiopageType | null>(null)
     const [isPremium, setIsPremium] = useState<boolean>(false)
@@ -143,6 +164,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                 setSelected(data.biopage.links || [])
                 setBgColor(data.biopage.backgroundColor || '#000000')
                 setTextColor(data.biopage.textColor || '#ffffff')
+                setAvatarUrl(data.biopage.avatarUrl || '')
             } else {
                 setBiopage(null)
             }
@@ -195,6 +217,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
             setSelected(data.biopage.links || [])
             setBgColor(data.biopage.backgroundColor || '#000000')
             setTextColor(data.biopage.textColor || '#ffffff')
+            setAvatarUrl(data.biopage.avatarUrl || '')
             toast.success(t.created, { richColors: true, position: "top-center" })
         } else {
             toast.error(t.createError, { richColors: true, position: "top-center" })
@@ -236,12 +259,13 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                     links: selected,
                     backgroundColor: bgColor,
                     textColor,
-                    avatarUrl: biopage.avatarUrl || '',
+                    avatarUrl: avatarUrl || '',
                 }),
             })
             const data = await res.json()
             if (res.ok) {
                 setBiopage(data.biopage)
+                setAvatarUrl(data.biopage.avatarUrl || avatarUrl)
                 toast.success(t.saved, { richColors: true, position: "top-center" })
             } else {
                 toast.error(`${t.slugErrorPrefix} ${data.error || t.saveError}`, { richColors: true, position: "top-center" })
@@ -293,7 +317,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                             <h1 className="text-lg font-semibold">{t.avatarPrompt}</h1>
                             <div className="w-28 h-28 rounded-full overflow-hidden ring-2 ring-blue-500/60">
                                 <img
-                                    src={biopage.avatarUrl || defaultAvatar}
+                                    src={avatarUrl || defaultAvatar}
                                     alt="avatar"
                                     className="w-full h-full object-cover"
                                 />
@@ -302,7 +326,11 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                         <UploadButton
                             endpoint="imageUploader"
                             onClientUploadComplete={(res) => {
-                                console.log("Files: ", res);
+                                const uploadedUrl = res?.[0]?.url
+                                if (uploadedUrl) {
+                                    setAvatarUrl(uploadedUrl)
+                                    setBiopage((prev) => prev ? { ...prev, avatarUrl: uploadedUrl } : prev)
+                                }
                                 toast.success(t.avatarUploadSuccess, { richColors: true, position: "top-center" });
                             }}
                             onUploadError={(error: Error) => {
@@ -331,7 +359,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                                 onClick={() => setAvatarModal(true)}
                                 className="relative w-28 h-28 rounded-full overflow-hidden ring-2 ring-blue-500/60 transition hover:ring-blue-400"
                             >
-                                <img src={biopage.avatarUrl || defaultAvatar} alt="avatar" className="w-full h-full object-cover" />
+                                <img src={avatarUrl || defaultAvatar} alt="avatar" className="w-full h-full object-cover" />
                                 <span className="absolute inset-0 grid place-items-center bg-black/50 text-sm font-semibold opacity-0 transition hover:opacity-100">
                                     {t.avatarQuestion}
                                 </span>
@@ -361,6 +389,17 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                                     >
                                         {t.viewBiopage}
                                     </Link>
+                                </div>
+                                <div className="flex flex-col gap-2 pt-3">
+                                    <label className="text-sm text-gray-300" htmlFor="avatar-url">{t.avatarLabel}</label>
+                                    <input
+                                        id="avatar-url"
+                                        type="url"
+                                        value={avatarUrl}
+                                        onChange={(e) => setAvatarUrl(e.target.value)}
+                                        placeholder={defaultAvatar}
+                                        className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -404,31 +443,65 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                     </SectionCard>
 
                     <SectionCard title={t.appearanceTitle} description={t.appearanceDescription}>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2 rounded-lg border border-gray-800 bg-gray-900/60 p-4">
-                                <label htmlFor="bg-color" className="block text-sm text-gray-300">{t.background}</label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        id="bg-color"
-                                        type="color"
-                                        value={bgColor}
-                                        onChange={(e) => setBgColor(e.target.value)}
-                                        className="h-12 w-12 cursor-pointer rounded border border-gray-600"
-                                    />
-                                    <span className="text-xs text-gray-400">{bgColor}</span>
+                        <div className="space-y-4">
+                            <div className="space-y-3">
+                                <p className="text-sm text-gray-300">{t.gradients}</p>
+                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                    {gradientPresets.map((preset) => (
+                                        <button
+                                            key={preset.label}
+                                            type="button"
+                                            onClick={() => setBgColor(preset.value)}
+                                            className={`rounded-lg border p-3 text-left text-sm transition hover:-translate-y-0.5 hover:border-blue-400/60 ${bgColor === preset.value ? 'border-blue-400 shadow-lg shadow-blue-900/40' : 'border-gray-800'}`}
+                                            style={{ backgroundImage: preset.value }}
+                                        >
+                                            <span className="font-semibold drop-shadow-sm">{preset.label}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
-                            <div className="space-y-2 rounded-lg border border-gray-800 bg-gray-900/60 p-4">
-                                <label htmlFor="text-color" className="block text-sm text-gray-300">{t.textColor}</label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        id="text-color"
-                                        type="color"
-                                        value={textColor}
-                                        onChange={(e) => setTextColor(e.target.value)}
-                                        className="h-12 w-12 cursor-pointer rounded border border-gray-600"
-                                    />
-                                    <span className="text-xs text-gray-400">{textColor}</span>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div className="space-y-2 rounded-lg border border-gray-800 bg-gray-900/60 p-4">
+                                    <label htmlFor="bg-color" className="block text-sm text-gray-300">{t.customColor}</label>
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                        <input
+                                            id="bg-color"
+                                            type="color"
+                                            value={bgColor.startsWith('#') ? bgColor : '#000000'}
+                                            onChange={(e) => setBgColor(e.target.value)}
+                                            className="h-12 w-12 cursor-pointer rounded border border-gray-600"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={bgColor}
+                                            onChange={(e) => setBgColor(e.target.value)}
+                                            className="flex-1 min-w-[160px] rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="#000000"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400">{t.colorHelp}</p>
+                                </div>
+
+                                <div className="space-y-2 rounded-lg border border-gray-800 bg-gray-900/60 p-4">
+                                    <label htmlFor="text-color" className="block text-sm text-gray-300">{t.textColor}</label>
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                        <input
+                                            id="text-color"
+                                            type="color"
+                                            value={textColor.startsWith('#') ? textColor : '#ffffff'}
+                                            onChange={(e) => setTextColor(e.target.value)}
+                                            className="h-12 w-12 cursor-pointer rounded border border-gray-600"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={textColor}
+                                            onChange={(e) => setTextColor(e.target.value)}
+                                            className="flex-1 min-w-[160px] rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="#ffffff"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400">{t.colorHelp}</p>
                                 </div>
                             </div>
                         </div>
@@ -462,7 +535,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                     <BiopagePreview
                         bgColor={bgColor}
                         textColor={textColor}
-                        avatarUrl={biopage?.avatarUrl || ''}
+                        avatarUrl={avatarUrl || ''}
                         slug={biopage?.slug || 'usuario'}
                         links={selected}
                         language={language}
