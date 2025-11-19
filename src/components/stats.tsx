@@ -52,20 +52,23 @@ const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
                     </div>
                 </div>
                 {selected && (
-                    <div className="rounded-full bg-gray-800 px-4 py-2 text-sm text-gray-300">
-                        {t.viewing}: <span className="font-semibold text-white">{selected.originalUrl}</span>
+                    <div className="max-w-full overflow-hidden rounded-full bg-gray-800 px-4 py-2 text-sm text-gray-300">
+                        {t.viewing}:{' '}
+                        <span className="inline-block max-w-full truncate align-middle font-semibold text-white md:max-w-2xl">
+                            {selected.originalUrl}
+                        </span>
                     </div>
                 )}
             </div>
 
             <div className="space-y-3">
                 <p className="text-sm font-medium text-gray-200">{t.selectLink}</p>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
                     {links.map((link) => (
                         <button
                             key={link.id}
                             onClick={() => setSelectedLink(link.id)}
-                            className={`rounded-lg border px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            className={`w-full break-words rounded-lg border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                                 selectedLink === link.id
                                     ? 'border-blue-500 bg-blue-500/20 text-white'
                                     : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-500'
