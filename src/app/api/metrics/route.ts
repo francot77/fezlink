@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     const deviceType = searchParams.get('deviceType'); // opcional
     const groupByDevice = searchParams.get('groupByDevice') === 'true';
 
-    const allowedDeviceTypes = ['mobile', 'desktop', 'tablet'];
+    const allowedDeviceTypes = ['mobile', 'desktop', 'tablet', 'unknown'];
     if (deviceType && !allowedDeviceTypes.includes(deviceType)) {
         return NextResponse.json({ error: 'Invalid deviceType' }, { status: 400 });
     }
