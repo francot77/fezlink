@@ -44,44 +44,38 @@ interface RequestWithHeaders extends Request {
 
 export async function GET(req: Request, context: { params: Promise<{ slug?: string }> }) {
     const { slug } = await context.params;
-    const sanitizedSlug = sanitize(slug!);
+    if (!slug) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
+
+    const sanitizedSlug = sanitize(slug);
     if (sanitizedSlug?.startsWith("@")) return NextResponse.redirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.substring(1)}`);
 
     const country = getCountryCode(req);
     const userAgent = req.headers.get('user-agent');
     const deviceType = detectDeviceType(userAgent, req.headers);
-    if (!slug) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
 
     await dbConnect();
 
-    const link = await Link.findOne({ shortId: slug });
-    if (!link) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
-
-    // Actualizar contador totalClicks
     const updatedLink = await Link.findOneAndUpdate(
-        { _id: link._id },
+        { shortId: sanitizedSlug },
         { $inc: { totalClicks: 1 } },
-        { new: true }
+        { new: true, projection: { originalUrl: 1, userId: 1 }, lean: true }
     );
 
     if (!updatedLink) return NextResponse.redirect(`${process.env.BASE_URL}/404`);
 
     // Actualizar clicks por país en linkStats
-    const res = await LinkStats.updateOne(
-        { linkId: link._id, 'countries.country': country },
-        { $inc: { 'countries.$.clicksCount': 1 } }
+    await LinkStats.updateOne(
+        { linkId: updatedLink._id },
+        {
+            $setOnInsert: { linkId: updatedLink._id, countries: [] },
+            $addToSet: { countries: { country, clicksCount: 0 } },
+            $inc: { 'countries.$[countryEntry].clicksCount': 1 }
+        },
+        {
+            upsert: true,
+            arrayFilters: [{ 'countryEntry.country': country }]
+        }
     );
-
-    if (res.modifiedCount === 0) {
-        await LinkStats.updateOne(
-            { linkId: link._id },
-            {
-                $setOnInsert: { linkId: link._id },
-                $push: { countries: { country, clicksCount: 1 } }
-            },
-            { upsert: true }
-        );
-    }
 
     // Update global clicks counter
     try {
@@ -93,8 +87,8 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     // --- NUEVO: Registrar clic en colección clicks ---
     try {
         await Click.create({
-            linkId: link._id,
-            userId: link.userId,
+            linkId: updatedLink._id,
+            userId: updatedLink.userId,
             country,
             timestamp: new Date(),
             userAgent,
@@ -105,5 +99,12 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
         // No interrumpir la redirección si falla la inserción
     }
 
-    return NextResponse.redirect(updatedLink.originalUrl, 301);
+    const response = NextResponse.redirect(updatedLink.originalUrl, 301);
+
+    response.headers.set(
+        'Cache-Control',
+        'public, max-age=3600, s-maxage=3600, stale-while-revalidate=60'
+    );
+
+    return response;
 }
