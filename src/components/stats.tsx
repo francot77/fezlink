@@ -85,7 +85,7 @@ const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
                 </div>
             </div>
 
-            {selectedLink && <Metrics linkId={selectedLink} language={language} />}
+            {selectedLink && <Metrics linkId={selectedLink} selectedUrl={selected?.destinationUrl} language={language} />}
         </div>
     );
 };

@@ -105,7 +105,7 @@ const LinkCard = ({
     };
 
     return (
-        <div className="flex flex-col gap-4 rounded-xl border border-gray-700/80 bg-gradient-to-br from-gray-800/80 via-gray-900 to-black/60 p-5 shadow-lg shadow-blue-900/30 backdrop-blur">
+        <div className="flex h-full flex-col gap-4 rounded-xl border border-gray-700/80 bg-gradient-to-br from-gray-800/80 via-gray-900 to-black/60 p-5 shadow-lg shadow-blue-900/30 backdrop-blur">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-600/15 text-blue-200 ring-1 ring-blue-500/30">
@@ -216,14 +216,14 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
     return (
         <div className="space-y-6">
             {modals}
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
                 {[{ label: t.activeLinks, value: links.length }, { label: t.totalClicks, value: totalClicks }, {
                     label: t.averagePerLink,
                     value: links.length === 0 ? 0 : Math.round(totalClicks / links.length),
                 }].map((stat) => (
                     <div
                         key={stat.label}
-                        className="rounded-xl border border-gray-800/80 bg-gradient-to-br from-gray-800/70 via-gray-900 to-black/60 p-4 shadow-lg shadow-blue-900/20"
+                        className="rounded-xl border border-gray-800/80 bg-gradient-to-br from-gray-800/70 via-gray-900 to-black/60 p-4 shadow-lg shadow-blue-900/20 backdrop-blur-sm"
                     >
                         <p className="text-sm text-gray-400">{stat.label}</p>
                         <p className="mt-1 text-3xl font-bold text-white">{stat.value}</p>
@@ -282,7 +282,7 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                         {t.empty}
                     </div>
                 )}
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
                     {links.map((link) => (
                         <LinkCard
                             key={link.id}

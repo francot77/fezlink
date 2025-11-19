@@ -39,6 +39,7 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         deviceTotalsEmpty: 'No device data captured for this range yet.',
         sourceMetrics: 'Source insights',
         sourceTotalsEmpty: 'No source data captured for this range yet.',
+        clickTrend: 'Click performance',
     },
     es: {
         title: 'Métricas del enlace',
@@ -63,10 +64,11 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         deviceTotalsEmpty: 'Aún no hay datos por dispositivo en este rango.',
         sourceMetrics: 'Detalles por fuente',
         sourceTotalsEmpty: 'Aún no hay datos por fuente en este rango.',
+        clickTrend: 'Evolución de clics',
     },
 };
 
-export default function Metrics({ linkId, language = 'en' }: { linkId: string; language?: SupportedLanguage }) {
+export default function Metrics({ linkId, selectedUrl, language = 'en' }: { linkId: string; selectedUrl?: string; language?: SupportedLanguage }) {
     const t = translations[language];
     const [stats, setStats] = useState<Stat[]>([]);
     const [loading, setLoading] = useState(false);
@@ -92,6 +94,23 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
     const [deviceType, setDeviceType] = useState('');
     const [source, setSource] = useState('');
 
+    const sourceLabelPresets: Record<SupportedLanguage, Record<string, string>> = {
+        en: {
+            instagram_bio: 'Instagram bio',
+            whatsapp: 'WhatsApp',
+            qr_local: 'QR downloads',
+            direct: 'Direct',
+            referral: 'Referral',
+        },
+        es: {
+            instagram_bio: 'Bio de Instagram',
+            whatsapp: 'WhatsApp',
+            qr_local: 'Descargas QR',
+            direct: 'Directo',
+            referral: 'Referencia',
+        },
+    };
+
     const formatDeviceLabel = (type: string) => {
         switch (type) {
             case 'mobile':
@@ -103,6 +122,13 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
             default:
                 return t.unknownDevice;
         }
+    };
+
+    const formatSourceLabel = (value: string) => {
+        const preset = sourceLabelPresets[language]?.[value];
+        if (preset) return preset;
+        const normalized = value.replace(/[_-]+/g, ' ');
+        return normalized.charAt(0).toUpperCase() + normalized.slice(1);
     };
 
     // Fetch resumen total (totalClicks y countries)
@@ -197,140 +223,152 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
     }, [availableCountries, endDate, linkId, source, startDate]);
 
     return (
-        <div className="p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-            <h2 className="text-2xl font-bold mb-4 text-white">{t.title}</h2>
-
-
-            <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mb-6 backdrop-blur-sm w-fit">
-                <p className="text-lg text-gray-300">{t.total}:</p>
-                <p className="text-4xl font-extrabold text-white">{totalClicks}</p>
-            </div>
-
-
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-
-                <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-1">
-                        {t.from}
-                    </label>
-                    <input
-                        id="startDate"
-                        type="date"
-                        value={startDate}
-                        max={endDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+        <div className="space-y-6 rounded-2xl border border-gray-800/80 bg-gradient-to-b from-gray-900/80 via-[#0c1428] to-black/70 p-6 shadow-2xl shadow-blue-900/20">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="space-y-1">
+                    <p className="text-sm text-gray-400">{t.subtitle}</p>
+                    <h2 className="text-2xl font-bold text-white">{t.title}</h2>
                 </div>
-
-
-                <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-300 mb-1">
-                        {t.to}
-                    </label>
-                    <input
-                        id="endDate"
-                        type="date"
-                        value={endDate}
-                        min={startDate}
-                        max={new Date().toISOString().slice(0, 10)}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-
-                <div>
-                    <label htmlFor="country" className="block text-sm font-medium text-gray-300 mb-1">
-                        {t.country}
-                    </label>
-                    <select
-                        id="country"
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                    >
-                        <option value="">{t.all}</option>
-                        {availableCountries.map((c) => (
-                            <option key={c} value={c}>
-                                {c}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-
-                <div>
-                    <label htmlFor="deviceType" className="block text-sm font-medium text-gray-300 mb-1">
-                        {t.deviceType}
-                    </label>
-                    <select
-                        id="deviceType"
-                        value={deviceType}
-                        onChange={(e) => setDeviceType(e.target.value)}
-                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                    >
-                        <option value="">{t.allDevices}</option>
-                        <option value="mobile">Mobile</option>
-                        <option value="desktop">Desktop</option>
-                        <option value="tablet">Tablet</option>
-                    </select>
-                    <p className="mt-2 text-xs text-gray-400">{t.deviceHint}</p>
-                </div>
-
-                <div>
-                    <label htmlFor="source" className="block text-sm font-medium text-gray-300 mb-1">
-                        {t.source}
-                    </label>
-                    <select
-                        id="source"
-                        value={source}
-                        onChange={(e) => setSource(e.target.value)}
-                        className="w-full border-gray-600 rounded-md bg-gray-900 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                    >
-                        <option value="">{t.allSources}</option>
-                        {availableSources.map((src) => (
-                            <option key={src} value={src}>
-                                {src}
-                            </option>
-                        ))}
-                    </select>
+                <div className="flex flex-wrap gap-3">
+                    <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 backdrop-blur-sm">
+                        <p className="text-xs uppercase tracking-wide text-blue-200/80">{t.total}</p>
+                        <p className="text-3xl font-extrabold text-white">{totalClicks.toLocaleString()}</p>
+                    </div>
+                    {selectedUrl && (
+                        <div className="max-w-xl truncate rounded-xl border border-gray-700 bg-gray-900/80 px-4 py-3 text-sm text-gray-200 shadow-inner">
+                            <span className="text-gray-400">{t.viewing}: </span>
+                            <span className="font-semibold text-white">{selectedUrl}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
+            <div className="rounded-xl border border-gray-800/80 bg-gray-900/60 p-4 shadow-lg shadow-blue-900/10">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
+                    <div>
+                        <label htmlFor="startDate" className="mb-1 block text-sm font-medium text-gray-300">
+                            {t.from}
+                        </label>
+                        <input
+                            id="startDate"
+                            type="date"
+                            value={startDate}
+                            max={endDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="endDate" className="mb-1 block text-sm font-medium text-gray-300">
+                            {t.to}
+                        </label>
+                        <input
+                            id="endDate"
+                            type="date"
+                            value={endDate}
+                            min={startDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="country" className="mb-1 block text-sm font-medium text-gray-300">
+                            {t.country}
+                        </label>
+                        <select
+                            id="country"
+                            value={country}
+                            onChange={(e) => setCountry(e.target.value)}
+                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">{t.all}</option>
+                            {availableCountries.map((c) => (
+                                <option key={c} value={c}>
+                                    {c}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="deviceType" className="mb-1 block text-sm font-medium text-gray-300">
+                            {t.deviceType}
+                        </label>
+                        <select
+                            id="deviceType"
+                            value={deviceType}
+                            onChange={(e) => setDeviceType(e.target.value)}
+                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">{t.allDevices}</option>
+                            <option value="mobile">Mobile</option>
+                            <option value="desktop">Desktop</option>
+                            <option value="tablet">Tablet</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="source" className="mb-1 block text-sm font-medium text-gray-300">
+                            {t.source}
+                        </label>
+                        <select
+                            id="source"
+                            value={source}
+                            onChange={(e) => setSource(e.target.value)}
+                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">{t.allSources}</option>
+                            {availableSources.map((src) => (
+                                <option key={src} value={src}>
+                                    {formatSourceLabel(src)}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <p className="col-span-full text-xs text-gray-400">{t.deviceHint}</p>
+                </div>
+            </div>
 
             {loading && (
-                <div className="py-8 text-center text-gray-400 flex justify-center items-center gap-2">
-                    <span className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
+                <div className="flex items-center justify-center gap-2 rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-6 text-gray-300">
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
                     {t.loading}
                 </div>
             )}
-            {error && <div className="text-red-400 text-sm my-4">{error}</div>}
+            {error && <div className="text-red-400 text-sm">{error}</div>}
             {!loading && !error && stats.length === 0 && (
-                <div className="text-gray-400 text-sm my-4">{t.noData}</div>
+                <div className="rounded-xl border border-dashed border-gray-700 bg-gray-900/60 px-4 py-6 text-sm text-gray-400">
+                    {t.noData}
+                </div>
             )}
 
-
             {!loading && !error && stats.length > 0 && (
-                <div className="mt-6 bg-gray-900 p-4 rounded-lg shadow-inner">
+                <div className="rounded-xl border border-gray-800 bg-gray-900/70 p-4 shadow-inner">
+                    <div className="mb-2 flex items-center justify-between gap-4 text-sm text-gray-300">
+                        <h3 className="text-base font-semibold text-white">{t.clickTrend}</h3>
+                    </div>
                     <MetricsChart stats={stats} />
                 </div>
             )}
 
-            <div className="mt-6 space-y-2">
+            <div className="space-y-2">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-white">{t.deviceMetrics}</h3>
                 </div>
                 {deviceTotals.length === 0 ? (
                     <p className="text-sm text-gray-400">{t.deviceTotalsEmpty}</p>
                 ) : (
-                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
                         {deviceTotals.map((device) => (
                             <div
                                 key={device.deviceType}
-                                className="rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 shadow-sm text-gray-100"
+                                className="rounded-lg border border-gray-800 bg-gradient-to-br from-gray-900/80 to-black/60 px-4 py-3 shadow-md"
                             >
-                                <p className="text-sm font-semibold">{formatDeviceLabel(device.deviceType)}</p>
+                                <p className="text-sm font-semibold text-white">{formatDeviceLabel(device.deviceType)}</p>
                                 <p className="text-xs text-gray-400">{t.deviceType}</p>
                                 <p className="mt-1 text-2xl font-bold text-white">{device.clicks.toLocaleString()}</p>
                             </div>
@@ -339,20 +377,20 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                 )}
             </div>
 
-            <div className="mt-6 space-y-2">
+            <div className="space-y-2">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-white">{t.sourceMetrics}</h3>
                 </div>
                 {sourceTotals.length === 0 ? (
                     <p className="text-sm text-gray-400">{t.sourceTotalsEmpty}</p>
                 ) : (
-                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
                         {sourceTotals.map((entry) => (
                             <div
                                 key={entry.source}
-                                className="rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 shadow-sm text-gray-100"
+                                className="rounded-lg border border-gray-800 bg-gradient-to-br from-gray-900/80 to-black/60 px-4 py-3 shadow-md"
                             >
-                                <p className="text-sm font-semibold">{entry.source}</p>
+                                <p className="text-sm font-semibold text-white">{formatSourceLabel(entry.source)}</p>
                                 <p className="text-xs text-gray-400">{t.source}</p>
                                 <p className="mt-1 text-2xl font-bold text-white">{entry.clicks.toLocaleString()}</p>
                             </div>
@@ -361,7 +399,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                 )}
             </div>
 
-            <div className="mt-6 space-y-2">
+            <div className="space-y-2">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-white">{t.countryMetrics}</h3>
                     {countryLoading && <span className="text-xs text-gray-400 animate-pulse">{t.loading}</span>}
@@ -369,7 +407,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                 {availableCountries.length === 0 ? (
                     <p className="text-sm text-gray-400">{t.countryTotalsEmpty}</p>
                 ) : (
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {availableCountries.map((code) => (
                             <button
                                 key={code}
@@ -377,7 +415,7 @@ export default function Metrics({ linkId, language = 'en' }: { linkId: string; l
                                 className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left transition ${
                                     country === code
                                         ? 'border-blue-500 bg-blue-500/10 text-white'
-                                        : 'border-gray-700 bg-gray-900 text-gray-200 hover:border-gray-500'
+                                        : 'border-gray-800 bg-gray-900 text-gray-200 hover:border-gray-600'
                                 }`}
                             >
                                 <div className="space-y-1">
