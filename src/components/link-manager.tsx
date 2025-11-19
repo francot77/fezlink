@@ -79,6 +79,7 @@ const LinkCard = ({
             toast.success(t.copied, { position: 'top-center', richColors: true });
             setTimeout(() => setCopied(false), 1600);
         } catch (error) {
+            console.error('Failed to copy link:', error);
             toast.error('Unable to copy link', { position: 'top-center', richColors: true });
         }
     };
