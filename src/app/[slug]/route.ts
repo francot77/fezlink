@@ -1,6 +1,7 @@
 import { Link } from '@/app/models/links';
 import { LinkStats } from '../models/linkStats';
 import Click from '../models/clicks'; // <-- importá tu modelo nuevo
+import GlobalClicks from '../models/globalClicks';
 import dbConnect from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
 
@@ -53,6 +54,13 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
             },
             { upsert: true }
         );
+    }
+
+    // Update global clicks counter
+    try {
+        await GlobalClicks.findOneAndUpdate({}, { $inc: { count: 1 } }, { upsert: true });
+    } catch (error) {
+        console.error('Error updating global clicks counter:', error);
     }
 
     // --- NUEVO: Registrar clic en colección clicks ---
