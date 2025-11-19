@@ -8,14 +8,14 @@ export async function PUT(req: Request) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { links, backgroundColor, textColor, avatarUrl } = body;
+    const { links, backgroundColor, textColor, avatarUrl, description } = body;
 
 
     await dbConnect();
 
     const updated = await Biopage.findOneAndUpdate(
         { userId },
-        { $set: { links, backgroundColor, textColor, avatarUrl } },
+        { $set: { links, backgroundColor, textColor, avatarUrl, description } },
         { new: true }
     );
 

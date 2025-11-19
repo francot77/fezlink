@@ -59,6 +59,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         premiumHint: 'Premium users can personalize their username.',
         cancel: 'Cancel',
         selectLanguage: 'Language',
+        descriptionLabel: 'Description',
+        descriptionPlaceholder: 'Write a short description to highlight who you are or what you do.',
     },
     es: {
         loading: 'Cargando...',
@@ -106,6 +108,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         premiumHint: 'Los usuarios Premium pueden personalizar su usuario.',
         cancel: 'Cancelar',
         selectLanguage: 'Idioma',
+        descriptionLabel: 'Descripción',
+        descriptionPlaceholder: 'Escribe una breve descripción para destacar quién eres o qué haces.',
     },
 }
 
@@ -142,6 +146,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
     const [bgColor, setBgColor] = useState('#000000')
     const [textColor, setTextColor] = useState('#ffffff')
     const [avatarUrl, setAvatarUrl] = useState('')
+    const [description, setDescription] = useState('')
     const [loading, setLoading] = useState(true)
     const [biopage, setBiopage] = useState<BiopageType | null>(null)
     const [isPremium, setIsPremium] = useState<boolean>(false)
@@ -165,6 +170,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                 setBgColor(data.biopage.backgroundColor || '#000000')
                 setTextColor(data.biopage.textColor || '#ffffff')
                 setAvatarUrl(data.biopage.avatarUrl || '')
+                setDescription(data.biopage.description || '')
             } else {
                 setBiopage(null)
             }
@@ -218,6 +224,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
             setBgColor(data.biopage.backgroundColor || '#000000')
             setTextColor(data.biopage.textColor || '#ffffff')
             setAvatarUrl(data.biopage.avatarUrl || '')
+            setDescription(data.biopage.description || '')
             toast.success(t.created, { richColors: true, position: "top-center" })
         } else {
             toast.error(t.createError, { richColors: true, position: "top-center" })
@@ -260,12 +267,14 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                     backgroundColor: bgColor,
                     textColor,
                     avatarUrl: avatarUrl || '',
+                    description,
                 }),
             })
             const data = await res.json()
             if (res.ok) {
                 setBiopage(data.biopage)
                 setAvatarUrl(data.biopage.avatarUrl || avatarUrl)
+                setDescription(data.biopage.description || description)
                 toast.success(t.saved, { richColors: true, position: "top-center" })
             } else {
                 toast.error(`${t.slugErrorPrefix} ${data.error || t.saveError}`, { richColors: true, position: "top-center" })
@@ -399,6 +408,14 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                                         onChange={(e) => setAvatarUrl(e.target.value)}
                                         placeholder={defaultAvatar}
                                         className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <label className="text-sm text-gray-300" htmlFor="description-textarea">{t.descriptionLabel}</label>
+                                    <textarea
+                                        id="description-textarea"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder={t.descriptionPlaceholder}
+                                        className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[96px]"
                                     />
                                 </div>
                             </div>
@@ -538,6 +555,7 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                         avatarUrl={avatarUrl || ''}
                         slug={biopage?.slug || 'usuario'}
                         links={selected}
+                        description={description}
                         language={language}
                     />
                 </div>
