@@ -6,8 +6,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export interface Link {
     id: string;
-    originalUrl: string;
+    destinationUrl: string;
     shortUrl: string;
+    slug: string;
     clicks: number;
 }
 
@@ -49,13 +50,13 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
     }, [refreshLinks, autoLoad]);
 
     const addLink = useCallback(
-        async (originalUrl: string) => {
+        async (destinationUrl: string) => {
             toast.promise(
                 async () => {
                     const res = await fetch('/api/links', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ originalUrl }),
+                        body: JSON.stringify({ destinationUrl }),
                     });
                     const newLink = await res.json();
                     if (newLink.error) throw new Error(newLink.error);
@@ -142,12 +143,12 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
                                 <div className="space-y-1">
                                     <p className="text-xs uppercase tracking-wide text-gray-400">Link original</p>
                                     <a
-                                        href={selectedLink.originalUrl}
+                                        href={selectedLink.destinationUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="break-all text-sm font-medium text-blue-300 hover:text-blue-200"
                                     >
-                                        {selectedLink.originalUrl}
+                                        {selectedLink.destinationUrl}
                                     </a>
                                 </div>
                                 <div className="space-y-1">
