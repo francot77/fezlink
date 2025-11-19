@@ -7,10 +7,10 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 const highlights = [
-  'Track clicks and geographic reach with real-time analytics.',
-  'Generate branded QR codes and share them anywhere.',
-  'Build a bio page to centralize your social links.',
-  'Privacy-first: no ads, no distractions for your visitors.',
+  'Track clicks, devices, and countries with real-time analytics.',
+  'Generate branded QR codes ready for print or live events.',
+  'Build a clean bio page to centralize your social links.',
+  'Share without friction: no ads or pop-ups for your visitors.',
 ]
 
 const featureCards = [
@@ -79,7 +79,7 @@ export default function Home() {
           <div className="space-y-8 text-center md:text-left">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm text-cyan-200 ring-1 ring-white/10">
               <span className="text-lg">✨</span>
-              <p>Link management built to be fast, focused, and clear.</p>
+              <p>URL shortener built to be fast, precise, and on-brand.</p>
             </div>
 
             <div className="space-y-4">
@@ -87,7 +87,7 @@ export default function Home() {
                 Shorten, share, and measure in one place
               </h1>
               <p className="text-lg text-gray-300 md:text-xl">
-                Fezlink turns every URL into a smart link with analytics, QR codes, and a customizable bio page—without ads.
+                Fezlink turns every URL into a smart link with clear analytics, QR downloads, and a customizable bio page—without ads or distractions.
               </p>
             </div>
 
@@ -217,19 +217,31 @@ export default function Home() {
               <p className="text-sm text-gray-200">Sample bio page</p>
               <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white">Preview</span>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 overflow-hidden rounded-2xl border border-white/20">
-                <Image src="/hero.webp" width={128} height={128} alt="Bio avatar" className="h-full w-full object-cover" />
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-inner">
+              <div className="relative h-28 w-full bg-gradient-to-br from-emerald-400/30 via-sky-500/30 to-purple-500/30" />
+              <div className="space-y-4 px-5 pb-5 text-center">
+                <div className="-mt-10 mx-auto h-20 w-20 overflow-hidden rounded-2xl border-4 border-white/20 shadow-xl">
+                  <Image src="/hero.webp" width={160} height={160} alt="Bio avatar" className="h-full w-full object-cover" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold">@yourbrand</p>
+                  <p className="text-xs text-white/70">Tu identidad en un solo enlace, con el mismo estilo que verá tu audiencia.</p>
+                </div>
+                <div className="space-y-3 text-sm">
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left">
+                    <p className="font-semibold">Último lanzamiento</p>
+                    <p className="text-white/70">Campaña de producto con métricas activas.</p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left">
+                    <p className="font-semibold">RSVP de eventos</p>
+                    <p className="text-white/70">Formulario directo para tu próxima presentación.</p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left">
+                    <p className="font-semibold">Newsletter</p>
+                    <p className="text-white/70">Suscripciones sin salir de tu biopage.</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-lg font-semibold">@yourbrand</p>
-                <p className="text-sm text-gray-300">Link everything your audience should see first.</p>
-              </div>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="rounded-xl bg-white/10 px-4 py-3 text-white">Latest launch: product announcement</div>
-              <div className="rounded-xl bg-white/10 px-4 py-3 text-white">Event RSVP and ticketing</div>
-              <div className="rounded-xl bg-white/10 px-4 py-3 text-white">Newsletter signup</div>
             </div>
             <button
               className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
