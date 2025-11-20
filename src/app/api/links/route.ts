@@ -47,15 +47,28 @@ export async function POST(req: Request): Promise<NextResponse> {
 
         const normalizedUrl = new URL(destinationUrl).toString();
 
-        // Generate unique slug
-        let slug: string;
-        let existingLink;
-        do {
-            slug = crypto.randomBytes(4).toString('hex');
-            existingLink = await Link.findOne({ slug });
-        } while (existingLink);
+        // Generate unique slug with retry in case of rare collisions
+        let newLink: Awaited<ReturnType<typeof Link.create>> | null = null;
+        for (let attempt = 0; attempt < 5; attempt++) {
+            const slug = crypto.randomBytes(4).toString('hex');
 
-        const newLink = await Link.create({ destinationUrl: normalizedUrl, slug, userId });
+            try {
+                // Persist both the canonical field (`shortId`) and its alias (`slug`) to
+                // satisfy existing unique indexes in the database.
+                newLink = await Link.create({ destinationUrl: normalizedUrl, shortId: slug, slug, userId });
+                break;
+            } catch (error: unknown) {
+                if (error instanceof Error && 'code' in error && (error as { code?: number }).code === 11000) {
+                    // Collision on the unique slug/shortId index, retry with a new value
+                    continue;
+                }
+                throw error;
+            }
+        }
+
+        if (!newLink) {
+            return NextResponse.json({ error: 'Failed to generate unique short link' }, { status: 500 });
+        }
 
         return NextResponse.json({
             id: newLink._id.toString(),
