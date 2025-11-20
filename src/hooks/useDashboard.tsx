@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useLinks from "./useLinks";
 import { useRouter } from "next/navigation";
-import BiopageEditor from "@/app/dashboard/biopageeditor";
+import BiopageEditor from "@/app/(app)/dashboard/biopageeditor";
 import PremiumFeatures from "@/components/premiumfeatures";
 import Stats from "@/components/stats";
 import LinkManager from "@/components/link-manager";
