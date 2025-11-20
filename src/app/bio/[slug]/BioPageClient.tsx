@@ -1,15 +1,15 @@
 "use client";
 
 import QRButton from "@/components/QRButton";
-import Spinner from "@/components/spinner";
 import { BioPageData } from "@/lib/biopage";
+import Image from "next/image";
 
 interface Props {
     slug: string;
     initialBioPage: BioPageData | null;
 }
 
-export default function BioPageClient({ slug, initialBioPage }: Props) {
+export default function BioPageClient({ initialBioPage }: Props) {
     const bioPage = initialBioPage;
 
     if (!bioPage) {
@@ -53,7 +53,7 @@ export default function BioPageClient({ slug, initialBioPage }: Props) {
                                     boxShadow: `0 20px 40px ${bioPage.textColor}30`,
                                 }}
                             >
-                                <img
+                                <Image
                                     src={bioPage.avatarUrl || fallbackAvatar}
                                     alt="Avatar"
                                     className="h-full w-full object-cover"

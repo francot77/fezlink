@@ -19,13 +19,13 @@ export const getBiopageBySlug = cache(
     if (!biopage) return null;
 
     const links =
-      (biopage.links || []).map((link: any) => ({
-        // elegí exactamente qué querés exponer
-        shortUrl: link.shortUrl ?? "",
-        label: link.label ?? "",
-        // si querés el id:
-        // id: link._id?.toString(),
-      })) ?? [];
+      ((biopage.links || []) as unknown[]).map((link: unknown) => {
+        const l = link as { shortUrl?: string; label?: string };
+        return {
+          shortUrl: l.shortUrl ?? "",
+          label: l.label ?? "",
+        };
+      }) ?? [];
 
     return {
       slug: biopage.slug,
