@@ -1,8 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import QRButton from "@/components/QRButton";
 import { BioPageData } from "@/lib/biopage";
-import Image from "next/image";
 
 interface Props {
     slug: string;
@@ -53,7 +53,7 @@ export default function BioPageClient({ initialBioPage }: Props) {
                                     boxShadow: `0 20px 40px ${bioPage.textColor}30`,
                                 }}
                             >
-                                <Image
+                                <img
                                     src={bioPage.avatarUrl || fallbackAvatar}
                                     alt="Avatar"
                                     className="h-full w-full object-cover"
