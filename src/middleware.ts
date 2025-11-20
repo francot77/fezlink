@@ -54,13 +54,20 @@ export default clerkMiddleware(async (auth, req) => {
 
     // 🟦 Hacer públicas las biopages & shortlinks
     if (pathname.startsWith("/bio") || pathname.startsWith("/l/")) {
-        const res = NextResponse.next();
+        const url = req.nextUrl.clone();
+        const res = NextResponse.rewrite(url);
+
         res.headers.set(
             "Cache-Control",
-            "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
+            "public, s-maxage=3600, max-age=3600, stale-while-revalidate=86400"
         );
+
+        res.headers.delete("X-Clerk-Auth-Reason");
+        res.headers.delete("X-Clerk-Auth-Status");
+        res.headers.delete("Set-Cookie"); // ⚠ evita sesión fantasma
         return res;
     }
+
 
     return NextResponse.next();
 });
