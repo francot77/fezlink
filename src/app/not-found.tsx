@@ -1,43 +1,70 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 
 export default function NotFound() {
   const router = useRouter();
+  const [counter, setCounter] = useState(5);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push("/");
-    }, 5000);
+    const countdown = setInterval(() => {
+      setCounter((prev) => {
+        if (prev <= 1) {
+          router.push("/");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearTimeout(timer);
+    return () => clearInterval(countdown);
   }, [router]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 px-6 py-16 text-gray-900">
-      <div className="max-w-xl rounded-2xl bg-white p-8 shadow-lg shadow-indigo-100">
-        <div className="flex items-center gap-3 text-indigo-600">
-          <AlertTriangle className="h-7 w-7" aria-hidden />
-          <p className="text-sm font-semibold tracking-wide uppercase">404 - Page not found</p>
+    <main className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-950 via-black to-gray-900 px-6 py-16 text-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-16 top-24 h-64 w-64 rounded-full bg-cyan-500/15 blur-3xl" />
+        <div className="absolute right-10 bottom-12 h-72 w-72 rounded-full bg-purple-600/20 blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-2xl rounded-3xl border border-white/10 bg-white/5 p-10 shadow-2xl backdrop-blur">
+        <div className="flex items-center gap-3 text-emerald-200">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10">
+            <AlertTriangle className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">404 - Not Found</p>
         </div>
 
-        <h1 className="mt-4 text-3xl font-bold sm:text-4xl">Something went wrong</h1>
-        <p className="mt-3 text-lg text-gray-600">
-          The page you&apos;re looking for doesn&apos;t exist. We&apos;ll take you back home in
-          5 seconds.
-        </p>
+        <div className="mt-6 space-y-4">
+          <h1 className="text-3xl font-bold sm:text-4xl">No pudimos encontrar esa página</h1>
+          <p className="text-lg text-gray-200 sm:text-xl">
+            Algo salió mal. Te llevaremos al inicio automáticamente en {counter} segundos. Si prefieres, usa el botón a
+            continuación para regresar ahora mismo.
+          </p>
+        </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-4">
+        <div className="mt-8 flex flex-wrap items-center gap-4">
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            className="inline-flex items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-500/20 px-6 py-3 text-sm font-semibold text-emerald-50 transition hover:border-emerald-300/60 hover:bg-emerald-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
           >
-            Go to homepage now
+            Volver al inicio ahora
           </Link>
-          <p className="text-sm text-gray-500">Redirecting automatically...</p>
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <span className="h-2 w-2 rounded-full bg-emerald-300" aria-hidden />
+            <p>Redirigiendo automáticamente cuando llegue a 0</p>
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center gap-3 text-sm text-gray-300">
+          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+            <span className="text-xs uppercase tracking-[0.2em] text-gray-400">Contador</span>
+            <span className="text-lg font-semibold text-emerald-200">{counter}</span>
+          </div>
+          <p className="text-gray-400">Te redirigiremos al inicio en cuanto llegue a cero.</p>
         </div>
       </div>
     </main>
