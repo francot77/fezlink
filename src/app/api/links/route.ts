@@ -28,51 +28,67 @@ const buildShortUrl = (slug: string, req: Request) => {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
-    const { userId, sessionClaims } = await auth()
-    await dbConnect();
+    const { userId, sessionClaims } = await auth();
 
-    const links = await Link.find({ userId })
-    if (links.length >= 2 && !isPremiumActive(sessionClaims as CustomJwtSessionClaims)) {
-        return NextResponse.json({ error: "Limited Account" }, { status: 401 });
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    try {
+        await dbConnect();
+
+        const links = await Link.find({ userId });
+        if (links.length >= 2 && !isPremiumActive(sessionClaims as CustomJwtSessionClaims)) {
+            return NextResponse.json({ error: "Limited Account" }, { status: 401 });
+        }
+
+        const { destinationUrl } = await req.json();
+        if (!isValidHttpUrl(destinationUrl)) {
+            return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
+        }
+
+        const normalizedUrl = new URL(destinationUrl).toString();
+
+        // Generate unique slug
+        let slug: string;
+        let existingLink;
+        do {
+            slug = crypto.randomBytes(4).toString('hex');
+            existingLink = await Link.findOne({ slug });
+        } while (existingLink);
+
+        const newLink = await Link.create({ destinationUrl: normalizedUrl, slug, userId });
+
+        return NextResponse.json({
+            id: newLink._id.toString(),
+            destinationUrl: newLink.destinationUrl,
+            shortUrl: buildShortUrl(newLink.slug, req),
+            slug: newLink.slug,
+            clicks: newLink.totalClicks
+        });
+    } catch (error) {
+        console.error('Error creating link', error);
+        return NextResponse.json({ error: 'Failed to create link' }, { status: 500 });
     }
-    const { destinationUrl } = await req.json();
-    if (!isValidHttpUrl(destinationUrl)) {
-        return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
-    }
-
-    const normalizedUrl = new URL(destinationUrl).toString();
-
-    // Generate unique slug
-    let slug: string;
-    let existingLink;
-    do {
-        slug = crypto.randomBytes(4).toString('hex');
-        existingLink = await Link.findOne({ slug });
-    } while (existingLink);
-
-    const newLink = await Link.create({ destinationUrl: normalizedUrl, slug, userId });
-
-    return NextResponse.json({
-        id: newLink._id.toString(),
-        destinationUrl: newLink.destinationUrl,
-        shortUrl: buildShortUrl(newLink.slug, req),
-        slug: newLink.slug,
-        clicks: newLink.totalClicks
-    });
 }
 
 export async function GET() {
-    const { userId } = await auth()
-    await dbConnect();
-    const links = await Link.find({ userId });
-    const response = links.map(link => ({
-        id: link._id,
-        destinationUrl: link.destinationUrl,
-        shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || ''}/${link.slug}`,
-        slug: link.slug,
-        clicks: link.totalClicks
-    }));
+    const { userId } = await auth();
 
-    return NextResponse.json({ links: response });
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    try {
+        await dbConnect();
+        const links = await Link.find({ userId });
+        const response = links.map(link => ({
+            id: link._id,
+            destinationUrl: link.destinationUrl,
+            shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || ''}/${link.slug}`,
+            slug: link.slug,
+            clicks: link.totalClicks
+        }));
+
+        return NextResponse.json({ links: response });
+    } catch (error) {
+        console.error('Error fetching links', error);
+        return NextResponse.json({ error: 'Failed to fetch links' }, { status: 500 });
+    }
 }
