@@ -39,10 +39,9 @@ export default function NotFound() {
         </div>
 
         <div className="mt-6 space-y-4">
-          <h1 className="text-3xl font-bold sm:text-4xl">No pudimos encontrar esa página</h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">We couldn&apos;t find that page</h1>
           <p className="text-lg text-gray-200 sm:text-xl">
-            Algo salió mal. Te llevaremos al inicio automáticamente en {counter} segundos. Si prefieres, usa el botón a
-            continuación para regresar ahora mismo.
+            Something went wrong. You&apos;ll be redirected to the homepage in {counter} seconds, or you can head back now.
           </p>
         </div>
 
@@ -51,20 +50,15 @@ export default function NotFound() {
             href="/"
             className="inline-flex items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-500/20 px-6 py-3 text-sm font-semibold text-emerald-50 transition hover:border-emerald-300/60 hover:bg-emerald-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
           >
-            Volver al inicio ahora
+            Return home now
           </Link>
-          <div className="flex items-center gap-2 text-sm text-gray-300">
-            <span className="h-2 w-2 rounded-full bg-emerald-300" aria-hidden />
-            <p>Redirigiendo automáticamente cuando llegue a 0</p>
+          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-gray-300">
+            <span className="text-xs uppercase tracking-[0.2em] text-gray-400">Redirecting in</span>
+            <span className="text-lg font-semibold text-emerald-200" aria-live="polite">
+              {counter}
+            </span>
+            <span className="text-xs uppercase tracking-[0.2em] text-gray-400">seconds</span>
           </div>
-        </div>
-
-        <div className="mt-6 flex items-center gap-3 text-sm text-gray-300">
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
-            <span className="text-xs uppercase tracking-[0.2em] text-gray-400">Contador</span>
-            <span className="text-lg font-semibold text-emerald-200">{counter}</span>
-          </div>
-          <p className="text-gray-400">Te redirigiremos al inicio en cuanto llegue a cero.</p>
         </div>
       </div>
     </main>
