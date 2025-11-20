@@ -1,7 +1,7 @@
 // app/api/links/route.js
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import { Link } from '@/app/models/links';
+import { Link, type LinkDocument } from '@/app/models/links';
 import { auth } from '@clerk/nextjs/server';
 import crypto from 'crypto';
 
@@ -48,7 +48,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         const normalizedUrl = new URL(destinationUrl).toString();
 
         // Generate unique slug with retry in case of rare collisions
-        let newLink: Awaited<ReturnType<typeof Link.create>> | null = null;
+        let newLink: LinkDocument | null = null;
         for (let attempt = 0; attempt < 5; attempt++) {
             const slug = crypto.randomBytes(4).toString('hex');
 

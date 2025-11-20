@@ -1,4 +1,14 @@
-import mongoose from 'mongoose';
+import mongoose, { type Document, type Model } from 'mongoose';
+
+interface LinkDocument extends Document {
+    userId: string;
+    destinationUrl: string;
+    shortId: string;
+    slug: string;
+    totalClicks: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
 
 const LinkSchema = new mongoose.Schema({
     userId: { type: String, required: true },
@@ -10,6 +20,6 @@ const LinkSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Verifica si el modelo ya está definido, y si no, lo define
-const Link = mongoose.models.Link || mongoose.model('Link', LinkSchema);
+const Link = (mongoose.models.Link as Model<LinkDocument>) || mongoose.model<LinkDocument>('Link', LinkSchema);
 
-export { Link };
+export { Link, type LinkDocument };
