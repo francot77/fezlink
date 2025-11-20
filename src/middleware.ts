@@ -65,5 +65,6 @@ export const config = {
   matcher: [
     "/dashboard(.*)",
     "/admin(.*)",
+    "/api/(.*)",
   ],
 };
