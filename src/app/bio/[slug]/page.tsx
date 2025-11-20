@@ -1,12 +1,15 @@
+// src/app/bio/[slug]/page.tsx
 import type { Metadata } from "next";
 import BioPageClient from "./BioPageClient";
 import { getBiopageBySlug } from "@/lib/biopage";
 
 type PageParams = {
-  params: { slug: string }; // no hace falta Promise acá
+  params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: PageParams
+): Promise<Metadata> {
   const { slug } = await params;
   const biopage = await getBiopageBySlug(slug);
 
@@ -52,8 +55,8 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 }
 
 export default async function BioPage({ params }: PageParams) {
-    const { slug } = await params;
-    const biopage = await getBiopageBySlug(slug);
+  const { slug } = await params;
+  const biopage = await getBiopageBySlug(slug);
 
-    return <BioPageClient slug={slug} initialBioPage={biopage} />;
+  return <BioPageClient slug={slug} initialBioPage={biopage} />;
 }
