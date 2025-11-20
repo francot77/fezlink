@@ -14,7 +14,7 @@ const blockedPaths = [
     '/wordpress/wp-admin/setup-config.php',
 ]
 
-// 👇 NUEVO: User-Agents que NO deben ser bloqueados nunca
+
 const ALLOWED_BOTS = [
     "facebookexternalhit",
     "WhatsApp",
@@ -35,6 +35,14 @@ export default clerkMiddleware(async (auth, req) => {
             return NextResponse.next()
         }
     }
+    if (pathname.startsWith("/bio")) {
+        const res = NextResponse.next()
+        res.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400")
+        res.headers.delete("X-Clerk-Auth-Reason")
+        res.headers.delete("X-Clerk-Auth-Status")
+        return res
+    }
+
 
     // 2) Bloqueos falsos positivos estilo WordPress
     if (blockedPaths.some((path) => pathname.startsWith(path))) {
