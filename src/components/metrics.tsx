@@ -32,6 +32,10 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         total: 'Total clicks',
         from: 'From',
         to: 'To',
+        quickRanges: 'Quick ranges',
+        lastWeek: 'Last week',
+        lastMonth: 'Last month',
+        lastYear: 'Last year',
         country: 'Country',
         all: 'All',
         source: 'Source',
@@ -51,15 +55,19 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         sourceMetrics: 'Source insights',
         sourceTotalsEmpty: 'No source data captured for this range yet.',
         clickTrend: 'Click performance',
-        weeklyChange: 'this week',
-        trendNew: 'New this week',
-        trendNoData: 'No data this week yet',
+        weeklyChange: 'this period',
+        trendNew: 'New in this period',
+        trendNoData: 'Not enough data for comparison',
     },
     es: {
         title: 'Métricas del enlace',
         total: 'Total de clics',
         from: 'Desde',
         to: 'Hasta',
+        quickRanges: 'Rangos rápidos',
+        lastWeek: 'Última semana',
+        lastMonth: 'Último mes',
+        lastYear: 'Último año',
         country: 'País',
         all: 'Todos',
         source: 'Fuente',
@@ -79,9 +87,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         sourceMetrics: 'Detalles por fuente',
         sourceTotalsEmpty: 'Aún no hay datos por fuente en este rango.',
         clickTrend: 'Evolución de clics',
-        weeklyChange: 'esta semana',
-        trendNew: 'Nuevo esta semana',
-        trendNoData: 'Sin datos esta semana',
+        weeklyChange: 'este periodo',
+        trendNew: 'Nuevo en este periodo',
+        trendNoData: 'Sin datos para comparar',
     },
 };
 
@@ -109,6 +117,7 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
         const d = new Date();
         return d.toISOString().slice(0, 10);
     });
+    const [activePreset, setActivePreset] = useState<'week' | 'month' | 'year' | null>('week');
     const [country, setCountry] = useState('');
     const [deviceType, setDeviceType] = useState('');
     const [source, setSource] = useState('');
@@ -245,6 +254,33 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
         fetchCountryTotals();
     }, [availableCountries, endDate, linkId, source, startDate]);
 
+    const applyPreset = (preset: 'week' | 'month' | 'year') => {
+        const end = new Date();
+        const start = new Date(end);
+
+        if (preset === 'week') {
+            start.setDate(end.getDate() - 6);
+        } else if (preset === 'month') {
+            start.setMonth(end.getMonth() - 1);
+        } else {
+            start.setFullYear(end.getFullYear() - 1);
+        }
+
+        setEndDate(end.toISOString().slice(0, 10));
+        setStartDate(start.toISOString().slice(0, 10));
+        setActivePreset(preset);
+    };
+
+    const handleStartDateChange = (value: string) => {
+        setStartDate(value);
+        setActivePreset(null);
+    };
+
+    const handleEndDateChange = (value: string) => {
+        setEndDate(value);
+        setActivePreset(null);
+    };
+
     const renderTrendBadge = (trend?: Trend) => {
         if (!trend) return null;
 
@@ -294,7 +330,7 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                             type="date"
                             value={startDate}
                             max={endDate}
-                            onChange={(e) => setStartDate(e.target.value)}
+                            onChange={(e) => handleStartDateChange(e.target.value)}
                             className="w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
@@ -309,9 +345,35 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                             value={endDate}
                             min={startDate}
                             max={new Date().toISOString().slice(0, 10)}
-                            onChange={(e) => setEndDate(e.target.value)}
+                            onChange={(e) => handleEndDateChange(e.target.value)}
                             className="w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
+                    </div>
+
+                    <div className="sm:col-span-2 xl:col-span-2 2xl:col-span-3">
+                        <p className="mb-2 text-sm font-medium text-gray-300">{t.quickRanges}</p>
+                        <div className="flex flex-wrap gap-2">
+                            {(
+                                [
+                                    { key: 'week', label: t.lastWeek },
+                                    { key: 'month', label: t.lastMonth },
+                                    { key: 'year', label: t.lastYear },
+                                ] as const
+                            ).map((preset) => (
+                                <button
+                                    key={preset.key}
+                                    type="button"
+                                    onClick={() => applyPreset(preset.key)}
+                                    className={`rounded-lg border px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                        activePreset === preset.key
+                                            ? 'border-blue-500 bg-blue-600/20 text-white'
+                                            : 'border-gray-700 bg-gray-950 text-gray-200 hover:border-gray-500'
+                                    }`}
+                                >
+                                    {preset.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div>
