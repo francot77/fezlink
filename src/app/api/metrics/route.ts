@@ -148,8 +148,8 @@ export async function GET(req: NextRequest) {
             ]);
         }
 
-        const comparisonDuration = parsedEnd.getTime() - parsedStart.getTime() + 24 * 60 * 60 * 1000;
-        const comparisonStart = new Date(parsedStart.getTime() - comparisonDuration);
+        const windowDurationMs = parsedEnd.getTime() - parsedStart.getTime() + 1;
+        const comparisonStart = new Date(parsedStart.getTime() - windowDurationMs);
 
         const comparisonMatchFilter: MatchFilter = {
             linkId: linkObjectId,
