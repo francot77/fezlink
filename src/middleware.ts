@@ -1,10 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
-// Bots que deben poder ver OG metadata sin challenge ni headers privados
+
 const ALLOWED_BOTS = [
     "Discord",
     "Discordbot",
@@ -16,11 +16,10 @@ const ALLOWED_BOTS = [
     "Googlebot",
 ];
 
-export default clerkMiddleware(async (auth, req) => {
+const clerk = clerkMiddleware(async (auth, req) => {
     const { pathname } = req.nextUrl;
     const ua = req.headers.get("user-agent") || "";
 
-    // 🟢 Si es un bot permitido → siempre dejamos pasar sin Clerk ni headers privados
     if (ALLOWED_BOTS.some(bot => ua.includes(bot))) {
         const res = NextResponse.next();
         res.headers.set(
@@ -30,7 +29,6 @@ export default clerkMiddleware(async (auth, req) => {
         return res;
     }
 
-    // 🔴 Bloquear rutas basura de bots
     const blockedPaths = [
         '/wp-admin',
         '/wp-login.php',
@@ -41,18 +39,18 @@ export default clerkMiddleware(async (auth, req) => {
         return new NextResponse('Forbidden', { status: 403 });
     }
 
-    // 🟠 Check para admin CMS
+
     if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'admin') {
         const url = new URL('/', req.url);
         return NextResponse.redirect(url);
     }
 
-    // 🔐 Proteger dashboard
+
     if (isProtectedRoute(req)) {
         await auth.protect();
     }
 
-    // 🟦 Hacer públicas las biopages & shortlinks
+
     if (pathname.startsWith("/bio") || pathname.startsWith("/l/")) {
         const url = req.nextUrl.clone();
         const res = NextResponse.rewrite(url);
@@ -71,6 +69,22 @@ export default clerkMiddleware(async (auth, req) => {
 
     return NextResponse.next();
 });
+
+export default function middleware(req: NextRequest) {
+    const { pathname } = req.nextUrl;
+
+    // 🟢 EARLY EXIT: redirect biopages
+    if (pathname.startsWith('/@')) {
+        const slug = pathname.slice(2);
+        return NextResponse.redirect(
+            new URL(`/bio/${slug}`, req.url),
+            308
+        );
+    }
+
+    // 🔵 Todo lo demás pasa por Clerk
+    return clerk(req, {} as NextFetchEvent);
+}
 export const config = {
     matcher: [
         // Todas las rutas excepto archivos estáticos y Next internals
@@ -79,11 +93,3 @@ export const config = {
         "/(api|trpc)(.*)",
     ],
 };
-
-/* export const config = {
-    matcher: [
-        '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-        '/(api|trpc)(.*)',
-    ],
-};
- */
