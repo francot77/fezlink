@@ -42,7 +42,7 @@ export default function ClicksGlobe({
             if (globeEl.current) {
                 globeEl.current.controls().autoRotate = true;
                 globeEl.current.controls().autoRotateSpeed = 1;
-                globeEl.current.pointOfView({ altitude: 8 }, 1000);
+                globeEl.current.pointOfView({ altitude: 2 }, 1000);
                 clearInterval(interval);
             }
         }, 100);

@@ -79,22 +79,15 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, description, onAccept, onC
 
                 <div className="mt-4 text-gray-200">{description}</div>
 
-                {(onAccept || onCancel) && (
+                {(onAccept) && (
                     <div className="mt-6 flex flex-wrap justify-end gap-3">
-                        {onCancel && (
-                            <button
-                                onClick={onCancel}
-                                className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-200 transition hover:border-gray-500 hover:text-white"
-                            >
-                                Cancelar
-                            </button>
-                        )}
+
                         {onAccept && (
                             <button
                                 onClick={onAccept}
                                 className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:brightness-110"
                             >
-                                Aceptar
+                                Cerrar
                             </button>
                         )}
                     </div>

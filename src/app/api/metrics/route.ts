@@ -37,8 +37,8 @@ export async function GET(req: NextRequest) {
     const linkId = searchParams.get('linkId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const country = searchParams.get('country'); // opcional
-    const deviceType = searchParams.get('deviceType'); // opcional
+    const country = searchParams.get('country');
+    const deviceType = searchParams.get('deviceType');
     const groupByDevice = searchParams.get('groupByDevice') === 'true';
     const groupBySource = searchParams.get('groupBySource') === 'true';
     const source = searchParams.get('source');
@@ -148,14 +148,16 @@ export async function GET(req: NextRequest) {
             ]);
         }
 
+        // Calcular el período de comparación (mismo tamaño que el período actual)
         const windowDurationMs = parsedEnd.getTime() - parsedStart.getTime() + 1;
         const comparisonStart = new Date(parsedStart.getTime() - windowDurationMs);
+        const comparisonEnd = new Date(parsedStart.getTime() - 1); // Termina justo antes del período actual
 
         const comparisonMatchFilter: MatchFilter = {
             linkId: linkObjectId,
             timestamp: {
                 $gte: comparisonStart,
-                $lte: parsedEnd,
+                $lte: comparisonEnd, // ✅ CORREGIDO: solo período anterior
             },
         };
 
@@ -163,24 +165,13 @@ export async function GET(req: NextRequest) {
         if (deviceType) comparisonMatchFilter.deviceType = deviceType;
         if (source) comparisonMatchFilter.source = source;
 
-        const comparisonAggregation = await clicks.aggregate([
-            { $match: comparisonMatchFilter },
+        // Obtener datos del período actual
+        const currentPeriodData = await clicks.aggregate([
+            { $match: matchFilter },
             {
                 $project: {
                     source: { $ifNull: ['$source', 'default'] },
                     deviceType: { $ifNull: ['$deviceType', 'unknown'] },
-                    period: {
-                        $cond: [
-                            {
-                                $and: [
-                                    { $gte: ['$timestamp', parsedStart] },
-                                    { $lte: ['$timestamp', parsedEnd] },
-                                ],
-                            },
-                            'current',
-                            'previous',
-                        ],
-                    },
                 },
             },
             {
@@ -188,7 +179,7 @@ export async function GET(req: NextRequest) {
                     bySource: [
                         {
                             $group: {
-                                _id: { source: '$source', period: '$period' },
+                                _id: '$source',
                                 clicks: { $sum: 1 },
                             },
                         },
@@ -196,7 +187,7 @@ export async function GET(req: NextRequest) {
                     byDevice: [
                         {
                             $group: {
-                                _id: { deviceType: '$deviceType', period: '$period' },
+                                _id: '$deviceType',
                                 clicks: { $sum: 1 },
                             },
                         },
@@ -205,27 +196,59 @@ export async function GET(req: NextRequest) {
             },
         ]);
 
-        const [comparisonResult] = comparisonAggregation as unknown as [
-            { bySource: { _id: { source: string; period: 'current' | 'previous' }; clicks: number }[]; byDevice: { _id: { deviceType: string; period: 'current' | 'previous' }; clicks: number }[] }?,
+        // Obtener datos del período anterior
+        const previousPeriodData = await clicks.aggregate([
+            { $match: comparisonMatchFilter },
+            {
+                $project: {
+                    source: { $ifNull: ['$source', 'default'] },
+                    deviceType: { $ifNull: ['$deviceType', 'unknown'] },
+                },
+            },
+            {
+                $facet: {
+                    bySource: [
+                        {
+                            $group: {
+                                _id: '$source',
+                                clicks: { $sum: 1 },
+                            },
+                        },
+                    ],
+                    byDevice: [
+                        {
+                            $group: {
+                                _id: '$deviceType',
+                                clicks: { $sum: 1 },
+                            },
+                        },
+                    ],
+                },
+            },
+        ]);
+
+        const [currentResult] = currentPeriodData as unknown as [
+            { bySource: { _id: string; clicks: number }[]; byDevice: { _id: string; clicks: number }[] }?
         ];
 
-        const buildTrends = <T extends 'source' | 'deviceType'>(groups: { _id: Record<T | 'period', string>; clicks: number }[], key: T, defaultKey: string): Trend[] => {
-            const trendMap = new Map<string, { thisWeek: number; lastWeek: number }>();
+        const [previousResult] = previousPeriodData as unknown as [
+            { bySource: { _id: string; clicks: number }[]; byDevice: { _id: string; clicks: number }[] }?
+        ];
 
-            groups.forEach(({ _id, clicks }) => {
-                const trendKey = (typeof _id[key] === 'string' ? (_id[key] as string) : defaultKey) || defaultKey;
-                const current = trendMap.get(trendKey) ?? { thisWeek: 0, lastWeek: 0 };
+        const buildTrends = (
+            currentGroups: { _id: string; clicks: number }[],
+            previousGroups: { _id: string; clicks: number }[]
+        ): Trend[] => {
+            const currentMap = new Map(currentGroups.map(g => [g._id, g.clicks]));
+            const previousMap = new Map(previousGroups.map(g => [g._id, g.clicks]));
 
-                if (_id.period === 'current') {
-                    current.thisWeek += clicks;
-                } else {
-                    current.lastWeek += clicks;
-                }
+            // Obtener todas las claves únicas de ambos períodos
+            const allKeys = new Set([...currentMap.keys(), ...previousMap.keys()]);
 
-                trendMap.set(trendKey, current);
-            });
+            return Array.from(allKeys).map(key => {
+                const thisWeek = currentMap.get(key) || 0;
+                const lastWeek = previousMap.get(key) || 0;
 
-            return Array.from(trendMap.entries()).map(([trendKey, { thisWeek, lastWeek }]) => {
                 let changePercent: number | null = null;
                 let hasEnoughData = true;
                 let label: string | undefined;
@@ -234,14 +257,14 @@ export async function GET(req: NextRequest) {
                     hasEnoughData = false;
                     label = 'Not enough data yet';
                 } else if (lastWeek === 0 && thisWeek > 0) {
-                    changePercent = 100;
+                    changePercent = null; // ✅ CORREGIDO: era 100
                     label = 'New this period';
                 } else if (lastWeek > 0) {
                     changePercent = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
                 }
 
                 const trend: Trend = {
-                    key: trendKey,
+                    key,
                     thisWeek,
                     lastWeek,
                     changePercent,
@@ -256,8 +279,15 @@ export async function GET(req: NextRequest) {
             });
         };
 
-        const sourceTrends = buildTrends(comparisonResult?.bySource ?? [], 'source', 'default');
-        const deviceTrends = buildTrends(comparisonResult?.byDevice ?? [], 'deviceType', 'unknown');
+        const sourceTrends = buildTrends(
+            currentResult?.bySource ?? [],
+            previousResult?.bySource ?? []
+        );
+
+        const deviceTrends = buildTrends(
+            currentResult?.byDevice ?? [],
+            previousResult?.byDevice ?? []
+        );
 
         return NextResponse.json({ stats, deviceTotals, sourceTotals, sourceTrends, deviceTrends });
     } catch (error) {
