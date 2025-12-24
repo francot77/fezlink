@@ -62,6 +62,10 @@ export async function GET(req: NextRequest) {
         parsedStart.setUTCHours(0, 0, 0, 0);
         parsedEnd.setUTCHours(23, 59, 59, 999);
 
+        if (parsedStart > parsedEnd) {
+            return NextResponse.json({ error: 'Invalid date range' }, { status: 400 });
+        }
+
         if (!mongoose.Types.ObjectId.isValid(linkId)) {
             return NextResponse.json({ error: 'Invalid linkId' }, { status: 400 });
         }
@@ -144,28 +148,39 @@ export async function GET(req: NextRequest) {
             ]);
         }
 
-        const now = new Date();
-        const startOfThisWeek = new Date(now);
-        startOfThisWeek.setUTCHours(0, 0, 0, 0);
-        const dayOfWeek = startOfThisWeek.getUTCDay();
-        const diffToMonday = (dayOfWeek + 6) % 7;
-        startOfThisWeek.setUTCDate(startOfThisWeek.getUTCDate() - diffToMonday);
+        const windowDurationMs = parsedEnd.getTime() - parsedStart.getTime() + 1;
+        const comparisonStart = new Date(parsedStart.getTime() - windowDurationMs);
 
-        const startOfLastWeek = new Date(startOfThisWeek);
-        startOfLastWeek.setUTCDate(startOfLastWeek.getUTCDate() - 7);
-
-        const weeklyAggregation = await clicks.aggregate([
-            {
-                $match: {
-                    linkId: linkObjectId,
-                    timestamp: { $gte: startOfLastWeek, $lte: now },
-                },
+        const comparisonMatchFilter: MatchFilter = {
+            linkId: linkObjectId,
+            timestamp: {
+                $gte: comparisonStart,
+                $lte: parsedEnd,
             },
+        };
+
+        if (country) comparisonMatchFilter.country = country;
+        if (deviceType) comparisonMatchFilter.deviceType = deviceType;
+        if (source) comparisonMatchFilter.source = source;
+
+        const comparisonAggregation = await clicks.aggregate([
+            { $match: comparisonMatchFilter },
             {
                 $project: {
                     source: { $ifNull: ['$source', 'default'] },
                     deviceType: { $ifNull: ['$deviceType', 'unknown'] },
-                    isThisWeek: { $gte: ['$timestamp', startOfThisWeek] },
+                    period: {
+                        $cond: [
+                            {
+                                $and: [
+                                    { $gte: ['$timestamp', parsedStart] },
+                                    { $lte: ['$timestamp', parsedEnd] },
+                                ],
+                            },
+                            'current',
+                            'previous',
+                        ],
+                    },
                 },
             },
             {
@@ -173,7 +188,7 @@ export async function GET(req: NextRequest) {
                     bySource: [
                         {
                             $group: {
-                                _id: { source: '$source', isThisWeek: '$isThisWeek' },
+                                _id: { source: '$source', period: '$period' },
                                 clicks: { $sum: 1 },
                             },
                         },
@@ -181,7 +196,7 @@ export async function GET(req: NextRequest) {
                     byDevice: [
                         {
                             $group: {
-                                _id: { deviceType: '$deviceType', isThisWeek: '$isThisWeek' },
+                                _id: { deviceType: '$deviceType', period: '$period' },
                                 clicks: { $sum: 1 },
                             },
                         },
@@ -190,18 +205,18 @@ export async function GET(req: NextRequest) {
             },
         ]);
 
-        const [weeklyResult] = weeklyAggregation as unknown as [
-            { bySource: { _id: { source: string; isThisWeek: boolean }; clicks: number }[]; byDevice: { _id: { deviceType: string; isThisWeek: boolean }; clicks: number }[] }?,
+        const [comparisonResult] = comparisonAggregation as unknown as [
+            { bySource: { _id: { source: string; period: 'current' | 'previous' }; clicks: number }[]; byDevice: { _id: { deviceType: string; period: 'current' | 'previous' }; clicks: number }[] }?,
         ];
 
-        const buildTrends = <T extends 'source' | 'deviceType'>(groups: { _id: Record<T | 'isThisWeek', string | boolean>; clicks: number }[], key: T, defaultKey: string): Trend[] => {
+        const buildTrends = <T extends 'source' | 'deviceType'>(groups: { _id: Record<T | 'period', string>; clicks: number }[], key: T, defaultKey: string): Trend[] => {
             const trendMap = new Map<string, { thisWeek: number; lastWeek: number }>();
 
             groups.forEach(({ _id, clicks }) => {
                 const trendKey = (typeof _id[key] === 'string' ? (_id[key] as string) : defaultKey) || defaultKey;
                 const current = trendMap.get(trendKey) ?? { thisWeek: 0, lastWeek: 0 };
 
-                if (_id.isThisWeek) {
+                if (_id.period === 'current') {
                     current.thisWeek += clicks;
                 } else {
                     current.lastWeek += clicks;
@@ -220,7 +235,7 @@ export async function GET(req: NextRequest) {
                     label = 'Not enough data yet';
                 } else if (lastWeek === 0 && thisWeek > 0) {
                     changePercent = 100;
-                    label = 'New this week';
+                    label = 'New this period';
                 } else if (lastWeek > 0) {
                     changePercent = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
                 }
@@ -241,8 +256,8 @@ export async function GET(req: NextRequest) {
             });
         };
 
-        const sourceTrends = buildTrends(weeklyResult?.bySource ?? [], 'source', 'default');
-        const deviceTrends = buildTrends(weeklyResult?.byDevice ?? [], 'deviceType', 'unknown');
+        const sourceTrends = buildTrends(comparisonResult?.bySource ?? [], 'source', 'default');
+        const deviceTrends = buildTrends(comparisonResult?.byDevice ?? [], 'deviceType', 'unknown');
 
         return NextResponse.json({ stats, deviceTotals, sourceTotals, sourceTrends, deviceTrends });
     } catch (error) {

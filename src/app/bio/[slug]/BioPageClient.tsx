@@ -1,89 +1,41 @@
 /* eslint-disable @next/next/no-img-element */
-'use client'
+"use client";
 
 import QRButton from "@/components/QRButton";
-import Spinner from "@/components/spinner";
-import { useEffect, useState } from "react";
-
-interface Link {
-    shortUrl: string;
-    label: string;
-}
-
-export interface BioPageData {
-    slug: string;
-    links: Link[];
-    textColor: string;
-    backgroundColor: string;
-    avatarUrl: string;
-    description?: string;
-}
-
-const defaultDescription = 'Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.';
-const fallbackAvatar = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541";
+import { BioPageData } from "@/lib/biopage";
 
 interface Props {
     slug: string;
     initialBioPage: BioPageData | null;
 }
 
-export default function BioPageClient({ slug, initialBioPage }: Props) {
-    const [bioPage, setBioPage] = useState<BioPageData | null>(initialBioPage);
-    const [isLoading, setIsLoading] = useState<boolean>(!initialBioPage);
-    const [error, setError] = useState<string | null>(null);
+export default function BioPageClient({ initialBioPage }: Props) {
+    const bioPage = initialBioPage;
 
-    useEffect(() => {
-        let isMounted = true;
+    if (!bioPage) {
+        return (
+            <div className="text-red-400 p-4">
+                Esta página no existe o ha sido eliminada.
+            </div>
+        );
+    }
 
-        const fetchFunc = async () => {
-            if (!initialBioPage) {
-                setIsLoading(true);
-            }
-
-            try {
-                const res = await fetch(`/api/biopage/${slug}`);
-                if (!res.ok) throw new Error("No se encontró la página");
-                const data = await res.json();
-                if (isMounted) {
-                    setBioPage(data.biopage);
-                    setError(null);
-                }
-            } catch (err) {
-                if (isMounted) {
-                    setError("Esta página no existe o ha sido eliminada.");
-                    console.error("Error fetching biopage:", err);
-                }
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        fetchFunc();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [slug, initialBioPage]);
-
-    if (isLoading) return <div className="w-full h-screen flex flex-col justify-center items-center text-white gap-2"><h1>Loading...</h1><Spinner color="white" /></div>;
-    if (error) return <div className="text-red-400 p-4">{error}</div>;
-    if (!bioPage) return null;
-
-    const backgroundValue = bioPage.backgroundColor || '#000000';
-    const isGradient = backgroundValue.toLowerCase().includes('gradient');
-    const qrButtonTextColor = isGradient ? '#0f172a' : backgroundValue;
+    const defaultDescription = 'Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.';
+    const fallbackAvatar = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541";
+    const backgroundValue = bioPage.backgroundColor || "#000000";
+    const isGradient = backgroundValue.toLowerCase().includes("gradient");
+    const qrButtonTextColor = isGradient ? "#0f172a" : backgroundValue;
 
     const backgroundStyle = {
         background: backgroundValue,
         color: bioPage.textColor,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
     };
 
-    const publicBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
-
+    const publicBaseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL ||
+        (typeof window !== "undefined" ? window.location.origin : "");
     return (
         <main
             className="min-h-screen text-white flex items-center justify-center px-4 py-10"
