@@ -53,7 +53,7 @@ export default function Home() {
   useEffect(() => {
     const fetchGlobalClicks = async () => {
       try {
-        const response = await fetch('/api/metrics/global')
+        const response = await fetch('/api/public/global')
         if (!response.ok) return
         const data: { count?: number } = await response.json()
         setGlobalClicks(data.count ?? 0)

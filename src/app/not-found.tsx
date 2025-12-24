@@ -48,7 +48,7 @@ export default function NotFound() {
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-500/20 px-6 py-3 text-sm font-semibold text-emerald-50 transition hover:border-emerald-300/60 hover:bg-emerald-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+            className="inline-flex items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-500/20 px-6 py-3 text-sm font-semibold text-emerald-50 transition hover:border-emerald-300/60 hover:bg-emerald-500/30 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
           >
             Return home now
           </Link>

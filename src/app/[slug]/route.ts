@@ -7,9 +7,12 @@ import { NextResponse } from 'next/server';
 
 type DeviceType = 'mobile' | 'desktop' | 'tablet' | 'unknown';
 
+interface RequestWithHeaders extends Request {
+    headers: Headers;
+}
+
 function getCountryCode(req: RequestWithHeaders): string {
-    const country = req.headers.get('x-vercel-ip-country');
-    return country || 'UNKNOWN';
+    return req.headers.get('x-vercel-ip-country') || 'UNKNOWN';
 }
 
 function detectDeviceType(userAgent: string | null, headers: Headers): DeviceType {
@@ -25,27 +28,21 @@ function detectDeviceType(userAgent: string | null, headers: Headers): DeviceTyp
     if (!userAgent) return 'unknown';
 
     const ua = userAgent.toLowerCase();
-    const isTablet = /(ipad|tablet|playbook|silk|kindle|sm\-t|tab\s+\d|android(?!.*mobile))/i.test(ua);
-    if (isTablet) return 'tablet';
-
-    const isMobile = /(mobile|iphone|ipod|blackberry|iemobile|opera mini|fennec|windows phone|webos|palm|bada|series60|symbian|nokia|android)/i.test(ua);
-    if (isMobile) return 'mobile';
+    if (/(ipad|tablet|android(?!.*mobile))/i.test(ua)) return 'tablet';
+    if (/(mobile|iphone|android)/i.test(ua)) return 'mobile';
 
     return 'desktop';
 }
 
 function sanitize(slug: string) {
-    if (slug.startsWith("@")) return "@" + slug.replace(/[^\w-]/g, '')
-    return slug.replace(/[^\w-]/g, '')
+    if (slug.startsWith('@')) return '@' + slug.replace(/[^\w-]/g, '');
+    return slug.replace(/[^\w-]/g, '');
 }
 
 function cacheableRedirect(url: string, status = 301) {
-    const response = NextResponse.redirect(url, status);
-    response.headers.set('Cache-Control', 'public, max-age=3600');
-    return response;
-}
-interface RequestWithHeaders extends Request {
-    headers: Headers;
+    const res = NextResponse.redirect(url, status);
+    res.headers.set('Cache-Control', 'public, max-age=3600');
+    return res;
 }
 
 export async function GET(req: Request, context: { params: Promise<{ slug?: string }> }) {
@@ -53,11 +50,14 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     const sanitizedSlug = slug ? sanitize(slug) : '';
 
     if (!sanitizedSlug) return cacheableRedirect(`${process.env.BASE_URL}/404`);
-    if (sanitizedSlug.startsWith("@")) return cacheableRedirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.substring(1)}`);
+    if (sanitizedSlug.startsWith('@')) {
+        return cacheableRedirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.slice(1)}`);
+    }
 
     const { searchParams } = new URL(req.url);
     const src = searchParams.get('src') ?? 'default';
-    const country = getCountryCode(req);
+
+    const country = getCountryCode(req as RequestWithHeaders);
     const userAgent = req.headers.get('user-agent');
     const deviceType = detectDeviceType(userAgent, req.headers);
 
@@ -71,7 +71,8 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
 
     if (!updatedLink) return cacheableRedirect(`${process.env.BASE_URL}/404`);
 
-    const linkStatsPromise = (async () => {
+    // ⬇⬇⬇ MÉTRICAS DESACOPLADAS ⬇⬇⬇
+    const metricsTask = async () => {
         try {
             const res = await LinkStats.updateOne(
                 { linkId: updatedLink._id, 'countries.country': country },
@@ -83,34 +84,39 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
                     { linkId: updatedLink._id },
                     {
                         $setOnInsert: { linkId: updatedLink._id },
-                        $push: { countries: { country, clicksCount: 1 } }
+                        $push: { countries: { country, clicksCount: 1 } },
                     },
                     { upsert: true }
                 );
             }
-        } catch (error) {
-            console.error('Error updating link stats:', error);
+
+            await GlobalClicks.findOneAndUpdate(
+                {},
+                { $inc: { count: 1 } },
+                { upsert: true }
+            );
+
+            await Click.create({
+                linkId: updatedLink._id,
+                userId: updatedLink.userId,
+                country,
+                timestamp: new Date(),
+                userAgent,
+                deviceType,
+                source: src,
+            });
+        } catch (err) {
+            console.error('Metrics error:', err);
         }
-    })();
+    };
 
-    const globalClicksPromise = GlobalClicks.findOneAndUpdate({}, { $inc: { count: 1 } }, { upsert: true }).catch((error) => {
-        console.error('Error updating global clicks counter:', error);
-    });
-
-    const clickLogPromise = Click.create({
-        linkId: updatedLink._id,
-        userId: updatedLink.userId,
-        country,
-        timestamp: new Date(),
-        userAgent,
-        deviceType,
-        source: src,
-    }).catch((error) => {
-        console.error('Error registrando clic en clicks:', error);
-        // No interrumpir la redirección si falla la inserción
-    });
-
-    await Promise.all([linkStatsPromise, globalClicksPromise, clickLogPromise]);
+    // Node runtime (Vercel)
+    if ('waitUntil' in globalThis) {
+        // @ts-expect-error asd
+        globalThis.waitUntil(metricsTask());
+    } else {
+        metricsTask(); // fallback local
+    }
 
     return cacheableRedirect(updatedLink.destinationUrl, 301);
 }
