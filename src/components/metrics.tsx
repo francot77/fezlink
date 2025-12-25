@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import MetricsChart from './MetricsChart';
 import { SupportedLanguage } from '@/types/i18n';
+import { Calendar, Filter, Globe, Smartphone, TrendingUp, TrendingDown, Minus, Sparkles, MapPin, Share2 } from 'lucide-react';
 
 interface Stat {
     _id: { year: number; month: number; day: number };
@@ -28,68 +29,70 @@ interface Trend {
 
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
     en: {
-        title: 'Link metrics',
+        title: 'Link Analytics',
         total: 'Total clicks',
         from: 'From',
         to: 'To',
         quickRanges: 'Quick ranges',
-        lastWeek: 'Last week',
-        lastMonth: 'Last month',
+        lastWeek: 'Last 7 days',
+        lastMonth: 'Last 30 days',
         lastYear: 'Last year',
         country: 'Country',
         all: 'All',
         source: 'Source',
         allSources: 'All sources',
-        deviceType: 'Device type',
+        deviceType: 'Device',
         allDevices: 'All devices',
-        deviceHint: 'Use the device filter to compare mobile vs desktop traffic.',
-        loading: 'Loading stats...',
-        noData: 'No data available to display.',
-        dateError: 'The date range is invalid',
-        countryMetrics: 'Country insights',
-        countryTotalsEmpty: 'No country data yet. Start sharing your link to see more!',
+        deviceHint: 'Filter by device to see mobile vs desktop performance',
+        loading: 'Loading...',
+        noData: 'No data available for this period',
+        dateError: 'Invalid date range',
+        countryMetrics: 'Top countries',
+        countryTotalsEmpty: 'No country data yet',
         countryClicks: 'clicks',
-        deviceMetrics: 'Device insights',
-        unknownDevice: 'Unknown device',
-        deviceTotalsEmpty: 'No device data captured for this range yet.',
-        sourceMetrics: 'Source insights',
-        sourceTotalsEmpty: 'No source data captured for this range yet.',
-        clickTrend: 'Click performance',
-        weeklyChange: 'this period',
-        trendNew: 'New in this period',
-        trendNoData: 'Not enough data for comparison',
+        deviceMetrics: 'Devices',
+        unknownDevice: 'Unknown',
+        deviceTotalsEmpty: 'No device data',
+        sourceMetrics: 'Traffic sources',
+        sourceTotalsEmpty: 'No source data',
+        clickTrend: 'Click trends',
+        weeklyChange: 'vs last period',
+        trendNew: 'New',
+        trendNoData: 'No data',
+        filters: 'Filters',
     },
     es: {
-        title: 'Métricas del enlace',
+        title: 'Analíticas del enlace',
         total: 'Total de clics',
         from: 'Desde',
         to: 'Hasta',
         quickRanges: 'Rangos rápidos',
-        lastWeek: 'Última semana',
-        lastMonth: 'Último mes',
+        lastWeek: 'Últimos 7 días',
+        lastMonth: 'Últimos 30 días',
         lastYear: 'Último año',
         country: 'País',
         all: 'Todos',
         source: 'Fuente',
-        allSources: 'Todas las fuentes',
-        deviceType: 'Tipo de dispositivo',
-        allDevices: 'Todos los dispositivos',
-        deviceHint: 'Usa el filtro por dispositivo para comparar tráfico móvil y desktop.',
-        loading: 'Cargando estadísticas...',
-        noData: 'No hay datos para mostrar.',
-        dateError: 'El rango de fechas es inválido',
-        countryMetrics: 'Detalles por país',
-        countryTotalsEmpty: 'Aún no hay datos por país. ¡Comparte tu enlace para ver más!',
+        allSources: 'Todas',
+        deviceType: 'Dispositivo',
+        allDevices: 'Todos',
+        deviceHint: 'Filtra por dispositivo para ver rendimiento móvil vs escritorio',
+        loading: 'Cargando...',
+        noData: 'No hay datos para este período',
+        dateError: 'Rango de fechas inválido',
+        countryMetrics: 'Principales países',
+        countryTotalsEmpty: 'Sin datos de país',
         countryClicks: 'clics',
-        deviceMetrics: 'Detalles por dispositivo',
-        unknownDevice: 'Dispositivo desconocido',
-        deviceTotalsEmpty: 'Aún no hay datos por dispositivo en este rango.',
-        sourceMetrics: 'Detalles por fuente',
-        sourceTotalsEmpty: 'Aún no hay datos por fuente en este rango.',
-        clickTrend: 'Evolución de clics',
-        weeklyChange: 'este periodo',
-        trendNew: 'Nuevo en este periodo',
-        trendNoData: 'Sin datos para comparar',
+        deviceMetrics: 'Dispositivos',
+        unknownDevice: 'Desconocido',
+        deviceTotalsEmpty: 'Sin datos de dispositivo',
+        sourceMetrics: 'Fuentes de tráfico',
+        sourceTotalsEmpty: 'Sin datos de fuente',
+        clickTrend: 'Tendencia de clics',
+        weeklyChange: 'vs período anterior',
+        trendNew: 'Nuevo',
+        trendNoData: 'Sin datos',
+        filters: 'Filtros',
     },
 };
 
@@ -124,32 +127,34 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
 
     const sourceLabelPresets: Record<SupportedLanguage, Record<string, string>> = {
         en: {
-            instagram_bio: 'Instagram bio',
+            instagram_bio: 'Instagram',
             whatsapp: 'WhatsApp',
-            qr_local: 'QR downloads',
+            qr_local: 'QR Code',
             direct: 'Direct',
             referral: 'Referral',
+            facebook: 'Facebook',
+            twitter: 'Twitter',
+            linkedin: 'LinkedIn',
         },
         es: {
-            instagram_bio: 'Bio de Instagram',
+            instagram_bio: 'Instagram',
             whatsapp: 'WhatsApp',
-            qr_local: 'Descargas QR',
+            qr_local: 'Código QR',
             direct: 'Directo',
             referral: 'Referencia',
+            facebook: 'Facebook',
+            twitter: 'Twitter',
+            linkedin: 'LinkedIn',
         },
     };
 
     const formatDeviceLabel = (type: string) => {
-        switch (type) {
-            case 'mobile':
-                return 'Mobile';
-            case 'desktop':
-                return 'Desktop';
-            case 'tablet':
-                return 'Tablet';
-            default:
-                return t.unknownDevice;
-        }
+        const labels: Record<string, string> = {
+            mobile: 'Mobile',
+            desktop: 'Desktop',
+            tablet: 'Tablet',
+        };
+        return labels[type] || t.unknownDevice;
     };
 
     const formatSourceLabel = (value: string) => {
@@ -159,7 +164,27 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
         return normalized.charAt(0).toUpperCase() + normalized.slice(1);
     };
 
-    // Fetch resumen total (totalClicks y countries)
+    const getDeviceIcon = (type: string) => {
+        if (type === 'mobile') return '📱';
+        if (type === 'desktop') return '💻';
+        if (type === 'tablet') return '📱';
+        return '❓';
+    };
+
+    const getSourceIcon = (source: string) => {
+        const icons: Record<string, string> = {
+            instagram_bio: '📸',
+            whatsapp: '💬',
+            qr_local: '🔲',
+            direct: '🔗',
+            referral: '🔄',
+            facebook: '📘',
+            twitter: '🐦',
+            linkedin: '💼',
+        };
+        return icons[source] || '🌐';
+    };
+
     useEffect(() => {
         async function fetchSummary() {
             try {
@@ -284,245 +309,306 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
     const renderTrendBadge = (trend?: Trend) => {
         if (!trend) return null;
 
-        const baseClasses = 'rounded-full px-3 py-1 text-xs font-semibold';
-
         if (!trend.hasEnoughData) {
-            return <span className={`${baseClasses} bg-gray-700/40 text-gray-200`}>{t.trendNoData}</span>;
+            return (
+                <div className="flex items-center gap-1.5 rounded-full bg-gray-700/40 px-2.5 py-1">
+                    <Minus size={12} className="text-gray-400" />
+                    <span className="text-xs font-semibold text-gray-400">{t.trendNoData}</span>
+                </div>
+            );
         }
 
         const percentText = trend.changePercent ?? 0;
         const isNegative = percentText < 0;
-        const colorClasses = isNegative ? 'bg-red-500/20 text-red-300' : 'bg-emerald-500/20 text-emerald-300';
-        const labelText = trend.changePercent === null ? t.trendNew : `${percentText > 0 ? '+' : ''}${percentText}% ${t.weeklyChange}`;
+        const isNew = trend.changePercent === null;
 
-        return <span className={`${baseClasses} ${colorClasses}`}>{labelText}</span>;
+        if (isNew) {
+            return (
+                <div className="flex items-center gap-1.5 rounded-full bg-purple-500/20 px-2.5 py-1 ring-1 ring-purple-500/30">
+                    <Sparkles size={12} className="text-purple-400" />
+                    <span className="text-xs font-semibold text-purple-300">{t.trendNew}</span>
+                </div>
+            );
+        }
+
+        const Icon = isNegative ? TrendingDown : TrendingUp;
+        const colorClasses = isNegative
+            ? 'bg-red-500/20 text-red-300 ring-red-500/30'
+            : 'bg-emerald-500/20 text-emerald-300 ring-emerald-500/30';
+
+        return (
+            <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 ring-1 ${colorClasses}`}>
+                <Icon size={12} />
+                <span className="text-xs font-semibold">
+                    {percentText > 0 ? '+' : ''}{percentText}%
+                </span>
+            </div>
+        );
     };
 
     return (
-        <div className="space-y-6 rounded-2xl border border-gray-800/80 bg-gradient-to-b from-gray-900/80 via-[#0c1428] to-black/70 p-6 shadow-2xl shadow-blue-900/20">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="space-y-1">
-                    <p className="text-sm text-gray-400">{t.subtitle}</p>
-                    <h2 className="text-2xl font-bold text-white">{t.title}</h2>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                    <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 backdrop-blur-sm">
-                        <p className="text-xs uppercase tracking-wide text-blue-200/80">{t.total}</p>
-                        <p className="text-3xl font-extrabold text-white">{totalClicks.toLocaleString()}</p>
-                    </div>
-                    {selectedUrl && (
-                        <div className="max-w-xl truncate rounded-xl border border-gray-700 bg-gray-900/80 px-4 py-3 text-sm text-gray-200 shadow-inner">
-                            <span className="text-gray-400">{t.viewing}: </span>
-                            <span className="font-semibold text-white">{selectedUrl}</span>
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
+                <div className="relative p-6">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-bold text-white">{t.title}</h2>
+                            {selectedUrl && (
+                                <p className="text-sm text-gray-400">
+                                    <span className="text-gray-500">Viewing: </span>
+                                    <span className="font-medium text-emerald-400">{selectedUrl}</span>
+                                </p>
+                            )}
                         </div>
-                    )}
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 px-6 py-4 ring-1 ring-white/10">
+                                <p className="text-xs font-medium uppercase tracking-wider text-emerald-200">{t.total}</p>
+                                <p className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                                    {totalClicks.toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="rounded-xl border border-gray-800/80 bg-gray-900/60 p-4 shadow-lg shadow-blue-900/10">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
-                    <div>
-                        <label htmlFor="startDate" className="mb-1 block text-sm font-medium text-gray-300">
-                            {t.from}
-                        </label>
-                        <input
-                            id="startDate"
-                            type="date"
-                            value={startDate}
-                            max={endDate}
-                            onChange={(e) => handleStartDateChange(e.target.value)}
-                            className="w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+            {/* Filters */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5" />
+                <div className="relative p-6 space-y-4">
+                    <div className="flex items-center gap-2">
+                        <Filter size={18} className="text-cyan-400" />
+                        <h3 className="text-lg font-semibold text-white">{t.filters}</h3>
                     </div>
 
-                    <div>
-                        <label htmlFor="endDate" className="mb-1 block text-sm font-medium text-gray-300">
-                            {t.to}
-                        </label>
-                        <input
-                            id="endDate"
-                            type="date"
-                            value={endDate}
-                            min={startDate}
-                            max={new Date().toISOString().slice(0, 10)}
-                            onChange={(e) => handleEndDateChange(e.target.value)}
-                            className="w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                        <div className="sm:col-span-2">
+                            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <Calendar size={14} className="text-emerald-400" />
+                                {t.from}
+                            </label>
+                            <input
+                                type="date"
+                                value={startDate}
+                                max={endDate}
+                                onChange={(e) => handleStartDateChange(e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-emerald-400/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            />
+                        </div>
 
-                    <div className="sm:col-span-2 xl:col-span-2 2xl:col-span-3">
-                        <p className="mb-2 text-sm font-medium text-gray-300">{t.quickRanges}</p>
-                        <div className="flex flex-wrap gap-2">
-                            {(
-                                [
-                                    { key: 'week', label: t.lastWeek },
-                                    { key: 'month', label: t.lastMonth },
-                                    { key: 'year', label: t.lastYear },
-                                ] as const
-                            ).map((preset) => (
-                                <button
-                                    key={preset.key}
-                                    type="button"
-                                    onClick={() => applyPreset(preset.key)}
-                                    className={`rounded-lg border px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                        activePreset === preset.key
-                                            ? 'border-blue-500 bg-blue-600/20 text-white'
-                                            : 'border-gray-700 bg-gray-950 text-gray-200 hover:border-gray-500'
-                                    }`}
-                                >
-                                    {preset.label}
-                                </button>
-                            ))}
+                        <div className="sm:col-span-2">
+                            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <Calendar size={14} className="text-cyan-400" />
+                                {t.to}
+                            </label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                min={startDate}
+                                max={new Date().toISOString().slice(0, 10)}
+                                onChange={(e) => handleEndDateChange(e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                            />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label className="mb-2 block text-sm font-medium text-gray-300">{t.quickRanges}</label>
+                            <div className="flex flex-wrap gap-2">
+                                {(['week', 'month', 'year'] as const).map((preset) => (
+                                    <button
+                                        key={preset}
+                                        onClick={() => applyPreset(preset)}
+                                        className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${activePreset === preset
+                                                ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
+                                                : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                                            }`}
+                                    >
+                                        {t[preset === 'week' ? 'lastWeek' : preset === 'month' ? 'lastMonth' : 'lastYear']}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <MapPin size={14} className="text-purple-400" />
+                                {t.country}
+                            </label>
+                            <select
+                                value={country}
+                                onChange={(e) => setCountry(e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-purple-400/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                            >
+                                <option value="">{t.all}</option>
+                                {availableCountries.map((c) => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <Smartphone size={14} className="text-cyan-400" />
+                                {t.deviceType}
+                            </label>
+                            <select
+                                value={deviceType}
+                                onChange={(e) => setDeviceType(e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                            >
+                                <option value="">{t.allDevices}</option>
+                                <option value="mobile">Mobile</option>
+                                <option value="desktop">Desktop</option>
+                                <option value="tablet">Tablet</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <Share2 size={14} className="text-emerald-400" />
+                                {t.source}
+                            </label>
+                            <select
+                                value={source}
+                                onChange={(e) => setSource(e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-emerald-400/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            >
+                                <option value="">{t.allSources}</option>
+                                {availableSources.map((src) => (
+                                    <option key={src} value={src}>{formatSourceLabel(src)}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
-
-                    <div>
-                        <label htmlFor="country" className="mb-1 block text-sm font-medium text-gray-300">
-                            {t.country}
-                        </label>
-                        <select
-                            id="country"
-                            value={country}
-                            onChange={(e) => setCountry(e.target.value)}
-                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">{t.all}</option>
-                            {availableCountries.map((c) => (
-                                <option key={c} value={c}>
-                                    {c}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label htmlFor="deviceType" className="mb-1 block text-sm font-medium text-gray-300">
-                            {t.deviceType}
-                        </label>
-                        <select
-                            id="deviceType"
-                            value={deviceType}
-                            onChange={(e) => setDeviceType(e.target.value)}
-                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">{t.allDevices}</option>
-                            <option value="mobile">Mobile</option>
-                            <option value="desktop">Desktop</option>
-                            <option value="tablet">Tablet</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label htmlFor="source" className="mb-1 block text-sm font-medium text-gray-300">
-                            {t.source}
-                        </label>
-                        <select
-                            id="source"
-                            value={source}
-                            onChange={(e) => setSource(e.target.value)}
-                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">{t.allSources}</option>
-                            {availableSources.map((src) => (
-                                <option key={src} value={src}>
-                                    {formatSourceLabel(src)}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <p className="col-span-full text-xs text-gray-400">{t.deviceHint}</p>
                 </div>
             </div>
 
+            {/* Loading/Error/Empty States */}
             {loading && (
-                <div className="flex items-center justify-center gap-2 rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-6 text-gray-300">
-                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                    {t.loading}
+                <div className="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 to-black/60 px-6 py-12 backdrop-blur-xl">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+                    <span className="text-gray-300">{t.loading}</span>
                 </div>
             )}
-            {error && <div className="text-red-400 text-sm">{error}</div>}
+
+            {error && (
+                <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-6 py-4 text-red-400">
+                    {error}
+                </div>
+            )}
+
             {!loading && !error && stats.length === 0 && (
-                <div className="rounded-xl border border-dashed border-gray-700 bg-gray-900/60 px-4 py-6 text-sm text-gray-400">
-                    {t.noData}
-                </div>
-            )}
-
-            {!loading && !error && stats.length > 0 && (
-                <div className="rounded-xl border border-gray-800 bg-gray-900/70 p-4 shadow-inner">
-                    <div className="mb-2 flex items-center justify-between gap-4 text-sm text-gray-300">
-                        <h3 className="text-base font-semibold text-white">{t.clickTrend}</h3>
+                <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/10 bg-gradient-to-br from-gray-900/40 to-black/40 backdrop-blur-xl p-12">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
+                    <div className="relative text-center space-y-3">
+                        <Globe size={48} className="mx-auto text-gray-600" />
+                        <p className="text-lg text-gray-400">{t.noData}</p>
                     </div>
-                    <MetricsChart stats={stats} />
                 </div>
             )}
 
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-white">{t.deviceMetrics}</h3>
+            {/* Chart */}
+            {!loading && !error && stats.length > 0 && (
+                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
+                    <div className="relative p-6">
+                        <h3 className="mb-4 text-xl font-semibold text-white">{t.clickTrend}</h3>
+                        <MetricsChart stats={stats} />
+                    </div>
+                </div>
+            )}
+
+            {/* Devices */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                    <Smartphone size={20} className="text-cyan-400" />
+                    <h3 className="text-xl font-semibold text-white">{t.deviceMetrics}</h3>
                 </div>
                 {deviceTotals.length === 0 ? (
                     <p className="text-sm text-gray-400">{t.deviceTotalsEmpty}</p>
                 ) : (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {deviceTotals.map((device) => {
                             const trend = deviceTrends.find((entry) => entry.key === device.deviceType);
-
                             return (
-                            <div
-                                key={device.deviceType}
-                                className="rounded-lg border border-gray-800 bg-gradient-to-br from-gray-900/80 to-black/60 px-4 py-3 shadow-md"
-                            >
-                                <div className="flex items-start justify-between gap-2">
-                                    <div>
-                                        <p className="text-sm font-semibold text-white">{formatDeviceLabel(device.deviceType)}</p>
-                                        <p className="text-xs text-gray-400">{t.deviceType}</p>
+                                <div
+                                    key={device.deviceType}
+                                    className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-xl hover:shadow-cyan-500/10"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                                    <div className="relative p-5 space-y-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl">{getDeviceIcon(device.deviceType)}</span>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-white">{formatDeviceLabel(device.deviceType)}</p>
+                                                    <p className="text-xs text-gray-500">{t.deviceType}</p>
+                                                </div>
+                                            </div>
+                                            {renderTrendBadge(trend)}
+                                        </div>
+                                        <p className="text-3xl font-bold text-white">{device.clicks.toLocaleString()}</p>
                                     </div>
-                                    {renderTrendBadge(trend)}
                                 </div>
-                                <p className="mt-2 text-2xl font-bold text-white">{device.clicks.toLocaleString()}</p>
-                            </div>
                             );
                         })}
                     </div>
                 )}
             </div>
 
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-white">{t.sourceMetrics}</h3>
+            {/* Sources */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                    <Share2 size={20} className="text-emerald-400" />
+                    <h3 className="text-xl font-semibold text-white">{t.sourceMetrics}</h3>
                 </div>
                 {sourceTotals.length === 0 ? (
                     <p className="text-sm text-gray-400">{t.sourceTotalsEmpty}</p>
                 ) : (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {sourceTotals.map((entry) => {
                             const trend = sourceTrends.find((item) => item.key === entry.source);
-
                             return (
-                            <div
-                                key={entry.source}
-                                className="rounded-lg border border-gray-800 bg-gradient-to-br from-gray-900/80 to-black/60 px-4 py-3 shadow-md"
-                            >
-                                <div className="flex items-start justify-between gap-2">
-                                    <div>
-                                        <p className="text-sm font-semibold text-white">{formatSourceLabel(entry.source)}</p>
-                                        <p className="text-xs text-gray-400">{t.source}</p>
+                                <div
+                                    key={entry.source}
+                                    className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-xl hover:shadow-emerald-500/10"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-green-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                                    <div className="relative p-5 space-y-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl">{getSourceIcon(entry.source)}</span>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-white">{formatSourceLabel(entry.source)}</p>
+                                                    <p className="text-xs text-gray-500">{t.source}</p>
+                                                </div>
+                                            </div>
+                                            {renderTrendBadge(trend)}
+                                        </div>
+                                        <p className="text-3xl font-bold text-white">{entry.clicks.toLocaleString()}</p>
                                     </div>
-                                    {renderTrendBadge(trend)}
                                 </div>
-                                <p className="mt-2 text-2xl font-bold text-white">{entry.clicks.toLocaleString()}</p>
-                            </div>
                             );
                         })}
                     </div>
                 )}
             </div>
 
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-white">{t.countryMetrics}</h3>
-                    {countryLoading && <span className="text-xs text-gray-400 animate-pulse">{t.loading}</span>}
+            {/* Countries */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                        <Globe size={20} className="text-purple-400" />
+                        <h3 className="text-xl font-semibold text-white">{t.countryMetrics}</h3>
+                    </div>
+                    {countryLoading && (
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-400 border-t-transparent" />
+                            {t.loading}
+                        </div>
+                    )}
                 </div>
                 {availableCountries.length === 0 ? (
                     <p className="text-sm text-gray-400">{t.countryTotalsEmpty}</p>
@@ -532,19 +618,27 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                             <button
                                 key={code}
                                 onClick={() => setCountry(code === country ? '' : code)}
-                                className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left transition ${
-                                    country === code
-                                        ? 'border-blue-500 bg-blue-500/10 text-white'
-                                        : 'border-gray-800 bg-gray-900 text-gray-200 hover:border-gray-600'
-                                }`}
+                                className={`group relative overflow-hidden rounded-xl border transition-all duration-300 ${country === code
+                                        ? 'border-purple-400/60 bg-purple-500/20 shadow-lg shadow-purple-500/20'
+                                        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                    }`}
                             >
-                                <div className="space-y-1">
-                                    <p className="text-sm font-semibold">{code}</p>
-                                    <p className="text-xs text-gray-400">{country === code ? t.loading : t.country}</p>
+                                <div className="flex items-center justify-between p-4">
+                                    <div className="flex items-center gap-3 text-left">
+                                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${country === code ? 'bg-purple-500/20' : 'bg-white/5'
+                                            } transition-colors`}>
+                                            <MapPin size={18} className={country === code ? 'text-purple-400' : 'text-gray-400'} />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-white">{code}</p>
+                                            <p className="text-xs text-gray-400">{t.country}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-2xl font-bold text-white">{countryTotals[code]?.toLocaleString() ?? 0}</p>
+                                        <p className="text-xs text-gray-400">{t.countryClicks}</p>
+                                    </div>
                                 </div>
-                                <span className="text-lg font-bold text-white">
-                                    {countryTotals[code] ?? 0} {t.countryClicks}
-                                </span>
                             </button>
                         ))}
                     </div>
