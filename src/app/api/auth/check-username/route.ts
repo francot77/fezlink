@@ -1,22 +1,27 @@
-// src/app/api/auth/check-username/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import { User } from '@/app/models/user';
+import User from '@/app/models/user';
 
 export async function GET(req: NextRequest) {
-    const username = req.nextUrl.searchParams.get('username');
+    const { searchParams } = new URL(req.url);
+    const username = searchParams.get('username');
 
-    if (!username || username.length < 3) {
+    if (!username) {
+        return NextResponse.json(
+            { error: 'Username is required' },
+            { status: 400 }
+        );
+    }
+
+    if (username.length < 3) {
         return NextResponse.json({ available: false });
     }
 
     await dbConnect();
 
-    const exists = await User.exists({
-        username: username.toLowerCase(),
+    const existingUser = await User.findOne({
+        username: username.toLowerCase()
     });
 
-    return NextResponse.json({
-        available: !exists,
-    });
+    return NextResponse.json({ available: !existingUser });
 }

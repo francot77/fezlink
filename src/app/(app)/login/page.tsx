@@ -126,8 +126,8 @@ export default function LoginPage() {
                                 type="submit"
                                 disabled={!isFormValid}
                                 className={`group relative w-full overflow-hidden rounded-xl px-6 py-3 font-semibold text-white transition-all duration-300 ${isFormValid
-                                        ? 'bg-gradient-to-r from-cyan-600 to-purple-600 shadow-lg shadow-cyan-500/30 hover:scale-105 hover:shadow-cyan-500/40'
-                                        : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                    ? 'bg-gradient-to-r from-cyan-600 to-purple-600 shadow-lg shadow-cyan-500/30 hover:scale-105 hover:shadow-cyan-500/40'
+                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-2">

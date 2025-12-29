@@ -1,12 +1,12 @@
 // app/api/stats/[linkId]/route.ts
-import { auth } from "@clerk/nextjs/server";
 import dbConnect from "@/lib/mongodb";
 import { Link } from "@/app/models/links";
 import { LinkStats } from "@/app/models/linkStats";
 import { NextResponse } from "next/server";
+import { getAuth } from "@/lib/auth-helpers";
 
 export async function GET(req: Request, { params }: { params: Promise<{ linkId: string }> }) {
-    const { userId } = await auth();
+    const { userId } = await getAuth();
     const { linkId } = await params;
 
     if (!userId) {

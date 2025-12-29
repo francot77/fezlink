@@ -11,6 +11,7 @@ import BiopageEditor from './biopageeditor';
 import PremiumFeatures from '@/components/premiumfeatures';
 import { SupportedLanguage } from '@/types/i18n';
 import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Section {
     id: string;
@@ -60,7 +61,7 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
 const DashboardPage: React.FC = () => {
     const { data: session } = useSession();
     const user = session?.user;
-
+    const { isLoaded } = useAuth()
     const linkState = useLinks();
     const [language, setLanguage] = useState<SupportedLanguage>('en');
     const t = translations[language];
@@ -122,7 +123,7 @@ const DashboardPage: React.FC = () => {
                     <div className="space-y-1">
                         <p className="text-sm text-gray-400">{t.welcome}</p>
                         <h1 className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent">
-                            {user?.firstName ? `${user.firstName} ${user.lastName ?? ''}` : t.dashboardTitle}
+                            {user?.name ? `${user.name}` : t.dashboardTitle}
                         </h1>
                         <p className="mt-1 text-gray-400">{t.description}</p>
                     </div>
@@ -135,8 +136,8 @@ const DashboardPage: React.FC = () => {
                                         key={lng}
                                         onClick={() => setLanguage(lng)}
                                         className={`rounded-full px-3 py-1 font-semibold transition ${language === lng
-                                                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40'
-                                                : 'text-gray-300 hover:bg-gray-800'
+                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40'
+                                            : 'text-gray-300 hover:bg-gray-800'
                                             }`}
                                         aria-label={`Switch dashboard language to ${lng === 'en' ? 'English' : 'Spanish'}`}
                                     >
@@ -162,8 +163,8 @@ const DashboardPage: React.FC = () => {
                                     <button
                                         onClick={() => setActiveSection(section.id)}
                                         className={`flex w-full min-w-0 items-start gap-3 rounded-lg border px-3 py-3 text-left transition md:flex-row ${activeSection === section.id
-                                                ? 'border-blue-500/70 bg-blue-500/10 text-white shadow-md shadow-blue-500/20'
-                                                : 'border-transparent bg-gray-800/60 text-gray-300 hover:border-gray-600 hover:text-white'
+                                            ? 'border-blue-500/70 bg-blue-500/10 text-white shadow-md shadow-blue-500/20'
+                                            : 'border-transparent bg-gray-800/60 text-gray-300 hover:border-gray-600 hover:text-white'
                                             }`}
                                     >
                                         <span className="mt-1 text-blue-300">{section.icon}</span>

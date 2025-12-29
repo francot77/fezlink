@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Biopage from '@/app/models/bioPages';
-import { auth } from '@clerk/nextjs/server';
 import { customAlphabet } from 'nanoid';
+import { getAuth } from '@/lib/auth-helpers';
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 6);
 
 export async function POST() {
-    const { userId } = await auth();
+    const { userId } = await getAuth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await dbConnect();

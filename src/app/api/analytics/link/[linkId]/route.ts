@@ -70,11 +70,11 @@ function buildTrends(
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { linkId: string } }
+    { params }: { params: Promise<{ linkId: string }> }
 ) {
     await dbConnect();
 
-    const { linkId } = params;
+    const { linkId } = await params;
     const { searchParams } = new URL(req.url);
 
     const from = searchParams.get('from');

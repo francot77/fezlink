@@ -1,34 +1,36 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Biopage from '@/app/models/bioPages';
-import { auth } from '@clerk/nextjs/server';
-
-function isPremiumActive(sessionClaims: CustomJwtSessionClaims): boolean {
-
-    const metadata = sessionClaims.metadata;
-    if (!metadata || metadata.accountType !== 'premium') return false;
-    const expirationDate = Number(metadata.expiresAt);
-    console.log("entroaca")
-    return expirationDate > Date.now();
-}
+import { requirePremium } from '@/lib/auth-helpers';
 
 export async function PUT(req: Request) {
-    const { userId } = await auth();
-    const { sessionClaims } = await auth()
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    try {
+        const { userId } = await requirePremium();
+        const body = await req.json();
+        const { slug } = body;
 
-    if (!isPremiumActive(sessionClaims as CustomJwtSessionClaims)) return NextResponse.json({ error: 'Not Premium active' }, { status: 401 })
-    const body = await req.json();
-    const { slug } = body;
+        await dbConnect();
 
-    await dbConnect();
+        const updated = await Biopage.findOneAndUpdate(
+            { userId },
+            { $set: { slug } },
+            { new: true }
+        );
 
-    const updated = await Biopage.findOneAndUpdate(
-        { userId },
-        { $set: { slug } },
-    );
+        if (!updated) {
+            return NextResponse.json({ error: 'Biopage not found' }, { status: 404 });
+        }
 
-    if (!updated) return NextResponse.json({ error: 'Error something went wrong' }, { status: 404 });
-
-    return NextResponse.json({ newSlug: updated });
+        return NextResponse.json({ newSlug: updated.slug });
+    } catch (error) {
+        if (error instanceof Error) {
+            if (error.message === 'Unauthorized') {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+            if (error.message === 'Premium subscription required') {
+                return NextResponse.json({ error: 'Premium subscription required' }, { status: 403 });
+            }
+        }
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    }
 }

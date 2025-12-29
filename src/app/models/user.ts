@@ -1,22 +1,54 @@
 // src/app/models/user.ts
-import { Schema, model, models } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const UserSchema = new Schema(
+export interface IUser extends Document {
+  email: string;
+  username: string;
+  password: string;
+  accountType: 'free' | 'premium';
+  premiumExpiresAt?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const UserSchema = new Schema<IUser>(
   {
-    email: { type: String, required: true, unique: true },
-    username: { type: String, required: true, unique: true },
-    name: String,
-    image: String,
-    passwordHash: String, // solo para credenciales
-
-    plan: {
+    email: {
       type: String,
-      enum: ['free', 'pro'],
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      minlength: 3,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    accountType: {
+      type: String,
+      enum: ['free', 'premium'],
       default: 'free',
     },
-    planSince: Date,
+    premiumExpiresAt: {
+      type: Number,
+      required: false,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export const User = models.User || model('User', UserSchema);
+// Índices para búsquedas rápidas
+/* UserSchema.index({ email: 1 });
+UserSchema.index({ username: 1 }); */
+
+export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

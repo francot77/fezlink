@@ -1,5 +1,6 @@
+import { getAuth } from "@/lib/auth-helpers";
 import { updateAvatarUrl } from "@/lib/mongodb";
-import { auth } from "@clerk/nextjs/server";
+
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 
@@ -15,7 +16,7 @@ export const ourFileRouter = {
     })
 
         .middleware(async () => {
-            const { userId } = await auth();
+            const { userId } = await getAuth();
             if (!userId) throw new UploadThingError("Unauthorized");
             return { userId };
         })

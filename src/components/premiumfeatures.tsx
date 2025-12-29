@@ -1,7 +1,7 @@
 import { usePaddle } from "@/hooks/usePaddle";
-import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { SupportedLanguage } from "@/types/i18n";
+import { useAuth } from "@/hooks/useAuth";
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
     en: {
         title: 'Manage subscription',
