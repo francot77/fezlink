@@ -6,16 +6,8 @@ import { SupportedLanguage } from '@/types/i18n';
 import { Calendar, Filter, Globe, Smartphone, TrendingUp, TrendingDown, Minus, Sparkles, MapPin, Share2 } from 'lucide-react';
 
 interface Stat {
-    _id: { year: number; month: number; day: number };
+    _id: string;
     clicks: number;
-}
-
-interface StatsResponse {
-    stats: Stat[];
-    deviceTotals?: { deviceType: string; clicks: number }[];
-    sourceTotals?: { source: string; clicks: number }[];
-    deviceTrends?: Trend[];
-    sourceTrends?: Trend[];
 }
 
 interface Trend {
@@ -185,99 +177,62 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
         return icons[source] || '🌐';
     };
 
-    useEffect(() => {
-        async function fetchSummary() {
-            try {
-                const res = await fetch(`/api/metrics/summary?linkId=${linkId}`);
-                if (!res.ok) throw new Error('Error fetching summary');
-                const data = await res.json();
-                setTotalClicks(data.totalClicks || 0);
-                setAvailableCountries(data.countries || []);
-                setAvailableSources(Object.keys(data.clicksBySource || {}));
-            } catch (err: any) {
-                console.error(err.message);
-            }
-        }
-        fetchSummary();
-    }, [linkId]);
+
+
 
     useEffect(() => {
-        async function fetchStats() {
+        async function fetchAnalytics() {
             setLoading(true);
             setError(null);
+            setCountryLoading(true)
             try {
-                const params = new URLSearchParams({
-                    linkId,
-                    startDate: new Date(startDate).toISOString(),
-                    endDate: new Date(endDate).toISOString(),
-                    groupByDevice: 'true',
-                });
-                if (country) params.append('country', country);
-                if (deviceType) params.append('deviceType', deviceType);
-                if (source) params.append('source', source);
-                params.append('groupBySource', 'true');
+                const res = await fetch(
+                    `/api/analytics/link/${linkId}?from=${startDate}&to=${endDate}`
+                );
+                if (!res.ok) throw new Error();
 
-                const res = await fetch(`/api/metrics?${params.toString()}`);
-                if (!res.ok) throw new Error('Error fetching stats');
-                const data: StatsResponse = await res.json();
-                setStats(data.stats);
-                setDeviceTotals(data.deviceTotals ?? []);
-                setSourceTotals(data.sourceTotals ?? []);
-                setDeviceTrends(data.deviceTrends ?? []);
-                setSourceTrends(data.sourceTrends ?? []);
-            } catch (err: any) {
-                setError(err.message);
-                setDeviceTotals([]);
-                setDeviceTrends([]);
-                setSourceTrends([]);
+                const data = await res.json();
+
+                setTotalClicks(data.totalClicks ?? 0);
+
+                setStats(
+                    data.daily.map((d: { date: string; clicks: number }) => ({
+                        _id: d.date,
+                        clicks: d.clicks,
+                    }))
+                );
+
+                setCountryTotals(data.byCountry || {});
+                setAvailableCountries(Object.keys(data.byCountry || {}));
+                setCountryLoading(false)
+                setDeviceTrends(data.trends?.byDevice ?? []);
+                setSourceTrends(data.trends?.bySource ?? []);
+
+                setSourceTotals(
+                    Object.entries(data.bySource || {}).map(([source, clicks]) => ({
+                        source,
+                        clicks: Number(clicks),
+                    }))
+                );
+                setAvailableSources(Object.keys(data.bySource || {}));
+
+                setDeviceTotals(
+                    Object.entries(data.byDevice || {}).map(([deviceType, clicks]) => ({
+                        deviceType,
+                        clicks: Number(clicks),
+                    }))
+                );
+
+            } catch {
+                setError('Failed to load analytics');
             } finally {
                 setLoading(false);
             }
         }
 
-        if (startDate && endDate && new Date(startDate) <= new Date(endDate)) {
-            fetchStats();
-        } else {
-            setStats([]);
-            setError(t.dateError);
-            setDeviceTotals([]);
-        }
-    }, [linkId, startDate, endDate, country, deviceType, source, t]);
+        fetchAnalytics();
+    }, [linkId, startDate, endDate]);
 
-    useEffect(() => {
-        const fetchCountryTotals = async () => {
-            if (!availableCountries.length || !startDate || !endDate || new Date(startDate) > new Date(endDate)) {
-                setCountryTotals({});
-                return;
-            }
-
-            setCountryLoading(true);
-            const totals: Record<string, number> = {};
-            await Promise.all(
-                availableCountries.map(async (code) => {
-                    try {
-                        const params = new URLSearchParams({
-                            linkId,
-                            startDate: new Date(startDate).toISOString(),
-                            endDate: new Date(endDate).toISOString(),
-                            country: code,
-                        });
-                        if (source) params.append('source', source);
-                        const res = await fetch(`/api/metrics?${params.toString()}`);
-                        if (!res.ok) return;
-                        const data: StatsResponse = await res.json();
-                        totals[code] = data.stats.reduce((acc, stat) => acc + stat.clicks, 0);
-                    } catch (err) {
-                        console.error('Error fetching country stats', err);
-                    }
-                })
-            );
-            setCountryTotals(totals);
-            setCountryLoading(false);
-        };
-
-        fetchCountryTotals();
-    }, [availableCountries, endDate, linkId, source, startDate]);
 
     const applyPreset = (preset: 'week' | 'month' | 'year') => {
         const end = new Date();
@@ -421,8 +376,8 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                                         key={preset}
                                         onClick={() => applyPreset(preset)}
                                         className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${activePreset === preset
-                                                ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
-                                                : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                                            ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
+                                            : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
                                             }`}
                                     >
                                         {t[preset === 'week' ? 'lastWeek' : preset === 'month' ? 'lastMonth' : 'lastYear']}
@@ -619,8 +574,8 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                                 key={code}
                                 onClick={() => setCountry(code === country ? '' : code)}
                                 className={`group relative overflow-hidden rounded-xl border transition-all duration-300 ${country === code
-                                        ? 'border-purple-400/60 bg-purple-500/20 shadow-lg shadow-purple-500/20'
-                                        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                    ? 'border-purple-400/60 bg-purple-500/20 shadow-lg shadow-purple-500/20'
+                                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                                     }`}
                             >
                                 <div className="flex items-center justify-between p-4">

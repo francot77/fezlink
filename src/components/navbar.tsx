@@ -1,7 +1,6 @@
 'use client'
 
 import Link from "next/link"
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, SignOutButton } from "@clerk/nextjs"
 import { useEffect, useRef, useState } from "react"
 
 type NavElement = {
@@ -57,36 +56,7 @@ const NavBar = () => {
                         ))}
                     </div>
 
-                    <SignedOut>
-                        <div className="flex items-center gap-2">
-                            <SignInButton mode="modal">
-                                <button className="rounded-lg px-3 py-2 text-white transition hover:bg-white/10">Sign in</button>
-                            </SignInButton>
-                            <SignUpButton mode="modal">
-                                <button className="rounded-lg bg-white px-3 py-2 font-semibold text-gray-900 transition hover:bg-gray-200">
-                                    Get started
-                                </button>
-                            </SignUpButton>
-                        </div>
-                    </SignedOut>
 
-                    <SignedIn>
-                        <div className="flex items-center gap-2">
-                            <Link
-                                href="/dashboard"
-                                className="rounded-lg bg-white px-3 py-2 font-semibold text-gray-900 transition hover:bg-gray-200"
-                            >
-                                Dashboard
-                            </Link>
-                            <button
-                                onClick={() => setShowSignOutModal(true)}
-                                className="rounded-lg px-3 py-2 text-white transition hover:bg-white/10"
-                            >
-                                Sign out
-                            </button>
-                            <UserButton afterSignOutUrl="/" />
-                        </div>
-                    </SignedIn>
                 </div>
             </div>
 
@@ -103,14 +73,7 @@ const NavBar = () => {
                         <p id="signout-heading" className="text-center text-base font-semibold text-gray-900">Cerrar sesión</p>
                         <p className="mt-2 text-center text-sm text-gray-600">¿Seguro que quieres salir de tu cuenta?</p>
                         <div className="mt-6 flex justify-center gap-3">
-                            <SignOutButton redirectUrl="/">
-                                <button
-                                    onClick={() => setShowSignOutModal(false)}
-                                    className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
-                                >
-                                    Logout
-                                </button>
-                            </SignOutButton>
+
                             <button
                                 onClick={() => setShowSignOutModal(false)}
                                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-100"

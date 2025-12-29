@@ -1,116 +1,23 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
-const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+export async function middleware(req: NextRequest) {
+    const token = await getToken({
+        req,
+        secret: process.env.NEXTAUTH_SECRET,
+    });
 
+    const isAuthRoute = req.nextUrl.pathname.startsWith('/dashboard');
 
-const ALLOWED_BOTS = [
-    "Discord",
-    "Discordbot",
-    "facebookexternalhit",
-    "WhatsApp",
-    "TelegramBot",
-    "Twitterbot",
-    "LinkedInBot",
-    "Googlebot",
-];
-const blockedPaths = [
-    '/wp-admin',
-    '/wp-login.php',
-    '/xmlrpc.php',
-    '/wordpress',
-];
-const clerk = clerkMiddleware(async (auth, req) => {
-    const { pathname } = req.nextUrl;
-    console.log('Entro al middleware CLERK')
-
-
-    if (blockedPaths.some((path) => pathname.startsWith(path))) {
-        return new NextResponse('Forbidden', { status: 403 });
+    if (isAuthRoute && !token) {
+        return NextResponse.redirect(new URL('/login', req.url));
     }
-
-
-    if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'admin') {
-        const url = new URL('/', req.url);
-        return NextResponse.redirect(url);
-    }
-
-
-    if (isProtectedRoute(req)) {
-        await auth.protect();
-    }
-
-
-    /* if (pathname.startsWith("/bio") || pathname.startsWith("/l/")) {
-        const url = req.nextUrl.clone();
-        const res = NextResponse.rewrite(url);
-
-        res.headers.set(
-            "Cache-Control",
-            "public, s-maxage=3600, max-age=3600, stale-while-revalidate=86400"
-        );
-
-        res.headers.delete("X-Clerk-Auth-Reason");
-        res.headers.delete("X-Clerk-Auth-Status");
-        res.headers.delete("Set-Cookie"); // ⚠ evita sesión fantasma
-        return res;
-    } */
-
 
     return NextResponse.next();
-});
-
-export default function middleware(req: NextRequest) {
-
-    console.log('Entro al middleware')
-
-    const { pathname } = req.nextUrl;
-    const ua = req.headers.get("user-agent") || "";
-
-    if (ALLOWED_BOTS.some(bot => ua.includes(bot))) {
-        const res = NextResponse.next();
-        res.headers.set(
-            "Cache-Control",
-            "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
-        );
-        return res;
-    }
-    if (pathname.startsWith('/@')) {
-        const slug = pathname.slice(2);
-        return NextResponse.redirect(
-            new URL(`/bio/${slug}`, req.url),
-            308
-        );
-    }
-
-
-    if (pathname.startsWith("/bio")) {
-        const res = NextResponse.next();
-        res.headers.set(
-            "Cache-Control",
-            "public, s-maxage=3600, max-age=3600, stale-while-revalidate=86400"
-        );
-        return res;
-    }
-
-
-    if (blockedPaths.some(p => pathname.startsWith(p))) {
-        return new NextResponse("Forbidden", { status: 403 });
-    }
-    // 🔵 Todo lo demás pasa por Clerk
-    return clerk(req, {} as NextFetchEvent);
 }
+
 export const config = {
-    matcher: [
-        "/dashboard/:path*",
-        "/admin/:path*",
-        "/api/dashboard/:path*",
-        "/api/biopage/:path*",
-        "/api/accounttype/:path*",
-        "/api/metrics/:path*",
-        "/api/stats/:path*",
-        "/api/webhooks/:path*",
-        "/api/links/:path*",
-    ],
+    matcher: ['/dashboard/:path*'],
 };

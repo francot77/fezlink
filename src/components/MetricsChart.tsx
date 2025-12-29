@@ -13,30 +13,24 @@ import {
 import { TrendingUp } from 'lucide-react';
 
 interface Stat {
-    _id: { year: number; month: number; day: number };
+    _id: string;
     clicks: number;
 }
 
 export default function MetricsChart({ stats }: { stats: Stat[] }) {
     const data = stats.map((stat) => {
-        const { year, month, day } = stat._id;
-        const date = new Date(year, month - 1, day);
-        const shortDate = date.toLocaleDateString(undefined, {
-            month: 'short',
-            day: 'numeric',
-        });
-        const fullDate = date.toLocaleDateString(undefined, {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
+        const [year, month, day] = stat._id.split('-').map(Number);
+
+        const label = `${day}/${month}`; // o locale si querés
+        const fullDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
         return {
-            date: shortDate,
+            date: label,
             fullDate,
-            clicks: stat.clicks
+            clicks: stat.clicks,
         };
     });
+
 
     const maxClicks = Math.max(...data.map(d => d.clicks), 0);
     const totalClicks = data.reduce((sum, d) => sum + d.clicks, 0);

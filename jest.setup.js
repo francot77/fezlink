@@ -1,0 +1,5 @@
+// jest.setup.js
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require('dotenv').config({
+    path: '.env.local',
+});

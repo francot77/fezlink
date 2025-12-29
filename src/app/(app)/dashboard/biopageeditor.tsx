@@ -2,7 +2,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react';
 import Link from 'next/link'
 import Button from '@/components/button'
 import { BiopageType, LinkType, SelectedLink } from '@/types/globals'
@@ -150,7 +150,10 @@ const SectionCard = ({ title, description, icon: Icon, children }: { title: stri
 
 export default function BiopageEditor({ language = 'en' }: { language?: SupportedLanguage }) {
     const t = useMemo(() => translations[language], [language])
-    const { user } = useUser()
+    //migrated from clerk to authjs
+    const { data: session } = useSession();
+    const user = session?.user;
+
     const [links, setLinks] = useState<LinkType[]>([])
     const [selected, setSelected] = useState<SelectedLink[]>([])
     const [bgColor, setBgColor] = useState('#000000')
@@ -491,8 +494,8 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                                     const isSelected = selected.find((l) => l.shortUrl === link.shortUrl)
                                     return (
                                         <div key={link.shortUrl} className={`rounded-xl border transition-all duration-300 ${isSelected
-                                                ? 'border-emerald-400/50 bg-emerald-500/10'
-                                                : 'border-white/10 bg-white/5 hover:border-white/20'
+                                            ? 'border-emerald-400/50 bg-emerald-500/10'
+                                            : 'border-white/10 bg-white/5 hover:border-white/20'
                                             }`}>
                                             <label className="flex items-start gap-3 p-4 cursor-pointer">
                                                 <input
@@ -535,8 +538,8 @@ export default function BiopageEditor({ language = 'en' }: { language?: Supporte
                                             type="button"
                                             onClick={() => setBgColor(preset.value)}
                                             className={`group relative overflow-hidden rounded-xl p-4 text-left transition-all duration-300 hover:scale-105 ${bgColor === preset.value
-                                                    ? 'ring-2 ring-emerald-400 shadow-xl shadow-emerald-500/20'
-                                                    : 'ring-1 ring-white/10 hover:ring-white/20'
+                                                ? 'ring-2 ring-emerald-400 shadow-xl shadow-emerald-500/20'
+                                                : 'ring-1 ring-white/10 hover:ring-white/20'
                                                 }`}
                                             style={{ backgroundImage: preset.value }}
                                         >

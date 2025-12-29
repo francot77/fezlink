@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
-import { ClerkProvider } from "@clerk/nextjs";
+import SessionWrapper from "@/components/SessionWrapper";
 
 export default function AppLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  return <ClerkProvider>{children}</ClerkProvider>;
+  return <SessionWrapper>
+    {children}
+  </SessionWrapper>
 }

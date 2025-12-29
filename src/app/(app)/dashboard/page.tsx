@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
 import { BarChart3, Flame, Home, Link as LinkIcon, Loader2, Palette } from 'lucide-react';
 import Spinner from '@/components/spinner';
 import Link from 'next/link';
@@ -11,6 +10,7 @@ import Stats from '@/components/stats';
 import BiopageEditor from './biopageeditor';
 import PremiumFeatures from '@/components/premiumfeatures';
 import { SupportedLanguage } from '@/types/i18n';
+import { useSession } from 'next-auth/react';
 
 interface Section {
     id: string;
@@ -58,7 +58,9 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
 };
 
 const DashboardPage: React.FC = () => {
-    const { isLoaded, user } = useUser();
+    const { data: session } = useSession();
+    const user = session?.user;
+
     const linkState = useLinks();
     const [language, setLanguage] = useState<SupportedLanguage>('en');
     const t = translations[language];
@@ -132,11 +134,10 @@ const DashboardPage: React.FC = () => {
                                     <button
                                         key={lng}
                                         onClick={() => setLanguage(lng)}
-                                        className={`rounded-full px-3 py-1 font-semibold transition ${
-                                            language === lng
+                                        className={`rounded-full px-3 py-1 font-semibold transition ${language === lng
                                                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40'
                                                 : 'text-gray-300 hover:bg-gray-800'
-                                        }`}
+                                            }`}
                                         aria-label={`Switch dashboard language to ${lng === 'en' ? 'English' : 'Spanish'}`}
                                     >
                                         {lng.toUpperCase()}
@@ -160,11 +161,10 @@ const DashboardPage: React.FC = () => {
                                 <li key={section.id} className="min-w-0">
                                     <button
                                         onClick={() => setActiveSection(section.id)}
-                                        className={`flex w-full min-w-0 items-start gap-3 rounded-lg border px-3 py-3 text-left transition md:flex-row ${
-                                            activeSection === section.id
+                                        className={`flex w-full min-w-0 items-start gap-3 rounded-lg border px-3 py-3 text-left transition md:flex-row ${activeSection === section.id
                                                 ? 'border-blue-500/70 bg-blue-500/10 text-white shadow-md shadow-blue-500/20'
                                                 : 'border-transparent bg-gray-800/60 text-gray-300 hover:border-gray-600 hover:text-white'
-                                        }`}
+                                            }`}
                                     >
                                         <span className="mt-1 text-blue-300">{section.icon}</span>
                                         <div className="flex-1 min-w-0 space-y-1">

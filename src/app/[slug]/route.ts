@@ -1,11 +1,8 @@
 import { Link } from '@/app/models/links';
-import { LinkStats } from '../models/linkStats';
-import Click from '../models/clicks';
-import GlobalClicks from '../models/globalClicks';
 import dbConnect from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
+import { ClickEvent, DeviceType, emitAnalyticsEvent } from '@/lib/emitAnalyticsEvent';
 
-type DeviceType = 'mobile' | 'desktop' | 'tablet' | 'unknown';
 
 interface RequestWithHeaders extends Request {
     headers: Headers;
@@ -121,13 +118,12 @@ function sanitize(slug: string) {
 
 function cacheableRedirect(url: string, status = 301) {
     const res = NextResponse.redirect(url, status);
-    res.headers.set('Cache-Control', 'public, max-age=3600');
+    //res.headers.set('Cache-Control', 'public, max-age=3600');
     return res;
 }
 
 export async function GET(req: Request, context: { params: Promise<{ slug?: string }> }) {
-    const startTime = Date.now();
-
+    console.log("TESTT")
     const { slug } = await context.params;
     const sanitizedSlug = slug ? sanitize(slug) : '';
 
@@ -148,93 +144,31 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
 
     await dbConnect();
 
-    const updatedLink = await Link.findOneAndUpdate(
-        { slug: sanitizedSlug },
-        { $inc: { totalClicks: 1 } },
-        { new: true }
-    );
+    const link = await Link.findOne({ slug: sanitizedSlug });
+    if (!link) return cacheableRedirect(`${process.env.BASE_URL}/404`);
 
-    if (!updatedLink) return cacheableRedirect(`${process.env.BASE_URL}/404`);
-
-    // ⬇⬇⬇ MÉTRICAS DESACOPLADAS CON MEJOR LOGGING ⬇⬇⬇
-    const metricsTask = async () => {
-        const metricsStartTime = Date.now();
-
-        try {
-            // 1. Update LinkStats
-            const res = await LinkStats.updateOne(
-                { linkId: updatedLink._id, 'countries.country': country },
-                { $inc: { 'countries.$.clicksCount': 1 } }
-            );
-
-            if (res.modifiedCount === 0) {
-                await LinkStats.updateOne(
-                    { linkId: updatedLink._id },
-                    {
-                        $setOnInsert: { linkId: updatedLink._id },
-                        $push: { countries: { country, clicksCount: 1 } },
-                    },
-                    { upsert: true }
-                );
-            }
-
-            // 2. Update Global Clicks
-            await GlobalClicks.findOneAndUpdate(
-                {},
-                { $inc: { count: 1 } },
-                { upsert: true }
-            );
-
-            // 3. Create Click record
-            await Click.create({
-                linkId: updatedLink._id,
-                userId: updatedLink.userId,
-                country,
-                timestamp: new Date(),
-                userAgent,
-                deviceType,
-                source,
-            });
-
-            const metricsTime = Date.now() - metricsStartTime;
-
-            // ✅ Log solo si es lento (> 500ms) o en desarrollo
-            if (metricsTime > 500 || process.env.NODE_ENV === 'development') {
-                console.log(`[Metrics] ${sanitizedSlug} | source: ${source} | device: ${deviceType} | country: ${country} | ${metricsTime}ms`);
-            }
-
-        } catch (err) {
-            // ✅ LOGGING MEJORADO: Ahora sabrás qué clicks fallan
-            console.error(`[Metrics Error] ${sanitizedSlug} |`, {
-                error: err instanceof Error ? err.message : String(err),
-                source,
-                deviceType,
-                country,
-                linkId: updatedLink._id.toString(),
-                timestamp: new Date().toISOString(),
-            });
-        }
+    // 🔥 EMITIR EVENTO (única responsabilidad nueva)
+    const clickEvent: ClickEvent = {
+        type: 'click',
+        linkId: link._id.toString(),
+        userId: link.userId.toString(),
+        country,
+        source,
+        deviceType,
+        userAgent: userAgent ?? undefined,
+        timestamp: new Date(),
     };
 
-    // Node runtime (Vercel)
-    if ('waitUntil' in globalThis) {
-        // @ts-expect-error Vercel waitUntil
-        globalThis.waitUntil(metricsTask());
+
+    emitAnalyticsEvent(clickEvent);
+
+    // fire-and-forget
+    /* if ('waitUntil' in globalThis) {
+        // @ts-expect-error Event Emitter error
+        globalThis.waitUntil(emitAnalyticsEvent(clickEvent));
     } else {
-        // En desarrollo, ejecutar inmediatamente para ver errores
-        if (process.env.NODE_ENV === 'development') {
-            await metricsTask();
-        } else {
-            metricsTask(); // fallback producción
-        }
-    }
+        emitAnalyticsEvent(clickEvent);
+    } */
 
-    const totalTime = Date.now() - startTime;
-
-    // ✅ Log de redirección (solo si es lenta)
-    if (totalTime > 200) {
-        console.log(`[Redirect] ${sanitizedSlug} → ${updatedLink.destinationUrl} | ${totalTime}ms`);
-    }
-
-    return cacheableRedirect(updatedLink.destinationUrl, 301);
+    return cacheableRedirect(link.destinationUrl, 301);
 }
