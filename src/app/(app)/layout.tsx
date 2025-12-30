@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import SessionWrapper from "@/components/SessionWrapper";
+import { NextIntlClientProvider } from "next-intl";
 
 export default function AppLayout({
   children,
@@ -7,6 +8,8 @@ export default function AppLayout({
   children: ReactNode;
 }) {
   return <SessionWrapper>
-    {children}
+    <NextIntlClientProvider>
+      {children}
+    </NextIntlClientProvider>
   </SessionWrapper>
 }

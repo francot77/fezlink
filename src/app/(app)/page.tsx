@@ -5,55 +5,12 @@ import Button from '@/components/button'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
-
-const highlights = [
-  'One clean bio page for everything you share.',
-  "Instant redirects that don't break the flow.",
-  'See clicks, countries, and devices without noise.',
-  'No ads, no pop-ups, no distractions for your audience.',
-]
-
-const featureCards = [
-  {
-    title: 'Clean bio pages',
-    description:
-      'Bring all your important links together in a single page that looks good everywhere — socials, profiles, and campaigns.',
-    accent: 'from-emerald-400/25 to-green-500/15',
-    icon: '🎨',
-  },
-  {
-    title: 'Real click feedback',
-    description:
-      "Know when someone clicks, where they're from, and what device they're on. Simple signals, not overwhelming dashboards.",
-    accent: 'from-cyan-400/30 to-blue-500/20',
-    icon: '📊',
-  },
-  {
-    title: 'QR-ready links',
-    description:
-      'Generate downloadable QR codes for print, events, or offline sharing — instantly and without setup.',
-    accent: 'from-fuchsia-400/25 to-purple-500/20',
-    icon: '📱',
-  },
-]
-
-const steps = [
-  {
-    title: 'Create your link',
-    detail: 'Customize a short link or bio page that matches your name or brand.',
-  },
-  {
-    title: 'Share it anywhere',
-    detail: 'Use it on social profiles, videos, email signatures, or print.',
-  },
-  {
-    title: 'See what happens',
-    detail: 'Get clear click feedback without slowing down your audience.',
-  },
-]
+import { useTranslations } from 'next-intl'
 
 export default function Home() {
   const router = useRouter()
+  const t = useTranslations('landing')
+
   const [globalClicks, setGlobalClicks] = useState<number | null>(null)
   const [animatedCount, setAnimatedCount] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
@@ -248,32 +205,31 @@ export default function Home() {
           <div className={`space-y-8 text-center md:text-left ${isVisible ? 'animate-slide-in-left' : 'opacity-0'}`}>
             <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm text-emerald-200 ring-1 ring-white/10 hover:bg-white/10 hover:ring-emerald-400/30 transition-all duration-300">
               <span className="text-lg animate-pulse">⚡</span>
-              <p>Built for creators who care about speed and clarity</p>
+              <p>{t('hero.badge')}</p>
             </div>
 
             <div className="space-y-4">
               <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl bg-gradient-to-r from-white via-emerald-100 to-cyan-100 bg-clip-text text-transparent">
-                One link.
+                {t('hero.title.line1')}
                 <br />
-                Zero friction.
+                {t('hero.title.line2')}
                 <br />
-                Real feedback.
+                {t('hero.title.line3')}
               </h1>
               <p className="text-lg text-gray-300 md:text-xl">
-                Fezlink gives creators a single, fast link with a clean bio page and clear click insights —
-                without ads, clutter, or distractions.
+                {t('hero.subtitle')}
               </p>
             </div>
 
             <ul className="space-y-3 text-left text-base text-gray-200 md:text-lg">
-              {highlights.map((item, index) => (
+              {[0, 1, 2, 3].map((index) => (
                 <li
-                  key={item}
+                  key={index}
                   className="flex items-start gap-3 transition-all duration-300 hover:translate-x-2"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <span className="mt-1 text-emerald-400 text-xl">•</span>
-                  <span>{item}</span>
+                  <span>{t(`hero.highlights.${index}`)}</span>
                 </li>
               ))}
             </ul>
@@ -281,7 +237,7 @@ export default function Home() {
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start">
               <div className="hover-lift">
                 <Button
-                  title="View a sample bio page"
+                  title={t('hero.cta.primary')}
                   customStyles={{
                     backgroundColor: '#10B981',
                     color: '#0B1021',
@@ -298,7 +254,7 @@ export default function Home() {
                 className="group w-full rounded-xl border border-white/20 px-5 py-3 text-base font-medium text-white transition-all duration-300 hover:border-emerald-400/50 hover:bg-white/5 hover:shadow-lg hover:shadow-emerald-500/20 sm:w-auto"
                 onClick={() => router.push('/dashboard')}
               >
-                <span className="group-hover:text-emerald-300 transition-colors">Create your link</span>
+                <span className="group-hover:text-emerald-300 transition-colors">{t('hero.cta.secondary')}</span>
               </button>
             </div>
           </div>
@@ -308,13 +264,13 @@ export default function Home() {
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/5 via-white/0 to-cyan-500/10 blur-2xl" />
             <div className="relative w-full max-w-md floating">
               <div className="glass-card rounded-3xl p-6 shadow-2xl">
-                <p className="text-sm text-gray-300">Live platform activity</p>
+                <p className="text-sm text-gray-300">{t('stats.subtitle')}</p>
                 <h2 className="mt-2 text-2xl font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
-                  Creators using Fezlink
+                  {t('stats.title')}
                 </h2>
 
                 <div className="mt-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 px-4 py-4 border border-white/10 hover:border-emerald-400/30 transition-all duration-300">
-                  <p className="text-sm text-gray-400">Total clicks tracked</p>
+                  <p className="text-sm text-gray-400">{t('stats.totalClicks')}</p>
                   <p className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
                     {globalClicks === null ? '—' : animatedCount.toLocaleString()}
                   </p>
@@ -328,7 +284,7 @@ export default function Home() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                   </span>
-                  Real data, updated automatically.
+                  {t('stats.realData')}
                 </div>
               </div>
             </div>
@@ -339,25 +295,29 @@ export default function Home() {
         <section ref={featuresRef} className="space-y-8 observe-scroll opacity-0">
           <div className="text-center space-y-2">
             <p className="text-sm uppercase tracking-[0.25em] text-emerald-200">
-              Why creators choose Fezlink
+              {t('features.sectionTitle')}
             </p>
             <h2 className="text-3xl font-bold md:text-4xl bg-gradient-to-r from-white via-emerald-100 to-white bg-clip-text text-transparent">
-              Everything you need — nothing you don&apos;t
+              {t('features.sectionSubtitle')}
             </h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {featureCards.map((feature, index) => (
+            {[
+              { icon: '🎨', accent: 'from-emerald-400/25 to-green-500/15' },
+              { icon: '📊', accent: 'from-cyan-400/30 to-blue-500/20' },
+              { icon: '📱', accent: 'from-fuchsia-400/25 to-purple-500/20' }
+            ].map((feature, index) => (
               <div
-                key={feature.title}
+                key={index}
                 className={`glass-card rounded-2xl bg-gradient-to-br ${feature.accent} p-6 shadow-lg`}
                 style={{ animationDelay: `${index * 150}ms` }}
               >
                 <div className="text-4xl mb-3 transition-transform duration-300 hover:scale-110 inline-block">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold">{feature.title}</h3>
-                <p className="mt-2 text-gray-200">{feature.description}</p>
+                <h3 className="text-xl font-semibold">{t(`features.cards.${index}.title`)}</h3>
+                <p className="mt-2 text-gray-200">{t(`features.cards.${index}.description`)}</p>
               </div>
             ))}
           </div>
@@ -367,24 +327,26 @@ export default function Home() {
         <section ref={stepsRef} className="observe-scroll opacity-0 grid gap-10 rounded-3xl glass-card px-6 py-12 md:grid-cols-2 md:px-10">
           <div className="space-y-6">
             <h3 className="text-3xl font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
-              Start sharing in minutes
+              {t('howItWorks.title')}
             </h3>
             <p className="text-gray-300">
-              No setup, no complexity. Create your link, share it, and get feedback without slowing anyone down.
+              {t('howItWorks.subtitle')}
             </p>
 
             <div className="space-y-4">
-              {steps.map((step, index) => (
+              {[0, 1, 2].map((index) => (
                 <div
-                  key={step.title}
+                  key={index}
                   className="gradient-border flex gap-4 rounded-2xl glass-card p-4 group"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 text-lg font-bold text-emerald-300 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12">
                     {index + 1}
                   </div>
                   <div>
-                    <p className="text-lg font-semibold group-hover:text-emerald-300 transition-colors">{step.title}</p>
-                    <p className="text-gray-300">{step.detail}</p>
+                    <p className="text-lg font-semibold group-hover:text-emerald-300 transition-colors">
+                      {t(`howItWorks.steps.${index}.title`)}
+                    </p>
+                    <p className="text-gray-300">{t(`howItWorks.steps.${index}.detail`)}</p>
                   </div>
                 </div>
               ))}
@@ -393,7 +355,7 @@ export default function Home() {
 
           {/* BIO PREVIEW */}
           <div className="space-y-4">
-            <p className="text-sm text-gray-400">Sample bio page</p>
+            <p className="text-sm text-gray-400">{t('bioPreview.label')}</p>
             <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl shadow-2xl">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/30 pointer-events-none" />
               <div className="relative p-6 space-y-6">
@@ -402,37 +364,29 @@ export default function Home() {
                     <Image src="/hero.webp" width={96} height={96} alt="Creator avatar" className="h-full w-full object-cover" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-bold tracking-tight">@yourname</h3>
-                    <p className="text-xs text-white/80">Everything I share, in one place.</p>
+                    <h3 className="text-2xl font-bold tracking-tight">{t('bioPreview.username')}</h3>
+                    <p className="text-xs text-white/80">{t('bioPreview.bio')}</p>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-lg">
                   <div className="flex items-center justify-between gap-3 mb-3">
-                    <h4 className="text-sm font-semibold">Links availables</h4>
+                    <h4 className="text-sm font-semibold">{t('bioPreview.linksTitle')}</h4>
                     <span className="rounded-full border border-white/10 px-2 py-0.5 text-xs text-white/70">
-                      3 links
+                      {t('bioPreview.linksCount')}
                     </span>
                   </div>
                   <ul className="space-y-2">
-                    <li className="flex items-center gap-2 rounded-xl bg-black/40 border border-white/10 p-2.5">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-emerald-400">My Portfolio</p>
-                        <p className="text-xs text-white/60">fezlink.app/portfolio</p>
-                      </div>
-                    </li>
-                    <li className="flex items-center gap-2 rounded-xl bg-black/40 border border-white/10 p-2.5">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-emerald-400">Latest Project</p>
-                        <p className="text-xs text-white/60">fezlink.app/project</p>
-                      </div>
-                    </li>
-                    <li className="flex items-center gap-2 rounded-xl bg-black/40 border border-white/10 p-2.5">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-emerald-400">Contact Me</p>
-                        <p className="text-xs text-white/60">fezlink.app/contact</p>
-                      </div>
-                    </li>
+                    {[0, 1, 2].map((index) => (
+                      <li key={index} className="flex items-center gap-2 rounded-xl bg-black/40 border border-white/10 p-2.5">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-emerald-400">
+                            {t(`bioPreview.links.${index}.title`)}
+                          </p>
+                          <p className="text-xs text-white/60">{t(`bioPreview.links.${index}.url`)}</p>
+                        </div>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>

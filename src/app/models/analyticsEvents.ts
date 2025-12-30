@@ -12,7 +12,7 @@ const AnalyticsEventSchema = new mongoose.Schema({
     processedAt: {
         type: Date,
         default: null,
-        index: true,
+        index: { expireAfterSeconds: 60 * 60 * 24 * 7 }// 7 Dias
     }
 }, { timestamps: false });
 

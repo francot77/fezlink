@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "npx jest"
+    "test": "npx jest",
+    "worker": "npx tsx src/scripts/runAnalyticsWorker.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
+    "@aws-sdk/client-s3": "^3.958.0",
     "@paddle/paddle-js": "^1.4.1",
     "@uploadthing/react": "^7.3.1",
     "@vercel/analytics": "^1.5.0",
@@ -22,6 +24,7 @@
     "mongoose": "^8.14.2",
     "next": "^15.5.9",
     "next-auth": "^4.24.13",
+    "next-intl": "^4.6.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-globe.gl": "^2.33.2",

@@ -6,7 +6,16 @@ export interface BioPageData {
   slug: string;
   links: { shortUrl: string; label: string }[];
   textColor: string;
-  backgroundColor: string;
+  background?: {
+    base: string;
+    image?: {
+      url: string;
+      blur?: number;
+      positionX?: number;
+      positionY?: number;
+      zoom?: number;
+    };
+  };
   avatarUrl: string;
   description?: string;
 }
@@ -31,7 +40,7 @@ export const getBiopageBySlug = cache(
       slug: biopage.slug,
       links,
       textColor: biopage.textColor || "#ffffff",
-      backgroundColor: biopage.backgroundColor || "#000000",
+      background: biopage.background || { base: "#000000" },
       avatarUrl: biopage.avatarUrl || "",
       description: biopage.description || undefined,
     };

@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useId, useRef } from "react";
 
-interface CustomModalProps {
+export type CustomModalProps = {
     title: string;
     children: ReactNode;
     onClose: () => void;

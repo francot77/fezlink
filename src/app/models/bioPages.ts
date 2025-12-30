@@ -1,10 +1,22 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IBiopage extends Document {
     userId: string;
-    links: { shortUrl: string; label: string }[]; // ID del link y nombre visible
+    links: {
+        shortUrl: string;
+        shortId: string;
+        label?: string;
+    }[];
     slug: string;
-    backgroundColor: string;
+
+    background: {
+        base: string; // color o linear-gradient
+        image?: {
+            url: string;
+            blur?: number;
+        };
+    };
+
     textColor: string;
     avatarUrl?: string;
     description?: string;
@@ -15,19 +27,57 @@ export interface IBiopage extends Document {
 const biopageSchema = new Schema<IBiopage>(
     {
         userId: { type: String, required: true },
-        links: [{
-            shortUrl: { type: String, required: true },
-            shortId: { type: String, required: true },
-            label: { type: String, default: "" }
-        }],
+
+        links: [
+            {
+                shortUrl: { type: String, required: true },
+                shortId: { type: String, required: true },
+                label: { type: String, default: "" },
+            },
+        ],
+
         slug: { type: String, unique: true, required: true },
-        backgroundColor: { type: String, default: "#000000" },
+
+        background: {
+            base: {
+                type: String,
+                default: "#000000", // color o gradient
+            },
+            image: {
+                url: {
+                    type: String,
+                    default: "",
+                },
+                blur: {
+                    type: Number,
+                    default: 0,
+                },
+                positionX: {
+                    type: Number,
+                    default: 0
+                }, positionY: {
+                    type: Number,
+                    default: 0
+                }, zoom: {
+                    type: Number,
+                    default: 0
+                }
+            },
+        },
+
         textColor: { type: String, default: "#ffffff" },
         avatarUrl: { type: String, default: "" },
-        description: { type: String, default: "Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable." },
+        description: {
+            type: String,
+            default:
+                "Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.",
+        },
     },
     { timestamps: true }
 );
 
-const Biopage = mongoose.models.Biopage || mongoose.model<IBiopage>('Biopage', biopageSchema);
+const Biopage =
+    mongoose.models.Biopage ||
+    mongoose.model<IBiopage>("Biopage", biopageSchema);
+
 export default Biopage;

@@ -1,0 +1,198 @@
+Folder PATH listing for volume HDD
+Volume serial number is 0A3E-A449
+E:.
+|   .env.local
+|   .gitignore
+|   eslint.config.mjs
+|   jest.config.js
+|   jest.setup.js
+|   next-env.d.ts
+|   next.config.ts
+|   package-lock.json
+|   package.json
+|   postcss.config.mjs
+|   README.md
+|   tailwind.config.js
+|   tree.txt
+|   tsconfig.json
+|        
++---public
+|       hero.svg
+|       hero.webp
+|       manifest.json
+|       qr.webp
+|       signal.svg
+|       window.svg
+|       
++---src
+|   |   middleware.ts
+|   |   
+|   +---app
+|   |   |   favicon.ico
+|   |   |   globals.css
+|   |   |   layout.tsx
+|   |   |   not-found.tsx
+|   |   |   
+|   |   +---(app)
+|   |   |   |   layout.tsx
+|   |   |   |   page.tsx
+|   |   |   |   
+|   |   |   +---admin
+|   |   |   +---dashboard
+|   |   |   |       biopageeditor.tsx
+|   |   |   |       layout.tsx
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---login
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---pricing
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   \---register
+|   |   |           page.tsx
+|   |   |           
+|   |   +---api
+|   |   |   +---accounttype
+|   |   |   |       route.ts
+|   |   |   |       
+|   |   |   +---analytics
+|   |   |   |   \---link
+|   |   |   |       \---[linkId]
+|   |   |   |               route.ts
+|   |   |   |               
+|   |   |   +---auth
+|   |   |   |   +---check-username
+|   |   |   |   |       route.ts
+|   |   |   |   |       
+|   |   |   |   +---register
+|   |   |   |   |       route.ts
+|   |   |   |   |       
+|   |   |   |   \---[...nextauth]
+|   |   |   |           route.ts
+|   |   |   |           
+|   |   |   +---background-image
+|   |   |   |       route.ts
+|   |   |   |       
+|   |   |   +---biopage
+|   |   |   |   |   route.ts
+|   |   |   |   |   
+|   |   |   |   +---changeslug
+|   |   |   |   |       route.ts
+|   |   |   |   |       
+|   |   |   |   +---create
+|   |   |   |   |       route.ts
+|   |   |   |   |       
+|   |   |   |   +---update
+|   |   |   |   |       route.ts
+|   |   |   |   |       
+|   |   |   |   \---[slug]
+|   |   |   |           route.ts
+|   |   |   |           
+|   |   |   +---links
+|   |   |   |   |   route.ts
+|   |   |   |   |   
+|   |   |   |   \---[id]
+|   |   |   |           route.ts
+|   |   |   |           
+|   |   |   +---public
+|   |   |   |   \---global
+|   |   |   |           route.ts
+|   |   |   |           
+|   |   |   +---stats
+|   |   |   |   \---[linkId]
+|   |   |   |           route.ts
+|   |   |   |           
+|   |   |   +---uploadthing
+|   |   |   |       core.ts
+|   |   |   |       route.ts
+|   |   |   |       
+|   |   |   \---webhooks
+|   |   |       \---paddle
+|   |   |               route.ts
+|   |   |               
+|   |   +---bio
+|   |   |   \---[slug]
+|   |   |           BioPageClient.tsx
+|   |   |           page.tsx
+|   |   |           
+|   |   +---models
+|   |   |       analyticsDaily.ts
+|   |   |       analyticsEvents.ts
+|   |   |       bioPages.ts
+|   |   |       clicks.ts
+|   |   |       globalClicks.ts
+|   |   |       links.ts
+|   |   |       linkStats.ts
+|   |   |       user.ts
+|   |   |       
+|   |   \---[slug]
+|   |           route.ts
+|   |           
+|   +---components
+|   |   |   biopagepreview.tsx
+|   |   |   button.tsx
+|   |   |   Freefeatures.tsx
+|   |   |   Globe.tsx
+|   |   |   link-manager.tsx
+|   |   |   metrics.tsx
+|   |   |   MetricsChart.tsx
+|   |   |   Modal.tsx
+|   |   |   Modalv2.tsx
+|   |   |   navbar.tsx
+|   |   |   premiumfeatures.tsx
+|   |   |   QRButton.tsx
+|   |   |   SessionWrapper.tsx
+|   |   |   Slider.tsx
+|   |   |   spinner.tsx
+|   |   |   stats.tsx
+|   |   |   
+|   |   \---biopage-editor
+|   |           AppearanceSection.tsx
+|   |           AvatarModal.tsx
+|   |           LinksSection.tsx
+|   |           PreviewSection.tsx
+|   |           ProfileSection.tsx
+|   |           SectionCard.tsx
+|   |           UsernameModal.tsx
+|   |           
+|   +---hooks
+|   |       useAuth.tsx
+|   |       useBiopage.ts
+|   |       useBiopageLinks.ts
+|   |       useDashboard.tsx
+|   |       useLinks.tsx
+|   |       useModal.tsx
+|   |       usePaddle.tsx
+|   |       
+|   +---icons
+|   |       instagram.tsx
+|   |       
+|   +---lib
+|   |       auth-helpers.ts
+|   |       auth-options.ts
+|   |       biopage-constants.ts
+|   |       biopage.ts
+|   |       emitAnalyticsEvent.ts
+|   |       mongoClient.ts
+|   |       mongodb.ts
+|   |       requireUser.ts
+|   |       uploadBackgroundImage.ts
+|   |       
+|   +---scripts
+|   |       runAnalyticsWorker.ts
+|   |       
+|   +---types
+|   |       globals.d.ts
+|   |       i18n.ts
+|   |       next-auth.d.ts
+|   |       
+|   +---utils
+|   |       uploadthings.ts
+|   |       
+|   \---workers
+|           analyticsWorker.ts
+|           
+\---__tests__
+        redirect.test.ts
+        

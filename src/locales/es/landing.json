@@ -1,0 +1,86 @@
+{
+  "landing": {
+    "hero": {
+      "badge": "Creado para creadores que valoran velocidad y claridad",
+      "title": {
+        "line1": "Un enlace.",
+        "line2": "Cero fricción.",
+        "line3": "Retroalimentación real."
+      },
+      "subtitle": "Fezlink ofrece a los creadores un enlace único y rápido con una página bio limpia e información clara de clics — sin anuncios, desorden ni distracciones.",
+      "highlights": [
+        "Una página bio limpia para todo lo que compartes.",
+        "Redirecciones instantáneas que no rompen el flujo.",
+        "Visualiza clics, países y dispositivos sin ruido.",
+        "Sin anuncios, ventanas emergentes ni distracciones para tu audiencia."
+      ],
+      "cta": {
+        "primary": "Ver página bio de ejemplo",
+        "secondary": "Crea tu enlace"
+      }
+    },
+    "stats": {
+      "title": "Creadores usando Fezlink",
+      "subtitle": "Actividad de la plataforma en vivo",
+      "totalClicks": "Total de clics rastreados",
+      "realData": "Datos reales, actualizados automáticamente."
+    },
+    "features": {
+      "sectionTitle": "Por qué los creadores eligen Fezlink",
+      "sectionSubtitle": "Todo lo que necesitas — nada que no",
+      "cards": [
+        {
+          "title": "Páginas bio limpias",
+          "description": "Reúne todos tus enlaces importantes en una sola página que se ve bien en todas partes — redes sociales, perfiles y campañas."
+        },
+        {
+          "title": "Retroalimentación de clics real",
+          "description": "Sabe cuándo alguien hace clic, de dónde es y qué dispositivo usa. Señales simples, no paneles abrumadores."
+        },
+        {
+          "title": "Enlaces listos para QR",
+          "description": "Genera códigos QR descargables para imprimir, eventos o compartir sin conexión — al instante y sin configuración."
+        }
+      ]
+    },
+    "howItWorks": {
+      "title": "Comienza a compartir en minutos",
+      "subtitle": "Sin configuración, sin complejidad. Crea tu enlace, compártelo y obtén retroalimentación sin ralentizar a nadie.",
+      "steps": [
+        {
+          "title": "Crea tu enlace",
+          "detail": "Personaliza un enlace corto o página bio que coincida con tu nombre o marca."
+        },
+        {
+          "title": "Compártelo donde sea",
+          "detail": "Úsalo en perfiles sociales, videos, firmas de correo o impreso."
+        },
+        {
+          "title": "Observa qué sucede",
+          "detail": "Obtén retroalimentación clara de clics sin ralentizar a tu audiencia."
+        }
+      ]
+    },
+    "bioPreview": {
+      "label": "Página bio de muestra",
+      "username": "@tunombre",
+      "bio": "Todo lo que comparto, en un solo lugar.",
+      "linksTitle": "Enlaces disponibles",
+      "linksCount": "3 enlaces",
+      "links": [
+        {
+          "title": "Mi Portafolio",
+          "url": "fezlink.app/portafolio"
+        },
+        {
+          "title": "Último Proyecto",
+          "url": "fezlink.app/proyecto"
+        },
+        {
+          "title": "Contáctame",
+          "url": "fezlink.app/contacto"
+        }
+      ]
+    }
+  }
+}

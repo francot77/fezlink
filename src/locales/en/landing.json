@@ -1,0 +1,86 @@
+{
+    "landing": {
+        "hero": {
+            "badge": "Built for creators who care about speed and clarity",
+            "title": {
+                "line1": "One link.",
+                "line2": "Zero friction.",
+                "line3": "Real feedback."
+            },
+            "subtitle": "Fezlink gives creators a single, fast link with a clean bio page and clear click insights — without ads, clutter, or distractions.",
+            "highlights": [
+                "One clean bio page for everything you share.",
+                "Instant redirects that don't break the flow.",
+                "See clicks, countries, and devices without noise.",
+                "No ads, no pop-ups, no distractions for your audience."
+            ],
+            "cta": {
+                "primary": "View a sample bio page",
+                "secondary": "Create your link"
+            }
+        },
+        "stats": {
+            "title": "Creators using Fezlink",
+            "subtitle": "Live platform activity",
+            "totalClicks": "Total clicks tracked",
+            "realData": "Real data, updated automatically."
+        },
+        "features": {
+            "sectionTitle": "Why creators choose Fezlink",
+            "sectionSubtitle": "Everything you need — nothing you don't",
+            "cards": [
+                {
+                    "title": "Clean bio pages",
+                    "description": "Bring all your important links together in a single page that looks good everywhere — socials, profiles, and campaigns."
+                },
+                {
+                    "title": "Real click feedback",
+                    "description": "Know when someone clicks, where they're from, and what device they're on. Simple signals, not overwhelming dashboards."
+                },
+                {
+                    "title": "QR-ready links",
+                    "description": "Generate downloadable QR codes for print, events, or offline sharing — instantly and without setup."
+                }
+            ]
+        },
+        "howItWorks": {
+            "title": "Start sharing in minutes",
+            "subtitle": "No setup, no complexity. Create your link, share it, and get feedback without slowing anyone down.",
+            "steps": [
+                {
+                    "title": "Create your link",
+                    "detail": "Customize a short link or bio page that matches your name or brand."
+                },
+                {
+                    "title": "Share it anywhere",
+                    "detail": "Use it on social profiles, videos, email signatures, or print."
+                },
+                {
+                    "title": "See what happens",
+                    "detail": "Get clear click feedback without slowing down your audience."
+                }
+            ]
+        },
+        "bioPreview": {
+            "label": "Sample bio page",
+            "username": "@yourname",
+            "bio": "Everything I share, in one place.",
+            "linksTitle": "Links availables",
+            "linksCount": "3 links",
+            "links": [
+                {
+                    "title": "My Portfolio",
+                    "url": "fezlink.app/portfolio"
+                },
+                {
+                    "title": "Latest Project",
+                    "url": "fezlink.app/project"
+                },
+                {
+                    "title": "Contact Me",
+                    "url": "fezlink.app/contact"
+                }
+            ]
+        }
+    }
+}

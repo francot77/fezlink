@@ -39,4 +39,13 @@ export type BiopageType = {
     textColor: string
     avatarUrl?: string
     description?: string
+    background: {
+        base: string,
+        image: {
+            url: string,
+            blur: number,
+            positionX: number,
+            positionY: number,
+        }
+    }
 }
