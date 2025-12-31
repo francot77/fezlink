@@ -90,8 +90,9 @@ function processEvents(events: EventLink[]) {
 }
 
 /* ---------------- worker ---------------- */
-
-export async function runAnalyticsWorker(batchSize: number, chunkSize: number) {
+const BATCH_SIZE = 10000;
+const CHUNK_SIZE = 700;
+export async function runAnalyticsWorker(batchSize: number = BATCH_SIZE, chunkSize: number = CHUNK_SIZE) {
     async function persistInChunks<T>(
         items: T[],
         fn: (chunk: T[]) => Promise<void>
