@@ -1,21 +1,23 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
-import React, { useEffect, useState } from 'react';
-import MetricsChart from './MetricsChart';
+import React, { useEffect, useState, useCallback } from 'react';
+import MetricsChart from '../features/metrics/components/MetricsChart';
 import { SupportedLanguage } from '@/types/i18n';
-import { Calendar, Filter, Globe, Smartphone, TrendingUp, TrendingDown, Minus, Sparkles, MapPin, Share2 } from 'lucide-react';
+import { Calendar, Filter, Globe, Smartphone, TrendingUp, TrendingDown, Minus, Sparkles, MapPin, Share2, X } from 'lucide-react';
 
 interface Stat {
     _id: string;
     clicks: number;
+    displayDate?: string;
+    isMonthly?: boolean;
 }
 
 interface Trend {
     key: string;
-    thisWeek: number;
-    lastWeek: number;
+    thisPeriod: number;
+    lastPeriod: number;
     changePercent: number | null;
     hasEnoughData: boolean;
-    label?: string;
 }
 
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
@@ -28,16 +30,16 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         lastWeek: 'Last 7 days',
         lastMonth: 'Last 30 days',
         lastYear: 'Last year',
+        specificMonth: 'Specific month',
+        specificYear: 'Specific year',
         country: 'Country',
         all: 'All',
         source: 'Source',
         allSources: 'All sources',
         deviceType: 'Device',
         allDevices: 'All devices',
-        deviceHint: 'Filter by device to see mobile vs desktop performance',
         loading: 'Loading...',
         noData: 'No data available for this period',
-        dateError: 'Invalid date range',
         countryMetrics: 'Top countries',
         countryTotalsEmpty: 'No country data yet',
         countryClicks: 'clicks',
@@ -51,6 +53,19 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         trendNew: 'New',
         trendNoData: 'No data',
         filters: 'Filters',
+        clearFilters: 'Clear filters',
+        january: 'January',
+        february: 'February',
+        march: 'March',
+        april: 'April',
+        may: 'May',
+        june: 'June',
+        july: 'July',
+        august: 'August',
+        september: 'September',
+        october: 'October',
+        november: 'November',
+        december: 'December',
     },
     es: {
         title: 'Analíticas del enlace',
@@ -61,16 +76,16 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         lastWeek: 'Últimos 7 días',
         lastMonth: 'Últimos 30 días',
         lastYear: 'Último año',
+        specificMonth: 'Mes específico',
+        specificYear: 'Año específico',
         country: 'País',
         all: 'Todos',
         source: 'Fuente',
         allSources: 'Todas',
         deviceType: 'Dispositivo',
         allDevices: 'Todos',
-        deviceHint: 'Filtra por dispositivo para ver rendimiento móvil vs escritorio',
         loading: 'Cargando...',
         noData: 'No hay datos para este período',
-        dateError: 'Rango de fechas inválido',
         countryMetrics: 'Principales países',
         countryTotalsEmpty: 'Sin datos de país',
         countryClicks: 'clics',
@@ -84,6 +99,19 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         trendNew: 'Nuevo',
         trendNoData: 'Sin datos',
         filters: 'Filtros',
+        clearFilters: 'Limpiar filtros',
+        january: 'Enero',
+        february: 'Febrero',
+        march: 'Marzo',
+        april: 'Abril',
+        may: 'Mayo',
+        june: 'Junio',
+        july: 'Julio',
+        august: 'Agosto',
+        september: 'Septiembre',
+        october: 'Octubre',
+        november: 'Noviembre',
+        december: 'Diciembre',
     },
 };
 
@@ -96,22 +124,28 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
     const [totalClicks, setTotalClicks] = useState(0);
     const [availableCountries, setAvailableCountries] = useState<string[]>([]);
     const [availableSources, setAvailableSources] = useState<string[]>([]);
+    const [availableDevices, setAvailableDevices] = useState<string[]>([]);
     const [countryTotals, setCountryTotals] = useState<Record<string, number>>({});
     const [countryLoading, setCountryLoading] = useState(false);
     const [deviceTotals, setDeviceTotals] = useState<{ deviceType: string; clicks: number }[]>([]);
     const [sourceTotals, setSourceTotals] = useState<{ source: string; clicks: number }[]>([]);
     const [deviceTrends, setDeviceTrends] = useState<Trend[]>([]);
     const [sourceTrends, setSourceTrends] = useState<Trend[]>([]);
+    //const [isMonthlyData, setIsMonthlyData] = useState(false);
 
+    // Estados para filtros
     const [startDate, setStartDate] = useState(() => {
-        const d = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+        const d = new Date(Date.now() - 6 * 24 * 3600 * 1000); // Últimos 7 días
         return d.toISOString().slice(0, 10);
     });
     const [endDate, setEndDate] = useState(() => {
         const d = new Date();
         return d.toISOString().slice(0, 10);
     });
-    const [activePreset, setActivePreset] = useState<'week' | 'month' | 'year' | null>('week');
+
+    const [activePreset, setActivePreset] = useState<'week' | 'month' | 'year' | 'custom'>('week');
+    const [selectedMonth, setSelectedMonth] = useState<string>('');
+    const [selectedYear, setSelectedYear] = useState<string>('');
     const [country, setCountry] = useState('');
     const [deviceType, setDeviceType] = useState('');
     const [source, setSource] = useState('');
@@ -126,6 +160,9 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
             facebook: 'Facebook',
             twitter: 'Twitter',
             linkedin: 'LinkedIn',
+            email: 'Email',
+            tiktok: 'TikTok',
+            pinterest: 'Pinterest',
         },
         es: {
             instagram_bio: 'Instagram',
@@ -136,14 +173,25 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
             facebook: 'Facebook',
             twitter: 'Twitter',
             linkedin: 'LinkedIn',
+            email: 'Email',
+            tiktok: 'TikTok',
+            pinterest: 'Pinterest',
         },
     };
 
+    const monthNames = language === 'es'
+        ? ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+        : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    // Generar años disponibles (últimos 5 años)
+    const currentYear = new Date().getFullYear();
+    const availableYears = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
+
     const formatDeviceLabel = (type: string) => {
         const labels: Record<string, string> = {
-            mobile: 'Mobile',
-            desktop: 'Desktop',
-            tablet: 'Tablet',
+            mobile: language === 'es' ? 'Móvil' : 'Mobile',
+            desktop: language === 'es' ? 'Escritorio' : 'Desktop',
+            tablet: language === 'es' ? 'Tableta' : 'Tablet',
         };
         return labels[type] || t.unknownDevice;
     };
@@ -172,92 +220,159 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
             facebook: '📘',
             twitter: '🐦',
             linkedin: '💼',
+            email: '📧',
+            tiktok: '🎵',
+            pinterest: '📌',
         };
         return icons[source] || '🌐';
     };
 
+    const fetchAnalytics = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        setCountryLoading(true);
+        try {
+            // Construir URL con parámetros
+            const url = new URL(`/api/analytics/link/${linkId}`, window.location.origin);
+            url.searchParams.append('from', startDate);
+            url.searchParams.append('to', endDate);
 
+            // Agregar filtros si existen
+            if (country) url.searchParams.append('country', country);
+            if (deviceType) url.searchParams.append('device', deviceType);
+            if (source) url.searchParams.append('source', source);
 
+            const res = await fetch(url.toString());
+            if (!res.ok) throw new Error('Failed to fetch analytics');
+
+            const data = await res.json();
+
+            setTotalClicks(data.totalClicks ?? 0);
+
+            // Determinar si son datos mensuales
+            const isMonthly = data.metadata?.frequency === 'monthly';
+            //setIsMonthlyData(isMonthly);
+
+            // Formatear fechas para display
+            const formatForDisplay = (dateStr: string) => {
+                if (isMonthly) {
+                    const [year, month] = dateStr.split('-');
+                    return `${monthNames[parseInt(month) - 1]} ${year}`;
+                }
+                const [year, month, day] = dateStr.split('-');
+                return `${day}/${month}/${year.slice(-2)}`;
+            };
+
+            setStats(
+                data.daily.map((d: { date: string; clicks: number }) => ({
+                    _id: d.date,
+                    clicks: d.clicks,
+                    displayDate: formatForDisplay(d.date),
+                    isMonthly: isMonthly,
+                }))
+            );
+
+            setCountryTotals(data.byCountry || {});
+            setAvailableCountries(Object.keys(data.byCountry || {}));
+            setCountryLoading(false);
+
+            setDeviceTrends(data.trends?.byDevice ?? []);
+            setSourceTrends(data.trends?.bySource ?? []);
+
+            // Actualizar fuentes disponibles
+            setSourceTotals(
+                Object.entries(data.bySource || {}).map(([source, clicks]) => ({
+                    source,
+                    clicks: Number(clicks),
+                }))
+            );
+            setAvailableSources(Object.keys(data.bySource || {}));
+
+            // Actualizar dispositivos disponibles
+            setDeviceTotals(
+                Object.entries(data.byDevice || {}).map(([deviceType, clicks]) => ({
+                    deviceType,
+                    clicks: Number(clicks),
+                }))
+            );
+            setAvailableDevices(Object.keys(data.byDevice || {}));
+
+        } catch (err) {
+            setError('Failed to load analytics');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [linkId, startDate, endDate, country, deviceType, source, language]);
 
     useEffect(() => {
-        async function fetchAnalytics() {
-            setLoading(true);
-            setError(null);
-            setCountryLoading(true)
-            try {
-                const res = await fetch(
-                    `/api/analytics/link/${linkId}?from=${startDate}&to=${endDate}`
-                );
-                if (!res.ok) throw new Error();
-
-                const data = await res.json();
-
-                setTotalClicks(data.totalClicks ?? 0);
-
-                setStats(
-                    data.daily.map((d: { date: string; clicks: number }) => ({
-                        _id: d.date,
-                        clicks: d.clicks,
-                    }))
-                );
-
-                setCountryTotals(data.byCountry || {});
-                setAvailableCountries(Object.keys(data.byCountry || {}));
-                setCountryLoading(false)
-                setDeviceTrends(data.trends?.byDevice ?? []);
-                setSourceTrends(data.trends?.bySource ?? []);
-
-                setSourceTotals(
-                    Object.entries(data.bySource || {}).map(([source, clicks]) => ({
-                        source,
-                        clicks: Number(clicks),
-                    }))
-                );
-                setAvailableSources(Object.keys(data.bySource || {}));
-
-                setDeviceTotals(
-                    Object.entries(data.byDevice || {}).map(([deviceType, clicks]) => ({
-                        deviceType,
-                        clicks: Number(clicks),
-                    }))
-                );
-
-            } catch {
-                setError('Failed to load analytics');
-            } finally {
-                setLoading(false);
-            }
-        }
-
         fetchAnalytics();
-    }, [linkId, startDate, endDate]);
-
+    }, [fetchAnalytics]);
 
     const applyPreset = (preset: 'week' | 'month' | 'year') => {
         const end = new Date();
         const start = new Date(end);
 
         if (preset === 'week') {
-            start.setDate(end.getDate() - 6);
+            start.setDate(end.getDate() - 6); // Últimos 7 días
         } else if (preset === 'month') {
-            start.setMonth(end.getMonth() - 1);
+            start.setMonth(end.getMonth() - 1); // Últimos 30 días
         } else {
-            start.setFullYear(end.getFullYear() - 1);
+            start.setFullYear(end.getFullYear() - 1); // Último año
         }
 
         setEndDate(end.toISOString().slice(0, 10));
         setStartDate(start.toISOString().slice(0, 10));
         setActivePreset(preset);
+        setSelectedMonth('');
+        setSelectedYear('');
+    };
+
+    const handleMonthSelect = (monthIndex: number) => {
+        const year = selectedYear || currentYear.toString();
+        const start = new Date(parseInt(year), monthIndex, 1);
+        const end = new Date(parseInt(year), monthIndex + 1, 0);
+
+        setStartDate(start.toISOString().slice(0, 10));
+        setEndDate(end.toISOString().slice(0, 10));
+        setActivePreset('custom');
+        setSelectedMonth(monthIndex.toString());
+    };
+
+    const handleYearSelect = (year: string) => {
+        setSelectedYear(year);
+        if (selectedMonth) {
+            handleMonthSelect(parseInt(selectedMonth));
+        } else {
+            // Si no hay mes seleccionado, mostrar todo el año
+            const start = new Date(parseInt(year), 0, 1);
+            const end = new Date(parseInt(year), 11, 31);
+
+            setStartDate(start.toISOString().slice(0, 10));
+            setEndDate(end.toISOString().slice(0, 10));
+            setActivePreset('custom');
+        }
+    };
+
+    const clearFilters = () => {
+        setCountry('');
+        setDeviceType('');
+        setSource('');
+        applyPreset('week'); // Resetear a último semana
     };
 
     const handleStartDateChange = (value: string) => {
         setStartDate(value);
-        setActivePreset(null);
+        setActivePreset('custom');
+        setSelectedMonth('');
+        setSelectedYear('');
     };
 
     const handleEndDateChange = (value: string) => {
         setEndDate(value);
-        setActivePreset(null);
+        setActivePreset('custom');
+        setSelectedMonth('');
+        setSelectedYear('');
     };
 
     const renderTrendBadge = (trend?: Trend) => {
@@ -300,6 +415,8 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
         );
     };
 
+    const hasActiveFilters = country || deviceType || source;
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -314,6 +431,37 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                                     <span className="text-gray-500">Viewing: </span>
                                     <span className="font-medium text-emerald-400">{selectedUrl}</span>
                                 </p>
+                            )}
+                            {hasActiveFilters && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {country && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/20 px-2 py-1 text-xs text-purple-300">
+                                            <MapPin size={10} />
+                                            {country}
+                                            <button onClick={() => setCountry('')} className="ml-1 hover:text-white">
+                                                <X size={10} />
+                                            </button>
+                                        </span>
+                                    )}
+                                    {deviceType && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/20 px-2 py-1 text-xs text-cyan-300">
+                                            <Smartphone size={10} />
+                                            {formatDeviceLabel(deviceType)}
+                                            <button onClick={() => setDeviceType('')} className="ml-1 hover:text-white">
+                                                <X size={10} />
+                                            </button>
+                                        </span>
+                                    )}
+                                    {source && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-1 text-xs text-emerald-300">
+                                            <Share2 size={10} />
+                                            {formatSourceLabel(source)}
+                                            <button onClick={() => setSource('')} className="ml-1 hover:text-white">
+                                                <X size={10} />
+                                            </button>
+                                        </span>
+                                    )}
+                                </div>
                             )}
                         </div>
                         <div className="flex items-center gap-3">
@@ -331,14 +479,84 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
             {/* Filters */}
             <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5" />
-                <div className="relative p-6 space-y-4">
-                    <div className="flex items-center gap-2">
-                        <Filter size={18} className="text-cyan-400" />
-                        <h3 className="text-lg font-semibold text-white">{t.filters}</h3>
+                <div className="relative p-6 space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Filter size={18} className="text-cyan-400" />
+                            <h3 className="text-lg font-semibold text-white">{t.filters}</h3>
+                        </div>
+                        {hasActiveFilters && (
+                            <button
+                                onClick={clearFilters}
+                                className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-300 hover:bg-red-500/20"
+                            >
+                                <X size={14} />
+                                {t.clearFilters}
+                            </button>
+                        )}
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                        <div className="sm:col-span-2">
+                    {/* Quick Ranges */}
+                    <div>
+                        <label className="mb-2 block text-sm font-medium text-gray-300">{t.quickRanges}</label>
+                        <div className="flex flex-wrap gap-2">
+                            {(['week', 'month', 'year'] as const).map((preset) => (
+                                <button
+                                    key={preset}
+                                    onClick={() => applyPreset(preset)}
+                                    className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${activePreset === preset
+                                        ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
+                                        : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                                        }`}
+                                >
+                                    {t[preset === 'week' ? 'lastWeek' : preset === 'month' ? 'lastMonth' : 'lastYear']}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Month and Year Selectors */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="mb-2 block text-sm font-medium text-gray-300">{t.specificMonth}</label>
+                            <div className="flex flex-wrap gap-2">
+                                {monthNames.map((month, index) => (
+                                    <button
+                                        key={month}
+                                        onClick={() => handleMonthSelect(index)}
+                                        className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${selectedMonth === index.toString()
+                                            ? 'border-purple-400/60 bg-purple-500/20 text-purple-300 shadow-lg shadow-purple-500/20'
+                                            : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                                            }`}
+                                    >
+                                        {month}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-medium text-gray-300">{t.specificYear}</label>
+                            <div className="flex flex-wrap gap-2">
+                                {availableYears.map((year) => (
+                                    <button
+                                        key={year}
+                                        onClick={() => handleYearSelect(year)}
+                                        className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${selectedYear === year
+                                            ? 'border-cyan-400/60 bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                                            : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                                            }`}
+                                    >
+                                        {year}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Custom Date Range */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
                             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                                 <Calendar size={14} className="text-emerald-400" />
                                 {t.from}
@@ -352,7 +570,7 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                             />
                         </div>
 
-                        <div className="sm:col-span-2">
+                        <div>
                             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                                 <Calendar size={14} className="text-cyan-400" />
                                 {t.to}
@@ -366,42 +584,10 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                                 className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
                             />
                         </div>
+                    </div>
 
-                        <div className="sm:col-span-2">
-                            <label className="mb-2 block text-sm font-medium text-gray-300">{t.quickRanges}</label>
-                            <div className="flex flex-wrap gap-2">
-                                {(['week', 'month', 'year'] as const).map((preset) => (
-                                    <button
-                                        key={preset}
-                                        onClick={() => applyPreset(preset)}
-                                        className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${activePreset === preset
-                                            ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
-                                            : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
-                                            }`}
-                                    >
-                                        {t[preset === 'week' ? 'lastWeek' : preset === 'month' ? 'lastMonth' : 'lastYear']}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
-                                <MapPin size={14} className="text-purple-400" />
-                                {t.country}
-                            </label>
-                            <select
-                                value={country}
-                                onChange={(e) => setCountry(e.target.value)}
-                                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-purple-400/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
-                            >
-                                <option value="">{t.all}</option>
-                                {availableCountries.map((c) => (
-                                    <option key={c} value={c}>{c}</option>
-                                ))}
-                            </select>
-                        </div>
-
+                    {/* Filter by Device, Source, Country */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                                 <Smartphone size={14} className="text-cyan-400" />
@@ -413,9 +599,11 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                                 className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
                             >
                                 <option value="">{t.allDevices}</option>
-                                <option value="mobile">Mobile</option>
-                                <option value="desktop">Desktop</option>
-                                <option value="tablet">Tablet</option>
+                                {availableDevices.map((device) => (
+                                    <option key={device} value={device}>
+                                        {formatDeviceLabel(device)}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -431,7 +619,26 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                             >
                                 <option value="">{t.allSources}</option>
                                 {availableSources.map((src) => (
-                                    <option key={src} value={src}>{formatSourceLabel(src)}</option>
+                                    <option key={src} value={src}>
+                                        {formatSourceLabel(src)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <MapPin size={14} className="text-purple-400" />
+                                {t.country}
+                            </label>
+                            <select
+                                value={country}
+                                onChange={(e) => setCountry(e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white backdrop-blur-sm transition focus:border-purple-400/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                            >
+                                <option value="">{t.all}</option>
+                                {availableCountries.map((c) => (
+                                    <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>
                         </div>
@@ -459,6 +666,11 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: { link
                     <div className="relative text-center space-y-3">
                         <Globe size={48} className="mx-auto text-gray-600" />
                         <p className="text-lg text-gray-400">{t.noData}</p>
+                        {hasActiveFilters && (
+                            <p className="text-sm text-gray-500">
+                                Try changing your filters or date range
+                            </p>
+                        )}
                     </div>
                 </div>
             )}

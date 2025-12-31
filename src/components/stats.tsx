@@ -2,8 +2,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Compass } from 'lucide-react';
 import useLinks, { Link } from '@/hooks/useLinks';
-import Metrics from './metrics';
 import { SupportedLanguage } from '@/types/i18n';
+import Metrics from '@/features/metrics/components/Metrics';
 
 interface StatsProps {
     links?: Link[];
@@ -68,11 +68,10 @@ const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
                         <button
                             key={link.id}
                             onClick={() => setSelectedLink(link.id)}
-                            className={`w-full break-words rounded-lg border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                selectedLink === link.id
-                                    ? 'border-blue-500 bg-blue-500/20 text-white'
-                                    : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-500'
-                            }`}
+                            className={`w-full break-words rounded-lg border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedLink === link.id
+                                ? 'border-blue-500 bg-blue-500/20 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-500'
+                                }`}
                         >
                             {link.destinationUrl}
                         </button>

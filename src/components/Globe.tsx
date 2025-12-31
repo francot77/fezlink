@@ -6,17 +6,62 @@ import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 
 const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
 
+type CountryStat = {
+    country: string;
+    clicksCount: number;
+};
+
+type PointData = {
+    lat: number;
+    lng: number;
+    size: number;
+    color: string;
+};
+
+/* 🔥 Heatmap color interpolation (cold → hot) */
+function heatColor(t: number) {
+    t = Math.max(0, Math.min(1, t));
+
+    // verde → amarillo → rojo
+    if (t < 0.5) {
+        // green → yellow
+        const p = t / 0.5;
+        const r = Math.round(255 * p);
+        const g = 255;
+        const b = 80;
+        return `rgba(${r}, ${g}, ${b},0.75)`;
+    } else {
+        // yellow → red
+        const p = (t - 0.5) / 0.5;
+        const r = 255;
+        const g = Math.round(255 * (1 - p));
+        const b = 50;
+        return `rgba(${r}, ${g}, ${b},0.55)`;
+    }
+}
+
+
 export default function ClicksGlobe({
     countries,
 }: {
-    countries: { country: string; clicksCount: number }[];
+    countries: CountryStat[];
 }) {
-    type PointData = { lat: number; lng: number; size: number };
-    const [arcsData, setArcsData] = useState<PointData[]>([]);
+    const [pointsData, setPointsData] = useState<PointData[]>([]);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [animate, setAnimate] = useState(true);
     const containerRef = useRef<HTMLDivElement>(null);
     const globeEl = useRef<any>(null);
 
+    /* ---------------- resize handling ---------------- */
+    function scaleHeight(clicks: number) {
+        const h = Math.sqrt(clicks) * 0.015;
+        return animate ? h * 0.6 : h;
+    }
+
+    useEffect(() => {
+        const t = setTimeout(() => setAnimate(false), 1200);
+        return () => clearTimeout(t);
+    }, []);
     useLayoutEffect(() => {
         const updateSize = () => {
             const el = containerRef.current;
@@ -26,17 +71,14 @@ export default function ClicksGlobe({
 
         updateSize();
 
-        const resizeObserver = new ResizeObserver(updateSize);
-        const current = containerRef.current;
-        if (current) resizeObserver.observe(current);
+        const observer = new ResizeObserver(updateSize);
+        if (containerRef.current) observer.observe(containerRef.current);
 
-        return () => {
-            if (current) resizeObserver.unobserve(current);
-            resizeObserver.disconnect();
-        };
+        return () => observer.disconnect();
     }, []);
 
-    // 🧠 Delay hasta que ref esté disponible
+    /* ---------------- globe setup ---------------- */
+
     useLayoutEffect(() => {
         const interval = setInterval(() => {
             if (globeEl.current) {
@@ -50,170 +92,123 @@ export default function ClicksGlobe({
         return () => clearInterval(interval);
     }, []);
 
+    /* ---------------- data mapping ---------------- */
+
     useEffect(() => {
         const countryCoords: Record<string, [number, number]> = {
-            AF: [33.9391, 67.7100],
-            AL: [41.1533, 20.1683],
-            AO: [-11.2027, 17.8739],
-            AR: [-38.4161, -63.6167],
-            AM: [40.0691, 45.0382],
-            AU: [-25.2744, 133.7751],
-            AT: [47.5162, 14.5501],
-            AZ: [40.1431, 47.5769],
-            BD: [23.6850, 90.3563],
-            BE: [50.5039, 4.4699],
-            BF: [12.2383, -1.5616],
-            BG: [42.7339, 25.4858],
-            BI: [-3.3731, 29.9189],
-            BJ: [9.3077, 2.3158],
-            BO: [-16.2902, -63.5887],
-            BR: [-14.2350, -51.9253],
-            BW: [-22.3285, 24.6849],
-            BY: [53.7098, 27.9534],
-            CA: [56.1304, -106.3468],
-            CD: [-4.0383, 21.7587],
-            CF: [6.6111, 20.9394],
-            CH: [46.8182, 8.2275],
-            CL: [-35.6751, -71.5430],
-            CN: [35.8617, 104.1954],
-            CO: [4.5709, -74.2973],
-            CR: [9.7489, -83.7534],
-            CU: [21.5218, -77.7812],
-            CZ: [49.8175, 15.4730],
-            DE: [51.1657, 10.4515],
-            DK: [56.2639, 9.5018],
-            DO: [18.7357, -70.1627],
-            DZ: [28.0339, 1.6596],
-            EC: [-1.8312, -78.1834],
-            EE: [58.5953, 25.0136],
-            EG: [26.8206, 30.8025],
-            ES: [40.4637, -3.7492],
-            FI: [61.9241, 25.7482],
-            FR: [46.6034, 1.8883],
-            GB: [55.3781, -3.4360],
-            GE: [42.3154, 43.3569],
-            GH: [7.9465, -1.0232],
-            GL: [71.7069, -42.6043],
-            GN: [9.9456, -9.6966],
-            GQ: [1.6508, 10.2679],
-            GR: [39.0742, 21.8243],
-            GT: [15.7835, -90.2308],
-            HN: [13.7942, -88.8965],
-            HR: [45.1000, 15.2000],
-            HT: [18.9712, -72.2852],
-            HU: [47.1625, 19.5033],
-            ID: [-0.7893, 113.9213],
-            IE: [53.4129, -8.2439],
-            IL: [31.0461, 34.8516],
-            IN: [20.5937, 78.9629],
-            IQ: [33.2232, 43.6793],
-            IR: [32.4279, 53.6880],
-            IS: [64.9631, -19.0208],
-            IT: [41.8719, 12.5674],
-            JM: [18.1096, -77.2975],
-            JO: [30.5852, 36.2384],
-            JP: [36.2048, 138.2529],
-            KE: [-0.0236, 37.9062],
-            KG: [41.2044, 74.7661],
-            KH: [12.5657, 104.9910],
-            KP: [40.3399, 127.5101],
-            KR: [35.9078, 127.7669],
-            KW: [29.3117, 47.4818],
-            KZ: [48.0196, 66.9237],
-            LA: [19.8563, 102.4955],
-            LB: [33.8547, 35.8623],
-            LK: [7.8731, 80.7718],
-            LR: [6.4281, -9.4295],
-            LS: [-29.6099, 28.2336],
-            LT: [55.1694, 23.8813],
-            LU: [49.8153, 6.1296],
-            LV: [56.8796, 24.6032],
-            LY: [26.3351, 17.2283],
-            MA: [31.7917, -7.0926],
-            MD: [47.4116, 28.3699],
-            ME: [42.7087, 19.3744],
-            MG: [-18.7669, 46.8691],
-            MK: [41.6086, 21.7453],
-            ML: [17.5707, -3.9962],
-            MM: [21.9162, 95.9560],
-            MN: [46.8625, 103.8467],
-            MR: [21.0079, -10.9408],
-            MT: [35.9375, 14.3754],
-            MX: [23.6345, -102.5528],
-            MY: [4.2105, 101.9758],
-            MZ: [-18.6657, 35.5296],
-            NA: [-22.9576, 18.4904],
-            NE: [17.6078, 8.0817],
-            NG: [9.0820, 8.6753],
-            NI: [12.8654, -85.2072],
-            NL: [52.1326, 5.2913],
-            NO: [60.4720, 8.4689],
-            NP: [28.3949, 84.1240],
-            NZ: [-40.9006, 174.8860],
-            OM: [21.5126, 55.9233],
-            PA: [8.5380, -80.7821],
-            PE: [-9.1900, -75.0152],
-            PG: [-6.3149, 143.9555],
-            PH: [12.8797, 121.7740],
-            PK: [30.3753, 69.3451],
-            PL: [51.9194, 19.1451],
-            PT: [39.3999, -8.2245],
-            PY: [-23.4425, -58.4438],
-            QA: [25.3548, 51.1839],
-            RO: [45.9432, 24.9668],
-            RS: [44.0165, 21.0059],
-            RU: [61.5240, 105.3188],
-            RW: [-1.9403, 29.8739],
-            SA: [23.8859, 45.0792],
-            SD: [12.8628, 30.2176],
-            SE: [60.1282, 18.6435],
-            SG: [1.3521, 103.8198],
-            SI: [46.1512, 14.9955],
-            SK: [48.6690, 19.6990],
-            SL: [8.4606, -11.7799],
-            SN: [14.4974, -14.4524],
-            SO: [5.1521, 46.1996],
-            SR: [3.9193, -56.0278],
-            SV: [13.7942, -88.8965],
-            SY: [34.8021, 38.9968],
-            SZ: [-26.5225, 31.4659],
-            TD: [15.4542, 18.7322],
-            TG: [8.6195, 0.8248],
-            TH: [15.8700, 100.9925],
-            TJ: [38.8610, 71.2761],
-            TL: [-8.8742, 125.7275],
-            TN: [33.8869, 9.5375],
-            TR: [38.9637, 35.2433],
-            TT: [10.6918, -61.2225],
-            TW: [23.6978, 120.9605],
-            TZ: [-6.3690, 34.8888],
-            UA: [48.3794, 31.1656],
-            UG: [1.3733, 32.2903],
-            US: [37.0902, -95.7129],
-            UY: [-32.5228, -55.7658],
-            UZ: [41.3775, 64.5853],
-            VE: [6.4238, -66.5897],
-            VN: [14.0583, 108.2772],
-            YE: [15.5527, 48.5164],
-            ZA: [-30.5595, 22.9375],
-            ZM: [-13.1339, 27.8493],
-            ZW: [-19.0154, 29.1549],
-            UNKNOWN: [0, 0], // fallback
+            AG: [17.05, -61.8],
+            BT: [27.5, 90.5],
+            IT: [42.83333333, 12.83333333],
+            TV: [-8.0, 178.0],
+            AI: [18.25, -63.16666666],
+            AU: [-27.0, 133.0],
+            BZ: [17.25, -88.75],
+            VU: [-16.0, 167.0],
+            BY: [53.0, 28.0],
+            MU: [-20.28333333, 57.55],
+            LA: [18.0, 105.0],
+            SN: [14.0, -14.0],
+            TR: [39.0, 35.0],
+            BO: [-17.0, -65.0],
+            LK: [7.0, 81.0],
+            NF: [-29.03333333, 167.95],
+            CN: [35.0, 105.0],
+            BQ: [12.18, -68.25],
+            GG: [49.46666666, -2.58333333],
+            SD: [15.0, 30.0],
+            YT: [-12.83333333, 45.16666666],
+            BL: [18.5, -63.41666666],
+            VA: [41.9, 12.45],
+            TC: [21.75, -71.58333333],
+            CW: [12.116667, -68.933333],
+            BW: [-22.0, 24.0],
+            BJ: [9.5, 2.25],
+            LT: [56.0, 24.0],
+            MS: [16.75, -62.2],
+            VG: [18.431383, -64.62305],
+            BI: [-3.5, 30.0],
+            IE: [53.0, -8.0],
+            SB: [-8.0, 159.0],
+            BM: [32.33333333, -64.75],
+            FI: [64.0, 26.0],
+            PE: [-10.0, -76.0],
+            BD: [24.0, 90.0],
+            DK: [56.0, 10.0],
+            DO: [19.0, -70.66666666],
+            MD: [47.0, 29.0],
+            BG: [43.0, 25.0],
+            CR: [10.0, -84.0],
+            NA: [-22.0, 17.0],
+            LU: [49.75, 6.16666666],
+            RU: [60.0, 100.0],
+            AE: [24.0, 54.0],
+            BS: [25.0343, -77.3963],
+            JP: [36.0, 138.0],
+            NG: [10.0, 8.0],
+            GH: [8.0, -2.0],
+            SL: [8.5, -11.5],
+            AL: [41.0, 20.0],
+            BE: [50.83333333, 4.0],
+            ZM: [-15.0, 30.0],
+            MG: [-20.0, 47.0],
+            KR: [37.0, 127.5],
+            ET: [8.0, 38.0],
+            MN: [46.0, 105.0],
+            SK: [48.66666666, 19.5],
+            CU: [21.5, -80.0],
+            GT: [15.5, -90.25],
+            NO: [62.0, 10.0],
+            CL: [-30.0, -71.0],
+            CO: [4.0, -72.0],
+            SA: [25.0, 45.0],
+            IL: [31.47, 35.13],
+            DE: [51.0, 9.0],
+            NZ: [-41.0, 174.0],
+            SE: [62.0, 15.0],
+            ES: [40.0, -4.0],
+            IN: [20.0, 77.0],
+            GB: [54.0, -2.0],
+            CA: [60.0, -95.0],
+            MX: [23.0, -102.0],
+            US: [38.0, -97.0],
+            AR: [-34.0, -64.0],
+            BR: [-10.0, -55.0],
+            UY: [-33.0, -56.0],
+            VE: [8.0, -66.0],
+            ZA: [-29.0, 24.0],
+            ZW: [-20.0, 30.0],
+
+            UNKNOWN: [0, 0],
         };
 
-        const data = countries
-            .filter((c) => countryCoords[c.country])
-            .map((c) => {
+
+        if (countries.length === 0) {
+            setPointsData([]);
+            return;
+        }
+
+        const values = countries.map(c => c.clicksCount);
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+
+        const mapped: PointData[] = countries
+            .filter(c => countryCoords[c.country])
+            .map(c => {
                 const [lat, lng] = countryCoords[c.country];
+                const t = max === min ? 1 : (c.clicksCount - min) / (max - min);
+
                 return {
                     lat,
                     lng,
                     size: c.clicksCount,
+                    color: heatColor(t),
                 };
             });
 
-        setArcsData(data);
+        setPointsData(mapped);
     }, [countries]);
+
+    /* ---------------- render ---------------- */
 
     return (
         <div
@@ -224,14 +219,16 @@ export default function ClicksGlobe({
                 ref={globeEl}
                 width={dimensions.width}
                 height={dimensions.height}
-                globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+                globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+
                 backgroundColor="rgba(0,0,0,0)"
-                pointsData={arcsData}
+                pointsData={pointsData}
                 pointLat={(d: any) => d.lat}
                 pointLng={(d: any) => d.lng}
-                pointAltitude={(d: any) => d.size * 0.001}
-                pointColor={() => '#b3f96d'}
-                pointRadius={0.3}
+                pointAltitude={(d: any) => scaleHeight(d.size)}
+                pointColor={(d: any) => d.color}
+                pointsTransitionDuration={2000}
+                pointRadius={0.5}
                 pointResolution={12}
             />
         </div>

@@ -234,19 +234,18 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
         setNewUrl,
         loading,
         addLink,
-        getStats,
+        openStats,
         handleDelete,
         modals,
     } = linkState ?? fallbackState;
 
     const totalClicks = useMemo(() => links.reduce((acc, link) => acc + (link.clicks ?? 0), 0), [links]);
     const t = translations[language];
-
+    //console.log(links)
     const handleAdd = () => {
         if (!newUrl || !newUrl.startsWith('http')) return;
         addLink(newUrl.trim());
     };
-
     const stats = [
         {
             label: t.activeLinks,
@@ -376,7 +375,7 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                             key={link.id}
                             link={link}
                             language={language}
-                            onStats={() => getStats(link)}
+                            onStats={() => openStats(link)}
                             onDelete={() => handleDelete(link)}
                         />
                     ))}

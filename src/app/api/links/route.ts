@@ -80,13 +80,13 @@ export async function GET() {
     try {
         await dbConnect();
         const links = await Link.find({ userId });
-
         const response = links.map(link => ({
             id: link._id,
             destinationUrl: link.destinationUrl,
             shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || ''}/${link.slug}`,
             slug: link.slug,
-            clicks: link.totalClicks
+            clicks: link.totalClicks,
+            byCountry: link.byCountry
         }));
 
         return NextResponse.json({ links: response });

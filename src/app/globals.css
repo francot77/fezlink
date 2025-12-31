@@ -96,3 +96,29 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
 }
+
+/* Scrollbar thin – sin plugins */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: #4b5563 transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  /* gray-600 */
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+  /* gray-500 */
+}

@@ -36,6 +36,7 @@ const countryToLocale: Record<string, string> = {
 
 async function getCountryFromHeaders(): Promise<string | null> {
     const headersList = headers()
+
     // Vercel/Cloudflare geo headers
     const country =
         (await headersList).get('x-vercel-ip-country') ||
