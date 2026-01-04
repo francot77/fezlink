@@ -53,34 +53,34 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, description, onAccept, onC
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 overflow-y-auto" role="presentation">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-2 overflow-y-auto" role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={title ? headingId : undefined}
-                className="relative w-full max-w-5xl rounded-2xl border border-gray-700 bg-gray-900 p-6 shadow-2xl shadow-blue-700/20"
+                className="relative w-full max-w-5xl rounded-2xl border border-gray-700 bg-gray-900 p-2 shadow-2xl shadow-blue-700/20"
                 tabIndex={-1}
             >
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        {title && <h2 id={headingId} className="text-2xl font-semibold text-white">{title}</h2>}
+                        {title && <h2 id={headingId} className="text-2xl p-2 font-semibold text-white">{title}</h2>}
                     </div>
                     {onCancel && (
                         <button
                             aria-label="Cerrar"
                             onClick={onCancel}
-                            className="rounded-full border border-gray-700 bg-gray-800 p-2 text-gray-300 transition hover:border-gray-500 hover:text-white"
+                            className="rounded-full border border-gray-700 bg-gray-800 p-2 py-1 text-gray-300 transition hover:border-gray-500 hover:text-white"
                         >
                             ✕
                         </button>
                     )}
                 </div>
 
-                <div className="mt-4 text-gray-200">{description}</div>
+                <div className="mt-1 text-gray-200">{description}</div>
 
                 {(onAccept) && (
-                    <div className="mt-6 flex flex-wrap justify-end gap-3">
+                    <div className="mt-4 flex flex-wrap justify-end gap-2">
 
                         {onAccept && (
                             <button

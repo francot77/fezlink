@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { BarChart3, Check, Copy, ExternalLink, Link as LinkIcon, Loader2, PlusCircle, Trash2, Instagram, MessageCircle, QrCode, TrendingUp } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { BarChart3, Check, Copy, ExternalLink, Link as LinkIcon, Loader2, PlusCircle, Trash2, Instagram, MessageCircle, QrCode, TrendingUp, Search, X } from 'lucide-react';
 import Button from './button';
 import useLinks, { Link } from '@/hooks/useLinks';
 import { SupportedLanguage } from '@/types/i18n';
@@ -35,6 +35,10 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         copyWhatsapp: 'WhatsApp',
         copyQr: 'QR Code',
         quickShare: 'Quick share',
+        search: 'Search links...',
+        clear: 'Clear',
+        deleting: 'Deleting...',
+        noResults: 'No links found',
     },
     es: {
         clicks: 'clicks',
@@ -58,19 +62,78 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         copyWhatsapp: 'WhatsApp',
         copyQr: 'Código QR',
         quickShare: 'Compartir rápido',
+        search: 'Buscar enlaces...',
+        clear: 'Limpiar',
+        deleting: 'Eliminando...',
+        noResults: 'No se encontraron enlaces',
     },
 };
+
+// Animated counter component
+const AnimatedCounter = ({ value, duration = 1000 }: { value: number; duration?: number }) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let startTime: number;
+        let animationFrame: number;
+
+        const animate = (timestamp: number) => {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+
+            setCount(Math.floor(progress * value));
+
+            if (progress < 1) {
+                animationFrame = requestAnimationFrame(animate);
+            }
+        };
+
+        animationFrame = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(animationFrame);
+    }, [value, duration]);
+
+    return <>{count.toLocaleString()}</>;
+};
+
+// Skeleton loader for links
+const LinkSkeleton = () => (
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl">
+        <div className="p-6 space-y-4 animate-pulse">
+            <div className="flex items-start gap-3">
+                <div className="h-12 w-12 rounded-xl bg-white/5" />
+                <div className="flex-1 space-y-2">
+                    <div className="h-3 w-20 rounded bg-white/5" />
+                    <div className="h-5 w-48 rounded bg-white/10" />
+                </div>
+                <div className="h-7 w-16 rounded-full bg-white/5" />
+            </div>
+            <div className="h-10 w-full rounded-xl bg-white/5" />
+            <div className="space-y-2">
+                <div className="h-3 w-24 rounded bg-white/5" />
+                <div className="grid grid-cols-3 gap-2">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="h-20 rounded-lg bg-white/5" />
+                    ))}
+                </div>
+            </div>
+        </div>
+    </div>
+);
 
 const LinkCard = ({
     link,
     onStats,
     onDelete,
     language = 'en',
+    isDeleting = false,
+    index = 0,
 }: {
     link: Link;
     onStats: () => void;
     onDelete: () => void;
     language?: SupportedLanguage;
+    isDeleting?: boolean;
+    index?: number;
 }) => {
     const safeShortUrl = link.shortUrl ?? '';
     const hostname = useMemo(
@@ -113,11 +176,24 @@ const LinkCard = ({
     ];
 
     return (
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl hover:shadow-emerald-500/10">
+        <div
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl hover:shadow-emerald-500/10 animate-in fade-in slide-in-from-bottom-4"
+            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+        >
             {/* Gradient overlay on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-            <div className="relative p-6 space-y-4">
+            {/* Deleting overlay */}
+            {isDeleting && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                    <div className="flex items-center gap-3">
+                        <Loader2 className="h-6 w-6 animate-spin text-red-400" />
+                        <span className="text-sm font-semibold text-red-400">{t.deleting}</span>
+                    </div>
+                </div>
+            )}
+
+            <div className="relative p-4 sm:p-6 space-y-4">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -127,7 +203,7 @@ const LinkCard = ({
                         <div className="flex-1 min-w-0 space-y-1">
                             <p className="text-xs font-medium uppercase tracking-wider text-gray-500">{originalHost}</p>
                             <a
-                                className="block truncate text-lg font-semibold text-white transition-colors hover:text-emerald-400"
+                                className="block truncate text-base sm:text-lg font-semibold text-white transition-colors hover:text-emerald-400"
                                 href={safeShortUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -149,7 +225,7 @@ const LinkCard = ({
                 {/* Copy main link button */}
                 <button
                     onClick={() => handleCopy()}
-                    className={`w-full flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${copied
+                    className={`w-full flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-all duration-300 active:scale-95 ${copied
                         ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
                         : 'border-white/10 bg-white/5 text-gray-300 hover:border-emerald-400/40 hover:bg-white/10 hover:text-white'
                         }`}
@@ -171,7 +247,7 @@ const LinkCard = ({
                                 <button
                                     key={channel.src}
                                     onClick={() => handleChannelCopy(channel.src, url)}
-                                    className={`group/btn relative overflow-hidden rounded-lg border p-3 transition-all duration-300 ${isCopied
+                                    className={`group/btn relative overflow-hidden rounded-lg border p-3 transition-all duration-300 active:scale-95 ${isCopied
                                         ? 'border-emerald-400/60 bg-emerald-500/20 shadow-lg shadow-emerald-500/20'
                                         : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                                         }`}
@@ -195,11 +271,12 @@ const LinkCard = ({
                     </div>
                 </div>
 
-                {/* Actions */}
+                {/* Actions - Better mobile touch targets */}
                 <div className="grid grid-cols-3 gap-2 pt-2">
                     <button
                         onClick={onStats}
-                        className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-105 hover:shadow-blue-500/40"
+                        disabled={isDeleting}
+                        className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-105 hover:shadow-blue-500/40 active:scale-95 disabled:opacity-50"
                     >
                         <BarChart3 size={16} />
                         <span className="hidden sm:inline">{t.stats}</span>
@@ -208,14 +285,15 @@ const LinkCard = ({
                         href={safeShortUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-gray-300 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:text-white"
+                        className={`flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-semibold text-gray-300 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:text-white active:scale-95 ${isDeleting ? 'pointer-events-none opacity-50' : ''}`}
                     >
                         <ExternalLink size={16} />
                         <span className="hidden sm:inline">{t.openLink}</span>
                     </a>
                     <button
                         onClick={onDelete}
-                        className="flex items-center justify-center gap-2 rounded-lg bg-red-600/10 px-3 py-2 text-sm font-semibold text-red-400 ring-1 ring-red-500/20 transition-all duration-300 hover:bg-red-600/20 hover:ring-red-500/40 hover:text-red-300"
+                        disabled={isDeleting}
+                        className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-red-600/10 px-3 py-2.5 text-sm font-semibold text-red-400 ring-1 ring-red-500/20 transition-all duration-300 hover:bg-red-600/20 hover:ring-red-500/40 hover:text-red-300 active:scale-95 disabled:opacity-50"
                     >
                         <Trash2 size={16} />
                         <span className="hidden sm:inline">{t.delete}</span>
@@ -239,13 +317,53 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
         modals,
     } = linkState ?? fallbackState;
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+    const [urlPreview, setUrlPreview] = useState('');
+
     const totalClicks = useMemo(() => links.reduce((acc, link) => acc + (link.clicks ?? 0), 0), [links]);
     const t = translations[language];
-    //console.log(links)
+
+    // Filter links based on search
+    const filteredLinks = useMemo(() => {
+        if (!searchQuery.trim()) return links;
+        const query = searchQuery.toLowerCase();
+        return links.filter(link =>
+            link.shortUrl?.toLowerCase().includes(query) ||
+            link.destinationUrl.toLowerCase().includes(query)
+        );
+    }, [links, searchQuery]);
+
     const handleAdd = () => {
         if (!newUrl || !newUrl.startsWith('http')) return;
         addLink(newUrl.trim());
+        setUrlPreview('');
     };
+
+    const handleDeleteWithLoading = async (link: Link) => {
+        setDeletingIds(prev => new Set(prev).add(link.id));
+        await handleDelete(link);
+        setDeletingIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(link.id);
+            return newSet;
+        });
+    };
+
+    // Extract domain for preview
+    useEffect(() => {
+        if (newUrl && newUrl.startsWith('http')) {
+            try {
+                const url = new URL(newUrl);
+                setUrlPreview(url.hostname);
+            } catch {
+                setUrlPreview('');
+            }
+        } else {
+            setUrlPreview('');
+        }
+    }, [newUrl]);
+
     const stats = [
         {
             label: t.activeLinks,
@@ -276,22 +394,25 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
 
             {/* Stats cards */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {stats.map((stat) => {
+                {stats.map((stat, index) => {
                     const Icon = stat.icon;
                     return (
                         <div
                             key={stat.label}
-                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-xl"
+                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-xl animate-in fade-in slide-in-from-top-4"
+                            style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
                         >
                             <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-50`} />
-                            <div className="relative p-6 space-y-3">
+                            <div className="relative p-4 sm:p-6 space-y-3">
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm font-medium text-gray-400">{stat.label}</p>
                                     <div className={`rounded-lg bg-white/5 p-2 ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-110`}>
                                         <Icon size={18} className={stat.iconColor} />
                                     </div>
                                 </div>
-                                <p className="text-4xl font-bold text-white">{stat.value.toLocaleString()}</p>
+                                <p className="text-3xl sm:text-4xl font-bold text-white">
+                                    <AnimatedCounter value={stat.value} />
+                                </p>
                             </div>
                         </div>
                     );
@@ -299,9 +420,9 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
             </div>
 
             {/* Create new link */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl">
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl animate-in fade-in slide-in-from-top-4" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
-                <div className="relative p-6 space-y-4">
+                <div className="relative p-4 sm:p-6 space-y-4">
                     <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 ring-1 ring-white/10">
                             <PlusCircle size={20} className="text-emerald-400" />
@@ -328,13 +449,18 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                                     : 'border-red-500/50 focus:border-red-400 focus:ring-red-500/20'
                                     }`}
                             />
+                            {urlPreview && (
+                                <div className="absolute -bottom-6 left-0 text-xs text-emerald-400">
+                                    → {urlPreview}
+                                </div>
+                            )}
                         </div>
                         <Button
                             title={t.addLink}
                             disabled={!newUrl || !newUrl.startsWith('http')}
                             onClick={handleAdd}
-                            className={`flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300 ${newUrl && newUrl.startsWith('http')
-                                ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg shadow-emerald-500/30 hover:scale-105 hover:shadow-emerald-500/40'
+                            className={`flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300 ${newUrl && newUrl.startsWith('http')
+                                ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg shadow-emerald-500/30 hover:scale-105 hover:shadow-emerald-500/40 active:scale-95'
                                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                 }`}
                         >
@@ -345,10 +471,32 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                 </div>
             </div>
 
-            {/* Links list */}
+            {/* Search and links list */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h2 className="text-xl font-semibold text-white">{t.myLinks}</h2>
+
+                    {links.length > 0 && (
+                        <div className="relative max-w-xs">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder={t.search}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-white/5 py-2 pl-10 pr-10 text-sm text-white backdrop-blur-sm transition-all focus:border-emerald-400/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+                    )}
+
                     {loading && (
                         <span className="flex items-center gap-2 text-sm text-gray-400">
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -357,8 +505,12 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                     )}
                 </div>
 
-                {links.length === 0 && !loading && (
-                    <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/10 bg-gradient-to-br from-gray-900/40 via-black/40 to-gray-900/40 backdrop-blur-xl p-12">
+                {loading && links.length === 0 ? (
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        {[1, 2, 3, 4].map(i => <LinkSkeleton key={i} />)}
+                    </div>
+                ) : links.length === 0 ? (
+                    <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/10 bg-gradient-to-br from-gray-900/40 via-black/40 to-gray-900/40 backdrop-blur-xl p-12 animate-in fade-in slide-in-from-bottom-4">
                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
                         <div className="relative text-center space-y-3">
                             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 ring-1 ring-white/10">
@@ -367,19 +519,28 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                             <p className="text-lg text-gray-400">{t.empty}</p>
                         </div>
                     </div>
+                ) : filteredLinks.length === 0 ? (
+                    <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/10 bg-gradient-to-br from-gray-900/40 via-black/40 to-gray-900/40 backdrop-blur-xl p-12">
+                        <div className="relative text-center space-y-3">
+                            <Search className="mx-auto h-12 w-12 text-gray-500" />
+                            <p className="text-lg text-gray-400">{t.noResults}</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        {filteredLinks.map((link, index) => (
+                            <LinkCard
+                                key={link.id}
+                                link={link}
+                                language={language}
+                                onStats={() => openStats(link)}
+                                onDelete={() => handleDeleteWithLoading(link)}
+                                isDeleting={deletingIds.has(link.id)}
+                                index={index}
+                            />
+                        ))}
+                    </div>
                 )}
-
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                    {links.map((link) => (
-                        <LinkCard
-                            key={link.id}
-                            link={link}
-                            language={language}
-                            onStats={() => openStats(link)}
-                            onDelete={() => handleDelete(link)}
-                        />
-                    ))}
-                </div>
             </div>
         </div>
     );

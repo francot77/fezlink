@@ -1,3 +1,4 @@
+//lib/countryNames.ts
 export const COUNTRY_NAMES: Record<string, string> = {
     AF: 'Afganistán',
     AL: 'Albania',
