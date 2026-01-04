@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/mongodb';
 import { AnalyticsEvent } from '@/app/models/analyticsEvents';
@@ -39,7 +40,7 @@ export const COUNTRIES = [
 
 const SOURCES = ['direct', 'instagram', 'twitter', 'google'];
 const DEVICES = ['desktop', 'mobile', 'tablet'];
-const TOTAL_EVENTS = 70000;
+const TOTAL_EVENTS = 25846;
 const BATCH_SIZE = 10000;
 const CHUNK_SIZE = 700;
 
@@ -78,15 +79,15 @@ async function seed() {
     console.log('🧹 Cleaning collections...');
     await Promise.all([
         AnalyticsEvent.deleteMany({}),
-        AnalyticsDaily.deleteMany({}),
-        analyticsMonthly.deleteMany({}),
-        Link.deleteMany({}),
+        //AnalyticsDaily.deleteMany({}),
+        //analyticsMonthly.deleteMany({}),
+        //Link.deleteMany({}),
     ]);
 
     console.log('🔗 Creating link...');
     const link = await Link.create({
         userId: USER_ID,
-        destinationUrl: 'https://example.com',
+        destinationUrl: 'https://examplern5.com',
         slug: 'stress-test-link',
     });
 

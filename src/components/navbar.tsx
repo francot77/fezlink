@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
-import { Menu, X, LogIn, UserPlus } from "lucide-react"
+import { Menu, X, LogIn, UserPlus, User } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
 type NavElement = {
     title: string
@@ -39,13 +40,15 @@ const NavBar = () => {
         }
     }, [showSignOutModal])
 
+    const { user } = useAuth()
+
     return (
         <>
             <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 md:px-8 lg:px-12">
                     {/* Logo */}
                     <Link href="/" className="group flex items-center gap-2.5 text-base font-bold text-white transition-all hover:opacity-90">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-bold shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-105">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-green-700 to-green-200 text-sm font-bold shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-105">
                             FL
                         </span>
                         <span className="hidden bg-gradient-to-r from-green-700 to-green-200 bg-clip-text text-transparent sm:inline">
@@ -62,13 +65,19 @@ const NavBar = () => {
                                 href={ne.path}
                             >
                                 {ne.title}
-                                <span className="absolute inset-x-2 bottom-1 h-0.5 scale-x-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-transform duration-200 group-hover:scale-x-100" />
+                                <span className="absolute inset-x-2 bottom-1 h-0.5 scale-x-0 rounded-full bg-gradient-to-r from-green-700 to-green-200 transition-transform duration-200 group-hover:scale-x-100" />
                             </Link>
                         ))}
                     </div>
 
                     {/* Auth Buttons - Desktop */}
-                    <div className="hidden items-center gap-3 lg:flex">
+                    {user ? <Link
+                        href="/dashboard"
+                        className="group flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-700 to-green-200 px-5 py-2.5 text-sm font-semibold text-black shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/30 hover:brightness-110"
+                    >
+                        <User className="h-4 w-4 transition-transform group-hover:scale-110" />
+                        Dashboard
+                    </Link> : <div className="hidden items-center gap-3 lg:flex">
                         <Link
                             href="/login"
                             className="group flex items-center gap-2 rounded-lg border border-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:border-white/20 hover:bg-white/5"
@@ -78,12 +87,12 @@ const NavBar = () => {
                         </Link>
                         <Link
                             href="/register"
-                            className="group flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/30 hover:brightness-110"
+                            className="group flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-700 to-green-200 px-5 py-2.5 text-sm font-semibold text-black shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/30 hover:brightness-110"
                         >
                             <UserPlus className="h-4 w-4 transition-transform group-hover:scale-110" />
                             Sign Up
                         </Link>
-                    </div>
+                    </div>}
 
                     {/* Mobile Menu Button */}
                     <button

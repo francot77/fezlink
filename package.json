@@ -30,6 +30,7 @@
     "react-globe.gl": "^2.33.2",
     "recharts": "^2.15.3",
     "sonner": "^2.0.3",
+    "swr": "^2.3.8",
     "three": "^0.176.0",
     "uploadthing": "^7.7.2"
   },

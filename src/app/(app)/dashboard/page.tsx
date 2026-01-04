@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { BarChart3, Flame, Home, Link as LinkIcon, Loader2, Palette } from 'lucide-react';
+import { BarChart3, Flame, Home, Link as LinkIcon, Loader2, Palette, Rocket } from 'lucide-react';
 import Spinner from '@/components/spinner';
 import Link from 'next/link';
 import useLinks from '@/hooks/useLinks';
@@ -12,6 +12,10 @@ import PremiumFeatures from '@/components/premiumfeatures';
 import { SupportedLanguage } from '@/types/i18n';
 import { useSession } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
+import InsightsDashboard from '@/components/insights/InsightsDashboard';
+
+
+
 
 interface Section {
     id: string;
@@ -38,6 +42,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         loading: 'Loading...',
         viewing: 'Viewing',
         language: 'Language',
+        insights: 'Insights',
+        insightsDescription: 'Discover what makes you take off'
     },
     es: {
         welcome: 'Bienvenido de vuelta',
@@ -55,6 +61,8 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         loading: 'Cargando...',
         viewing: 'Viendo',
         language: 'Idioma',
+        insights: 'Insights',
+        insightsDescription: 'Conoce que te hace despegar'
     },
 };
 
@@ -87,6 +95,13 @@ const DashboardPage: React.FC = () => {
                 description: t.biopageDescription,
                 icon: <Palette size={18} />,
                 content: <BiopageEditor language={language} />,
+            },
+            {
+                id: 'insights',
+                label: t.insights,
+                description: t.insightsDescription,
+                icon: <Rocket size={18} />,
+                content: <InsightsDashboard />,
             },
             {
                 id: 'premium',
