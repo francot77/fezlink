@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+//insightsDashboard.tsx
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -126,6 +127,7 @@ export default function InsightsDashboard() {
 
     return (
         <div className="space-y-6">
+
             {/* Header con stats */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
@@ -143,8 +145,8 @@ export default function InsightsDashboard() {
                                 key={p}
                                 onClick={() => setPeriod(p)}
                                 className={`px-3 py-1.5 text-sm rounded-md transition-all ${period === p
-                                        ? 'bg-emerald-500 text-white'
-                                        : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                                    ? 'bg-emerald-500 text-white'
+                                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                                     }`}
                             >
                                 {p === 'yearly' ? '1 año' : p}
@@ -199,8 +201,8 @@ export default function InsightsDashboard() {
                         key={cat}
                         onClick={() => setCategoryFilter(cat)}
                         className={`px-3 py-1.5 text-sm rounded-lg transition-all whitespace-nowrap ${categoryFilter === cat
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-gray-800/30 text-gray-400 hover:text-white hover:bg-gray-800/50'
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-gray-800/30 text-gray-400 hover:text-white hover:bg-gray-800/50'
                             }`}
                     >
                         {cat === 'all' ? 'Todos' : cat.charAt(0).toUpperCase() + cat.slice(1)}

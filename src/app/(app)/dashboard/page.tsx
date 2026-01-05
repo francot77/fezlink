@@ -326,7 +326,7 @@ const DashboardPage: React.FC = () => {
                                             <p className="text-xs text-gray-400 leading-snug">{section.description}</p>
                                         </div>
                                         {activeSection === section.id && (
-                                            <ChevronRight size={16} className="mt-1 text-blue-400 animate-in fade-in slide-in-from-left-2 duration-300" />
+                                            <ChevronRight size={16} className="self-center text-blue-400  animate-in fade-in slide-in-from-left-2 duration-300" />
                                         )}
                                     </button>
                                 </li>
@@ -392,7 +392,7 @@ const DashboardPage: React.FC = () => {
                     {/* Main content */}
                     <main
                         ref={mainRef}
-                        className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/70 via-black/70 to-gray-900/70 backdrop-blur-xl p-4 sm:p-6 shadow-2xl animate-in fade-in slide-in-from-right-4 duration-500"
+                        className="min-w-0  rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/70 via-black/70 to-gray-900/70 backdrop-blur-xl p-4 sm:p-6 shadow-2xl animate-in fade-in slide-in-from-right-4 duration-500"
                         style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}
                     >
                         {!currentSection ? (

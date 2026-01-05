@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { X, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { MiniChart } from './MiniChart';
+import { createPortal } from 'react-dom';
 
 interface InsightDetailProps {
     insight: any;
@@ -8,6 +9,7 @@ interface InsightDetailProps {
 }
 
 export function InsightDetail({ insight, onClose }: InsightDetailProps) {
+    if (typeof window === 'undefined') return null;
     const Icon = insight.icon;
 
     const typeColors: Record<string, { bg: string; border: string; text: string; badge: string }> = {
@@ -45,8 +47,8 @@ export function InsightDetail({ insight, onClose }: InsightDetailProps) {
 
     const colors = typeColors[insight.type] || typeColors.info;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    return createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0b1224] rounded-xl border border-gray-800 shadow-2xl">
                 {/* Header */}
                 <div className={`sticky top-0 p-6 border-b ${colors.border} ${colors.bg} backdrop-blur-sm`}>
@@ -189,8 +191,8 @@ export function InsightDetail({ insight, onClose }: InsightDetailProps) {
                                     <div
                                         key={i}
                                         className={`w-2 h-2 rounded-full ${i < Math.floor(insight.priority / 20)
-                                                ? colors.text.replace('text-', 'bg-')
-                                                : 'bg-gray-700'
+                                            ? colors.text.replace('text-', 'bg-')
+                                            : 'bg-gray-700'
                                             }`}
                                     />
                                 ))}
@@ -209,7 +211,7 @@ export function InsightDetail({ insight, onClose }: InsightDetailProps) {
                 </div>
             </div>
         </div>
-    );
+        , document.body);
 }
 
 function formatMetricValue(value: number, unit?: string): string {
