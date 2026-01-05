@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-//import QRButton from "@/components/QRButton";
 import { BioPageData } from "@/lib/biopage";
+import { getBackgroundImageStyles, getBaseColorStyle } from "@/utils/backgroundImageStyles";
 
 interface Props {
     slug: string;
@@ -26,24 +26,21 @@ export default function BioPageClient({ initialBioPage }: Props) {
     const fallbackAvatar =
         "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541";
 
-
-
-    /* 👉 background del body (color o gradient base) */
+    // Estilos base del page (color o gradient)
     const pageBackgroundStyle: React.CSSProperties = {
         color: bioPage.textColor,
+        ...getBaseColorStyle(bioPage.background?.base || '#000000'),
     };
 
-    const backgroundBase = bioPage.background?.base;
+    // Estilos de la imagen de fondo (usando utilidad compartida)
+    const backgroundImageStyle = getBackgroundImageStyles({
+        imageUrl: bioPage.background?.image?.url,
+        blur: bioPage.background?.image?.blur ?? 0,
+        zoom: bioPage.background?.image?.zoom ?? 0,
+        positionX: bioPage.background?.image?.positionX ?? 0,
+        positionY: bioPage.background?.image?.positionY ?? 0,
+    });
 
-    if (backgroundBase?.includes("gradient")) {
-        pageBackgroundStyle.backgroundImage = backgroundBase;
-    } else {
-        pageBackgroundStyle.backgroundColor = backgroundBase || "#000000";
-    }
-    const positionX = bioPage.background?.image?.positionX ?? 0;
-    const positionY = bioPage.background?.image?.positionY ?? 0;
-    const backgroundZoom = bioPage.background?.image?.zoom ?? 0;
-    const backgroundBlur = bioPage.background?.image?.blur ?? 0;
     return (
         <main
             className="min-h-screen flex items-center justify-center px-4 py-10"
@@ -51,29 +48,12 @@ export default function BioPageClient({ initialBioPage }: Props) {
         >
             <div className="w-full max-w-4xl">
                 <div className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl">
+                    {/* Background Image Layer */}
                     {bioPage.background?.image?.url && (
-                        <>
-                            <div
-                                className="absolute inset-0 bg-center bg-cover scale-110 z-0"
-                                style={{
-                                    backgroundImage: `url(${bioPage.background?.image?.url})`,
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundSize: 'cover',
-
-                                    // offsets reales, predecibles
-                                    backgroundPosition: `${50 + (positionX ?? 0)}% ${50 + (positionY ?? 0)}%`,
-
-                                    // blur no afecta posición
-                                    filter: `blur(${backgroundBlur}px)`,
-
-                                    // zoom único y consistente
-                                    transform: `scale(${1 + (backgroundZoom ?? 0) / 100})`,
-                                    transformOrigin: 'center',
-                                }}
-
-                            />
-
-                        </>
+                        <div
+                            className="absolute inset-0 bg-center bg-cover z-0"
+                            style={backgroundImageStyle}
+                        />
                     )}
 
                     {/* Overlay contraste */}
@@ -136,15 +116,12 @@ export default function BioPageClient({ initialBioPage }: Props) {
                                                             href={link.shortUrl}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="block text-lg  font-semibold"
+                                                            className="block text-lg font-semibold"
                                                             style={{ color: bioPage.textColor }}
                                                         >
                                                             {link.label}
                                                         </a>
-
                                                     </div>
-
-
                                                 </div>
                                             </li>
                                         ))}
@@ -156,7 +133,7 @@ export default function BioPageClient({ initialBioPage }: Props) {
                 </div>
 
                 <footer className="mt-8 text-center text-sm text-white/70">
-                    © {new Date().getFullYear()} Fezlink - Tu Acortador de Links 🐍
+                    © {new Date().getFullYear()} Fezlink - Tu Acortador de Links 🚀
                 </footer>
             </div>
         </main>

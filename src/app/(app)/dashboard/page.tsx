@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { BarChart3, Flame, Home, Link as LinkIcon, Loader2, Palette, Rocket, Menu, X, ChevronRight, Globe } from 'lucide-react';
+import { BarChart3, Flame, Home, Link as LinkIcon, Loader2, Palette, Rocket, Menu, X, ChevronRight, Globe, LogOut } from 'lucide-react';
 import Spinner from '@/components/spinner';
 import Link from 'next/link';
 import useLinks from '@/hooks/useLinks';
@@ -10,9 +10,10 @@ import Stats from '@/components/stats';
 import BiopageEditor from './biopageeditor';
 import PremiumFeatures from '@/components/premiumfeatures';
 import { SupportedLanguage } from '@/types/i18n';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
 import InsightsDashboard from '@/components/insights/InsightsDashboard';
+import CustomModal from '@/components/Modalv2';
 
 interface Section {
     id: string;
@@ -24,6 +25,7 @@ interface Section {
 
 const translations: Record<SupportedLanguage, { [key: string]: string }> = {
     en: {
+        logout: 'Logout',
         welcome: 'Welcome back',
         dashboardTitle: 'FezLink Dashboard',
         description: 'Manage your links, biopage, and metrics from a single view.',
@@ -45,6 +47,7 @@ const translations: Record<SupportedLanguage, { [key: string]: string }> = {
         close: 'Close',
     },
     es: {
+        logout: 'Cerrar sesión',
         welcome: 'Bienvenido de vuelta',
         dashboardTitle: 'FezLink Dashboard',
         description: 'Administra tus enlaces, biopage y métricas desde una única vista.',
@@ -74,6 +77,7 @@ const DashboardPage: React.FC = () => {
     const linkState = useLinks();
     const [language, setLanguage] = useState<SupportedLanguage>('es');
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [modalLogout, setModalLogout] = useState(false)
     const [isTransitioning, setIsTransitioning] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const mainRef = useRef<HTMLElement>(null);
@@ -154,6 +158,11 @@ const DashboardPage: React.FC = () => {
         }, 300);
     };
 
+    const handleLogout = () => {
+        setModalLogout(false)
+        signOut()
+    }
+
     // Close mobile sidebar when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -190,9 +199,12 @@ const DashboardPage: React.FC = () => {
 
     return (
         <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-gray-900 via-[#0b1224] to-black px-4 pb-16 text-white">
+            {modalLogout && <CustomModal title='Cerrar sesion?' onClose={() => { setModalLogout(false) }} onAccept={handleLogout} >
+                Estas seguro que deseas cerrar sesion?
+            </CustomModal>}
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6 pt-4 sm:pt-10">
                 {/* Header - Mobile Version (Compact) */}
-                <div className="md:hidden relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl p-4 shadow-xl animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="md:hidden relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl pt-7 p-4 shadow-xl animate-in fade-in slide-in-from-top-4 duration-500">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
                     <div className="relative space-y-3">
                         {/* Top row: Name + Language selector */}
@@ -274,13 +286,24 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 {/* Mobile menu button */}
-                <button
-                    onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                    className="menu-button fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl shadow-blue-500/40 transition-all duration-300 hover:scale-110 active:scale-95 md:hidden"
-                    aria-label={isMobileSidebarOpen ? t.close : t.menu}
-                >
-                    {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                <div className='fixed top-2 left-2 flex gap-4 z-40'>
+                    <button
+                        onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                        className="menu-button flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl shadow-blue-500/40 transition-all duration-300 hover:scale-110 active:scale-95 md:hidden"
+                        aria-label={isMobileSidebarOpen ? t.close : t.menu}
+                    >
+                        {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                    {/* <button
+                        onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                        className="menu-button flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-400 via-green-300 to-gray-400 text-black shadow-2xl shadow-blue-500/40 transition-all duration-300 hover:scale-110 active:scale-95 md:hidden"
+                        aria-label={isMobileSidebarOpen ? t.close : t.menu}
+                    >
+                        {<Rocket size={24} />}
+                    </button> */}
+
+                </div>
+
 
                 <div className="grid items-start gap-4 md:grid-cols-[minmax(0,260px),1fr] lg:grid-cols-[minmax(0,280px),1fr]">
                     {/* Sidebar - Desktop */}
@@ -350,6 +373,12 @@ const DashboardPage: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
+                        <button onClick={() => {
+                            setModalLogout(true)
+                            setIsMobileSidebarOpen(false)
+                        }
+                        } className='flex justify-center items-center h-10 bg-gradient-to-r from-red-900 rounded-lg to-black p-4 m-4'>
+                            <LogOut size={24} color='red' /> {t.logout} </button>
                     </aside>
 
                     {/* Backdrop for mobile sidebar */}
@@ -387,6 +416,7 @@ const DashboardPage: React.FC = () => {
                     </main>
                 </div>
             </div>
+
         </div>
     );
 };

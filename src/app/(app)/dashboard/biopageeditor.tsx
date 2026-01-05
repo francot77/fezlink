@@ -10,9 +10,10 @@ import { useBiopageLinks } from '@/hooks/useBiopageLinks';
 import { ProfileSection } from '@/components/biopage-editor/ProfileSection';
 import { LinksSection } from '@/components/biopage-editor/LinksSection';
 import { AppearanceSection } from '@/components/biopage-editor/AppearanceSection';
-import { PreviewSection } from '@/components/biopage-editor/PreviewSection';
+
 import { AvatarModal } from '@/components/biopage-editor/AvatarModal';
 import { UsernameModal } from '@/components/biopage-editor/UsernameModal';
+import BiopagePreview from '@/components/biopage-editor/BiopagePreview';
 
 interface BiopageEditorProps {
     language?: SupportedLanguage;
@@ -185,7 +186,7 @@ export default function BiopageEditor({ language = 'en' }: BiopageEditorProps) {
 
                 </div>
 
-                <PreviewSection
+                <BiopagePreview
                     bgColor={bgColor}
                     textColor={textColor}
                     avatarUrl={avatarUrl}
@@ -198,7 +199,7 @@ export default function BiopageEditor({ language = 'en' }: BiopageEditorProps) {
                     backgroundBlur={backgroundBlur}
                     backgroundPositionX={backgroundPositionX}
                     backgroundPositionY={backgroundPositionY}
-                    translations={t}
+
                 />
             </div>
         </div>

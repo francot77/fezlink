@@ -1,5 +1,5 @@
 // src/lib/auth-helpers.ts
-import { getServerSession } from 'next-auth';
+import { getServerSession, } from 'next-auth';
 import User, { IUser } from '@/app/models/user'; // Tu modelo de User
 import dbConnect from '@/lib/mongodb';
 import { authOptions } from './auth-options';
