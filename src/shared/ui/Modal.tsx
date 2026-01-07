@@ -13,6 +13,7 @@ export interface ModalProps {
     onCancel?: () => void;
     isStats?: boolean;
     acceptText?: string;
+    variant?: 'primary' | 'danger';
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -24,6 +25,7 @@ const Modal: React.FC<ModalProps> = ({
     isLoading = false,
     isStats = false,
     acceptText = 'Cerrar',
+    variant = 'primary',
 }) => {
     const dialogRef = useRef<HTMLDivElement>(null);
     const headingId = useId();
@@ -140,7 +142,7 @@ const Modal: React.FC<ModalProps> = ({
                         </div>
                     </div>
                     <div className="relative flex-1 overflow-y-auto overflow-x-hidden">
-                        <div className="px-4 sm:px-6 py-4 sm:py-6">{description}</div>
+                        <div className="px-4 sm:px-6 py-4 sm:py-6 text-gray-300">{description}</div>
                     </div>
                     {onAccept && (
                         <div className="relative shrink-0 border-t border-white/10 px-4 sm:px-6 py-4">
@@ -148,7 +150,10 @@ const Modal: React.FC<ModalProps> = ({
                                 <button
                                     onClick={onAccept}
                                     disabled={isLoading}
-                                    className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/40 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                    className={`flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${variant === 'danger'
+                                            ? 'bg-gradient-to-r from-red-600 to-red-700 shadow-red-500/30 hover:shadow-red-500/40'
+                                            : 'bg-gradient-to-r from-blue-600 to-blue-700 shadow-blue-500/30 hover:shadow-blue-500/40'
+                                        }`}
                                 >
                                     {isLoading ? (
                                         <>

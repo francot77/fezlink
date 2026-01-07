@@ -31,14 +31,39 @@ export function useBiopageLinks(user: { id: string; name: string; email: string 
       selected: SelectedLink[],
       setSelected: (value: SelectedLink[] | ((prev: SelectedLink[]) => SelectedLink[])) => void
     ) => {
-      const slug = link.slug ?? link.shortId;
-      if (!slug) return;
+      // 1. Check if it is selected using the same logic as the UI (shortUrl)
+      const isCurrentlySelected = selected.some((l) => l.shortUrl === link.shortUrl);
 
-      setSelected((prev) =>
-        prev.some((l) => l.shortId === slug)
-          ? prev.filter((l) => l.shortId !== slug)
-          : [...prev, { shortId: slug, slug, shortUrl: link.shortUrl, label: '' }]
-      );
+      if (isCurrentlySelected) {
+        // Remove
+        setSelected((prev) => prev.filter((l) => l.shortUrl !== link.shortUrl));
+      } else {
+        // Add - AND cleanup any stale versions
+        setSelected((prev) => {
+          // Remove any entry that matches the identity of this link (by code or slug)
+          // to prevent duplicates if the slug/url changed.
+          const cleaned = prev.filter(
+            (l) =>
+              l.shortUrl !== link.shortUrl && // Should be implied, but safe
+              l.shortId !== link.shortId && // Match by code
+              (link.slug ? l.shortId !== link.slug : true) // Match by slug (if stored in shortId)
+          );
+
+          const displayId = link.slug ?? link.shortId;
+
+          if (!displayId) return cleaned; // Should not happen
+
+          return [
+            ...cleaned,
+            {
+              shortId: displayId,
+              slug: link.slug,
+              shortUrl: link.shortUrl,
+              label: '',
+            },
+          ];
+        });
+      }
     },
     []
   );

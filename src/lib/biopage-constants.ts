@@ -2,7 +2,7 @@
 import { SupportedLanguage } from '@/types/i18n';
 
 export const DEFAULT_AVATAR =
-  'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541';
+  'https://cdn.fezlink.com/avatars/Profile_avatar_placeholder_large.png';
 
 export const GRADIENT_PRESETS = [
   { label: 'Aurora', value: 'linear-gradient(135deg, #a855f7 0%, #22d3ee 50%, #0ea5e9 100%)' },

@@ -175,7 +175,7 @@ export default function BiopageEditor({ language = 'en' }: BiopageEditorProps) {
             onBackgroundBlurChange={setBackgroundBlur}
             onBgColorChange={setBgColor}
             onTextColorChange={setTextColor}
-            onSave={saveBiopage}
+            onSave={() => saveBiopage(links)}
             translations={t}
             positionX={backgroundPositionX}
             positionY={backgroundPositionY}

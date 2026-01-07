@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const description = biopage?.description || defaultDescription;
   const image =
     biopage?.avatarUrl ||
-    'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541';
+    'https://cdn.fezlink.com/avatars/Profile_avatar_placeholder_large.png';
 
   return {
     title,
@@ -49,6 +49,8 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     },
   };
 }
+
+export const dynamic = 'force-dynamic';
 
 export default async function BioPage({ params }: PageParams) {
   const { slug } = await params;

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
-import { BiopageType, SelectedLink } from '@/types/globals';
+import { BiopageType, SelectedLink, LinkType } from '@/types/globals';
 
 export function useBiopage(translations: Record<string, string>) {
   const { data: session } = useSession();
@@ -136,10 +136,24 @@ export function useBiopage(translations: Record<string, string>) {
     }
   }, [translations]);
 
-  const saveBiopage = useCallback(async () => {
+  const saveBiopage = useCallback(async (availableLinks?: LinkType[]) => {
     if (!biopage) {
       toast.error(translations.updateError, { richColors: true, position: 'top-center' });
       return;
+    }
+
+    let linksToSave = selected;
+
+    // 🔹 FILTERING: If availableLinks provided, clean up any "ghost" links that no longer exist for the user
+    if (availableLinks) {
+      const availableMap = new Set(availableLinks.map((l) => l.shortUrl));
+      const cleanList = selected.filter((l) => availableMap.has(l.shortUrl));
+
+      if (cleanList.length !== selected.length) {
+        console.log(`[useBiopage] Cleaning up ghost links. Before: ${selected.length}, After: ${cleanList.length}`);
+        linksToSave = cleanList;
+        setSelected(cleanList); // Update local state too
+      }
     }
 
     try {
@@ -147,7 +161,7 @@ export function useBiopage(translations: Record<string, string>) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          links: selected,
+          links: linksToSave,
           backgroundColor: bgColor,
           backgroundImage: backgroundImageUrl,
           backgroundBlur,

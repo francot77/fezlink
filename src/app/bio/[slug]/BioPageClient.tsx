@@ -20,7 +20,7 @@ export default function BioPageClient({ initialBioPage }: Props) {
     'Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.';
 
   const fallbackAvatar =
-    'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541';
+    'https://cdn.fezlink.com/avatars/Profile_avatar_placeholder_large.png';
 
   // Estilos base del page (color o gradient)
   const pageBackgroundStyle: React.CSSProperties = {
@@ -36,6 +36,22 @@ export default function BioPageClient({ initialBioPage }: Props) {
     positionX: bioPage.background?.image?.positionX ?? 0,
     positionY: bioPage.background?.image?.positionY ?? 0,
   });
+
+  const handleLinkClick = (link: BioPageData['links'][0], e?: React.MouseEvent) => {
+    // Ignorar clic derecho (menú contextual)
+    if (e && e.button === 2) return;
+
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        linkId: link.linkId,
+        userId: bioPage.userId,
+        source: 'biopage',
+      }),
+      keepalive: true,
+    }).catch((err) => console.error('Tracking error:', err));
+  };
 
   return (
     <main
@@ -98,7 +114,9 @@ export default function BioPageClient({ initialBioPage }: Props) {
                         <div className="flex items-center gap-3 rounded-xl bg-black/40 border border-white/10 p-3 transition hover:border-white/30">
                           <div className="flex-1 text-center">
                             <a
-                              href={link.shortUrl}
+                              href={link.destinationUrl}
+                              onClick={(e) => handleLinkClick(link, e)}
+                              onAuxClick={(e) => handleLinkClick(link, e)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="block text-lg font-semibold"

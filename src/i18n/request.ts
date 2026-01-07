@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getRequestConfig } from 'next-intl/server';
 import { headers } from 'next/headers';
 

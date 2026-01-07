@@ -15,7 +15,7 @@ import {
   Zap,
 } from 'lucide-react';
 
-export function mapInsight(raw: any) {
+export function mapInsight(raw: any, t: any) {
   const baseInsight = {
     id: raw._id || raw.key,
     type: raw.type,
@@ -33,9 +33,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: TrendingUp,
-      title: 'Crecimiento de Tráfico',
-      description: `Tu tráfico creció ${Math.abs(raw.metricDelta || 0).toFixed(1)}% en este período.`,
-      detail: `Has tenido ${raw.metricValue.toLocaleString()} clicks totales, lo que representa un crecimiento significativo comparado con el período anterior.`,
+      title: t('types.traffic_growth.title'),
+      description: t('types.traffic_growth.description', { delta: Math.abs(raw.metricDelta || 0).toFixed(1) }),
+      detail: t('types.traffic_growth.detail', { value: raw.metricValue.toLocaleString() }),
       metricUnit: 'count',
     };
   }
@@ -44,9 +44,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: TrendingDown,
-      title: 'Disminución de Tráfico',
-      description: `El tráfico disminuyó ${Math.abs(raw.metricDelta || 0).toFixed(1)}% respecto al período anterior.`,
-      detail: `Se registraron ${raw.metricValue.toLocaleString()} clicks. Considera revisar tus estrategias de distribución y promoción.`,
+      title: t('types.traffic_decline.title'),
+      description: t('types.traffic_decline.description', { delta: Math.abs(raw.metricDelta || 0).toFixed(1) }),
+      detail: t('types.traffic_decline.detail', { value: raw.metricValue.toLocaleString() }),
       metricUnit: 'count',
     };
   }
@@ -56,9 +56,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Zap,
-      title: 'Pico de Tráfico Detectado',
-      description: `Se detectó un pico inusual de ${raw.metricValue.toLocaleString()} clicks.`,
-      detail: `El ${date} hubo un incremento de ${Math.abs(raw.metricDelta || 0).toFixed(1)}% sobre el promedio diario. Esto puede indicar contenido viral o campaña exitosa.`,
+      title: t('types.traffic_spike.title'),
+      description: t('types.traffic_spike.description', { value: raw.metricValue.toLocaleString() }),
+      detail: t('types.traffic_spike.detail', { date, delta: Math.abs(raw.metricDelta || 0).toFixed(1) }),
       metricUnit: 'count',
     };
   }
@@ -69,9 +69,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: MapPin,
-      title: 'Concentración Geográfica',
-      description: `${raw.metricValue.toFixed(0)}% de tu tráfico proviene de ${country}.`,
-      detail: `Tu audiencia está altamente concentrada en ${country}. Considera estrategias específicas para este mercado o explora oportunidades en otras regiones.`,
+      title: t('types.geo_concentration.title'),
+      description: t('types.geo_concentration.description', { value: raw.metricValue.toFixed(0), country }),
+      detail: t('types.geo_concentration.detail', { country }),
       metricUnit: 'percent',
     };
   }
@@ -80,9 +80,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Globe,
-      title: 'Audiencia Diversificada',
-      description: `Tu audiencia está distribuida en ${raw.metricValue} países diferentes.`,
-      detail: `Tienes presencia internacional con tráfico significativo desde múltiples países. Esto indica un alcance global saludable.`,
+      title: t('types.geo_diversification.title'),
+      description: t('types.geo_diversification.description', { value: raw.metricValue }),
+      detail: t('types.geo_diversification.detail'),
       metricUnit: 'count',
     };
   }
@@ -92,9 +92,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Globe,
-      title: 'Mercado Emergente',
-      description: `${country} está generando ${raw.metricValue.toFixed(0)}% de tu tráfico.`,
-      detail: `${country} se está convirtiendo en una fuente importante de tráfico. Considera crear contenido específico para esta audiencia.`,
+      title: t('types.geo_emerging.title'),
+      description: t('types.geo_emerging.description', { country, value: raw.metricValue.toFixed(0) }),
+      detail: t('types.geo_emerging.detail', { country }),
       metricUnit: 'percent',
     };
   }
@@ -105,9 +105,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Target,
-      title: 'Alto Engagement',
-      description: `Promedio de ${Math.round(raw.metricValue)} clicks por link.`,
-      detail: `Tus links están teniendo excelente rendimiento con ${avgClicks} clicks por link en promedio. Tu contenido resuena bien con tu audiencia.`,
+      title: t('types.performance_high_engagement.title'),
+      description: t('types.performance_high_engagement.description', { value: Math.round(raw.metricValue) }),
+      detail: t('types.performance_high_engagement.detail', { avgClicks }),
       metricUnit: 'count',
     };
   }
@@ -117,9 +117,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: AlertTriangle,
-      title: 'Engagement Bajo',
-      description: `Solo ${raw.metricValue.toFixed(1)} clicks promedio por link.`,
-      detail: `Con ${activeLinks} links activos, el engagement es bajo. Considera optimizar tus títulos, descripciones o estrategia de distribución.`,
+      title: t('types.performance_low_engagement.title'),
+      description: t('types.performance_low_engagement.description', { value: raw.metricValue.toFixed(1) }),
+      detail: t('types.performance_low_engagement.detail', { activeLinks }),
       metricUnit: 'count',
     };
   }
@@ -130,9 +130,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Link2,
-      title: 'Link Destacado',
-      description: `/${slug} concentra ${raw.metricValue.toFixed(0)}% del tráfico total.`,
-      detail: `Este link ha generado ${clicks.toLocaleString()} clicks. Analiza qué hace que este contenido sea exitoso y replica esa estrategia.`,
+      title: t('types.performance_top_link.title'),
+      description: t('types.performance_top_link.description', { slug, value: raw.metricValue.toFixed(0) }),
+      detail: t('types.performance_top_link.detail', { clicks: clicks.toLocaleString() }),
       metricUnit: 'percent',
     };
   }
@@ -143,9 +143,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Calendar,
-      title: 'Día Pico Identificado',
-      description: `${dayName} concentra ${raw.metricValue.toFixed(0)}% del tráfico semanal.`,
-      detail: `Los ${dayName}s son tu día más fuerte. Considera programar contenido importante o campañas en este día.`,
+      title: t('types.temporal_peak_day.title'),
+      description: t('types.temporal_peak_day.description', { dayName, value: raw.metricValue.toFixed(0) }),
+      detail: t('types.temporal_peak_day.detail', { dayName }),
       metricUnit: 'percent',
     };
   }
@@ -156,9 +156,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Calendar,
-      title: 'Fines de Semana Activos',
-      description: `Los fines de semana tienen ${raw.metricValue.toFixed(0)}% más actividad.`,
-      detail: `Promedio de fin de semana: ${weekendAvg.toLocaleString()} clicks vs ${weekdayAvg.toLocaleString()} entre semana. Tu audiencia es más activa los fines de semana.`,
+      title: t('types.temporal_weekend_peak.title'),
+      description: t('types.temporal_weekend_peak.description', { value: raw.metricValue.toFixed(0) }),
+      detail: t('types.temporal_weekend_peak.detail', { weekendAvg: weekendAvg.toLocaleString(), weekdayAvg: weekdayAvg.toLocaleString() }),
       metricUnit: 'percent',
     };
   }
@@ -169,9 +169,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Calendar,
-      title: 'Semana Laboral Activa',
-      description: `Los días de semana tienen ${raw.metricValue.toFixed(0)}% más actividad.`,
-      detail: `Promedio entre semana: ${weekdayAvg.toLocaleString()} clicks vs ${weekendAvg.toLocaleString()} fin de semana. Tu audiencia es más activa durante la semana.`,
+      title: t('types.temporal_weekday_peak.title'),
+      description: t('types.temporal_weekday_peak.description', { value: raw.metricValue.toFixed(0) }),
+      detail: t('types.temporal_weekday_peak.detail', { weekdayAvg: weekdayAvg.toLocaleString(), weekendAvg: weekendAvg.toLocaleString() }),
       metricUnit: 'percent',
     };
   }
@@ -182,9 +182,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Smartphone,
-      title: 'Dispositivo Dominante',
-      description: `${raw.metricValue.toFixed(0)}% del tráfico viene desde ${device}.`,
-      detail: `La mayoría de tu audiencia usa ${device}. Optimiza tu experiencia para este dispositivo.`,
+      title: t('types.device_dominance.title'),
+      description: t('types.device_dominance.description', { value: raw.metricValue.toFixed(0), device }),
+      detail: t('types.device_dominance.detail', { device }),
       metricUnit: 'percent',
     };
   }
@@ -195,9 +195,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Activity,
-      title: 'Fuente Concentrada',
-      description: `${raw.metricValue.toFixed(0)}% del tráfico viene de ${source}.`,
-      detail: `Dependes mucho de ${source}. Considera diversificar tus canales de distribución para reducir riesgos.`,
+      title: t('types.source_concentration.title'),
+      description: t('types.source_concentration.description', { value: raw.metricValue.toFixed(0), source }),
+      detail: t('types.source_concentration.detail', { source }),
       metricUnit: 'percent',
     };
   }
@@ -206,9 +206,9 @@ export function mapInsight(raw: any) {
     return {
       ...baseInsight,
       icon: Layers,
-      title: 'Fuentes Diversificadas',
-      description: `Tráfico balanceado desde ${raw.metricValue} fuentes diferentes.`,
-      detail: `Tienes una buena diversificación de canales. Esto reduce el riesgo de dependencia de una sola plataforma.`,
+      title: t('types.source_diversification.title'),
+      description: t('types.source_diversification.description', { value: raw.metricValue }),
+      detail: t('types.source_diversification.detail'),
       metricUnit: 'count',
     };
   }
@@ -217,9 +217,9 @@ export function mapInsight(raw: any) {
   return {
     ...baseInsight,
     icon: AlertTriangle,
-    title: 'Insight Detectado',
-    description: `Se detectó un patrón en ${raw.category}.`,
-    detail: `Valor: ${raw.metricValue}`,
+    title: t('types.generic.title'),
+    description: t('types.generic.description', { category: raw.category }),
+    detail: t('types.generic.detail', { value: raw.metricValue }),
     metricUnit: 'count',
   };
 }

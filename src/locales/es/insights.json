@@ -36,5 +36,91 @@
     "temporal": "Temporal",
     "device": "Dispositivo",
     "source": "Fuente"
+  },
+  "types": {
+    "traffic_growth": {
+      "title": "Crecimiento de Tráfico",
+      "description": "Tu tráfico creció {delta}% en este período.",
+      "detail": "Has tenido {value} clicks totales, lo que representa un crecimiento significativo comparado con el período anterior."
+    },
+    "traffic_decline": {
+      "title": "Disminución de Tráfico",
+      "description": "El tráfico disminuyó {delta}% respecto al período anterior.",
+      "detail": "Se registraron {value} clicks. Considera revisar tus estrategias de distribución y promoción."
+    },
+    "traffic_spike": {
+      "title": "Pico de Tráfico Detectado",
+      "description": "Se detectó un pico inusual de {value} clicks.",
+      "detail": "El {date} hubo un incremento de {delta}% sobre el promedio diario. Esto puede indicar contenido viral o campaña exitosa."
+    },
+    "geo_concentration": {
+      "title": "Concentración Geográfica",
+      "description": "{value}% de tu tráfico proviene de {country}.",
+      "detail": "Tu audiencia está altamente concentrada en {country}. Considera estrategias específicas para este mercado o explora oportunidades en otras regiones."
+    },
+    "geo_diversification": {
+      "title": "Audiencia Diversificada",
+      "description": "Tu audiencia está distribuida en {value} países diferentes.",
+      "detail": "Tienes presencia internacional con tráfico significativo desde múltiples países. Esto indica un alcance global saludable."
+    },
+    "geo_emerging": {
+      "title": "Mercado Emergente",
+      "description": "{country} está generando {value}% de tu tráfico.",
+      "detail": "{country} se está convirtiendo en una fuente importante de tráfico. Considera crear contenido específico para esta audiencia."
+    },
+    "performance_high_engagement": {
+      "title": "Alto Engagement",
+      "description": "Promedio de {value} clicks por link.",
+      "detail": "Tus links están teniendo excelente rendimiento con {avgClicks} clicks por link en promedio. Tu contenido resuena bien con tu audiencia."
+    },
+    "performance_low_engagement": {
+      "title": "Engagement Bajo",
+      "description": "Solo {value} clicks promedio por link.",
+      "detail": "Con {activeLinks} links activos, el engagement es bajo. Considera optimizar tus títulos, descripciones o estrategia de distribución."
+    },
+    "performance_top_link": {
+      "title": "Link Destacado",
+      "description": "/{slug} concentra {value}% del tráfico total.",
+      "detail": "Este link ha generado {clicks} clicks. Analiza qué hace que este contenido sea exitoso y replica esa estrategia."
+    },
+    "temporal_peak_day": {
+      "title": "Día Pico Identificado",
+      "description": "{dayName} concentra {value}% del tráfico semanal.",
+      "detail": "Los {dayName}s son tu día más fuerte. Considera programar contenido importante o campañas en este día."
+    },
+    "temporal_weekend_peak": {
+      "title": "Fines de Semana Activos",
+      "description": "Los fines de semana tienen {value}% más actividad.",
+      "detail": "Promedio de fin de semana: {weekendAvg} clicks vs {weekdayAvg} entre semana. Tu audiencia es más activa los fines de semana."
+    },
+    "temporal_weekday_peak": {
+      "title": "Semana Laboral Activa",
+      "description": "Los días de semana tienen {value}% más actividad.",
+      "detail": "Promedio entre semana: {weekdayAvg} clicks vs {weekendAvg} fin de semana. Tu audiencia es más activa durante la semana."
+    },
+    "device_dominance": {
+      "title": "Dispositivo Dominante",
+      "description": "{value}% del tráfico viene desde {device}.",
+      "detail": "La mayoría de tu audiencia usa {device}. Optimiza tu experiencia para este dispositivo."
+    },
+    "source_concentration": {
+      "title": "Fuente Concentrada",
+      "description": "{value}% del tráfico viene de {source}.",
+      "detail": "Dependes mucho de {source}. Considera diversificar tus canales de distribución para reducir riesgos."
+    },
+    "source_diversification": {
+      "title": "Fuentes Diversificadas",
+      "description": "Tráfico balanceado desde {value} fuentes diferentes.",
+      "detail": "Tienes una buena diversificación de canales. Esto reduce el riesgo de dependencia de una sola plataforma."
+    },
+    "generic": {
+      "title": "Insight Detectado",
+      "description": "Se detectó un patrón en {category}.",
+      "detail": "Valor: {value}"
+    }
+  },
+  "boolean": {
+    "true": "Sí",
+    "false": "No"
   }
 }

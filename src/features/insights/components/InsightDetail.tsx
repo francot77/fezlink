@@ -19,6 +19,15 @@ export function InsightDetail({ insight, onClose }: InsightDetailProps) {
 
   const colors = typeColorsDetail[insight.type] || typeColorsDetail.info;
 
+  function formatMetadataValue(value: any): string {
+    if (typeof value === 'number') {
+      if (value > 1000) return value.toLocaleString();
+      return value.toFixed(0);
+    }
+    if (typeof value === 'boolean') return value ? t('boolean.true') : t('boolean.false');
+    return String(value);
+  }
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0b1224] rounded-xl border border-gray-800 shadow-2xl">
@@ -152,7 +161,7 @@ export function InsightDetail({ insight, onClose }: InsightDetailProps) {
 
             <div>
               <p className="text-xs text-gray-500 mb-1">{t('categoryLabel')}</p>
-              <p className="text-sm text-white capitalize">{insight.category}</p>
+              <p className="text-sm text-white capitalize">{t(`category.${insight.category}`)}</p>
             </div>
           </div>
         </div>
@@ -167,13 +176,4 @@ function formatMetadataKey(key: string): string {
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, (str) => str.toUpperCase())
     .trim();
-}
-
-function formatMetadataValue(value: any): string {
-  if (typeof value === 'number') {
-    if (value > 1000) return value.toLocaleString();
-    return value.toFixed(0);
-  }
-  if (typeof value === 'boolean') return value ? 'Sí' : 'No';
-  return String(value);
 }

@@ -172,7 +172,7 @@ export default function RegisterPage() {
                     placeholder="yourname"
                     value={username}
                     onChange={(e) =>
-                      setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))
+                      setUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))
                     }
                     required
                     minLength={3}

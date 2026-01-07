@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Palette, Save } from 'lucide-react';
 import { SectionCard } from './SectionCard';
 import { TabsNavigation } from './components/TabsNavigation';
@@ -65,7 +66,7 @@ export function AppearanceSection({
         />
 
         {/* Tab Content */}
-        <div className="min-h-[200px]">
+        <div className="min-h-[200px] flex justify-center items-center">
           {/* COLORS TAB */}
           {activeTab === 'colors' && (
             <ColorPickerTab
@@ -132,32 +133,7 @@ export function AppearanceSection({
           }
         }
 
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-
-        /* Horizontal scroll styling */
-        .gradient-scroll {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-        }
-
-        .gradient-scroll::-webkit-scrollbar {
-          height: 6px;
-        }
-
-        .gradient-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .gradient-scroll::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 3px;
-        }
-
-        .gradient-scroll::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
+        
       `}</style>
     </SectionCard>
   );

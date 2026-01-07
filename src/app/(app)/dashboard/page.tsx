@@ -7,7 +7,7 @@ import {
   Link as LinkIcon,
   Rocket,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Spinner from '@/components/spinner';
 import useLinks from '@/hooks/useLinks';
 import LinkManager from '@/features/links/components/LinkManager';
@@ -33,8 +33,21 @@ const DashboardPage: React.FC = () => {
   const linkState = useLinks();
   // const { language, setLanguage } = useLanguage();
   const [language, setLanguage] = useState<SupportedLanguage>('es'); // Temporal fallback until context is restored or found
+  const [quickMenuEnabled, setQuickMenuEnabled] = useState(false);
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('quickMenuEnabled');
+    if (stored) {
+      setQuickMenuEnabled(JSON.parse(stored));
+    }
+  }, []);
+
+  const handleQuickMenuChange = (enabled: boolean) => {
+    setQuickMenuEnabled(enabled);
+    localStorage.setItem('quickMenuEnabled', JSON.stringify(enabled));
+  };
 
   const {
     activeSection,
@@ -118,6 +131,7 @@ const DashboardPage: React.FC = () => {
           title={t('logoutConfirmTitle')}
           onClose={() => setModalLogout(false)}
           onAccept={handleLogout}
+          variant="danger"
         >
           {t('logoutConfirmMessage')}
         </CustomModal>
@@ -130,6 +144,10 @@ const DashboardPage: React.FC = () => {
           setLanguage={setLanguage}
           isMobileSidebarOpen={isMobileSidebarOpen}
           setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+          quickMenuEnabled={quickMenuEnabled}
+          sections={sections}
+          activeSection={activeSection}
+          onSectionChange={handleSectionChange}
           translations={{
             welcome: t('welcome'),
             dashboardTitle: t('title'),
@@ -148,6 +166,8 @@ const DashboardPage: React.FC = () => {
             onSectionChange={handleSectionChange}
             isMobileSidebarOpen={isMobileSidebarOpen}
             setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+            quickMenuEnabled={quickMenuEnabled}
+            onQuickMenuChange={handleQuickMenuChange}
             onLogout={() => setModalLogout(true)}
             translations={{
               menu: tCommon('menu'),

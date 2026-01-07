@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useInsights } from '@/hooks/useInsights';
 import { mapInsight } from '../utils/insightMapper';
 
@@ -12,6 +13,7 @@ export type InsightCategory =
   | 'source';
 
 export function useInsightsDashboard() {
+  const t = useTranslations('insights');
   const [period, setPeriod] = useState<'7d' | '30d' | '90d' | 'yearly'>('30d');
   const { response, loading, error, refetch } = useInsights(period);
   const [selectedInsight, setSelectedInsight] = useState<any | null>(null);
@@ -30,8 +32,8 @@ export function useInsightsDashboard() {
 
   const insights = useMemo(() => {
     if (!response || response.status !== 'completed') return [];
-    return response.data.insights.map(mapInsight);
-  }, [response]);
+    return response.data.insights.map((insight: any) => mapInsight(insight, t));
+  }, [response, t]);
 
   const filteredInsights = useMemo(() => {
     if (categoryFilter === 'all') return insights;

@@ -36,5 +36,91 @@
         "temporal": "Temporal",
         "device": "Device",
         "source": "Source"
+    },
+    "types": {
+        "traffic_growth": {
+            "title": "Traffic Growth",
+            "description": "Your traffic grew by {delta}% in this period.",
+            "detail": "You had {value} total clicks, representing significant growth compared to the previous period."
+        },
+        "traffic_decline": {
+            "title": "Traffic Decline",
+            "description": "Traffic decreased by {delta}% compared to the previous period.",
+            "detail": "{value} clicks recorded. Consider reviewing your distribution and promotion strategies."
+        },
+        "traffic_spike": {
+            "title": "Traffic Spike Detected",
+            "description": "An unusual spike of {value} clicks was detected.",
+            "detail": "On {date}, there was a {delta}% increase over the daily average. This may indicate viral content or a successful campaign."
+        },
+        "geo_concentration": {
+            "title": "Geographic Concentration",
+            "description": "{value}% of your traffic comes from {country}.",
+            "detail": "Your audience is highly concentrated in {country}. Consider specific strategies for this market or explore opportunities in other regions."
+        },
+        "geo_diversification": {
+            "title": "Diversified Audience",
+            "description": "Your audience is distributed across {value} different countries.",
+            "detail": "You have an international presence with significant traffic from multiple countries. This indicates healthy global reach."
+        },
+        "geo_emerging": {
+            "title": "Emerging Market",
+            "description": "{country} is generating {value}% of your traffic.",
+            "detail": "{country} is becoming a major traffic source. Consider creating content specifically for this audience."
+        },
+        "performance_high_engagement": {
+            "title": "High Engagement",
+            "description": "Average of {value} clicks per link.",
+            "detail": "Your links are performing excellently with {avgClicks} clicks per link on average. Your content resonates well with your audience."
+        },
+        "performance_low_engagement": {
+            "title": "Low Engagement",
+            "description": "Only {value} average clicks per link.",
+            "detail": "With {activeLinks} active links, engagement is low. Consider optimizing your titles, descriptions, or distribution strategy."
+        },
+        "performance_top_link": {
+            "title": "Top Link",
+            "description": "/{slug} accounts for {value}% of total traffic.",
+            "detail": "This link has generated {clicks} clicks. Analyze what makes this content successful and replicate that strategy."
+        },
+        "temporal_peak_day": {
+            "title": "Peak Day Identified",
+            "description": "{dayName} accounts for {value}% of weekly traffic.",
+            "detail": "{dayName}s are your strongest day. Consider scheduling important content or campaigns on this day."
+        },
+        "temporal_weekend_peak": {
+            "title": "Active Weekends",
+            "description": "Weekends have {value}% more activity.",
+            "detail": "Weekend average: {weekendAvg} clicks vs {weekdayAvg} on weekdays. Your audience is more active on weekends."
+        },
+        "temporal_weekday_peak": {
+            "title": "Active Work Week",
+            "description": "Weekdays have {value}% more activity.",
+            "detail": "Weekday average: {weekdayAvg} clicks vs {weekendAvg} on weekends. Your audience is more active during the week."
+        },
+        "device_dominance": {
+            "title": "Device Dominance",
+            "description": "{value}% of traffic comes from {device}.",
+            "detail": "Most of your audience uses {device}. Optimize your experience for this device."
+        },
+        "source_concentration": {
+            "title": "Concentrated Source",
+            "description": "{value}% of traffic comes from {source}.",
+            "detail": "You rely heavily on {source}. Consider diversifying your distribution channels to reduce risk."
+        },
+        "source_diversification": {
+            "title": "Diversified Sources",
+            "description": "Balanced traffic from {value} different sources.",
+            "detail": "You have good channel diversification. This reduces the risk of depending on a single platform."
+        },
+        "generic": {
+            "title": "Insight Detected",
+            "description": "A pattern was detected in {category}.",
+            "detail": "Value: {value}"
+        }
+    },
+    "boolean": {
+        "true": "Yes",
+        "false": "No"
     }
 }

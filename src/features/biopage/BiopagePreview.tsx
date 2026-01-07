@@ -32,7 +32,7 @@ export default function BiopagePreview({
   backgroundPositionY,
 }: BiopagePreviewProps) {
   const fallbackAvatar =
-    'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541';
+    'https://cdn.fezlink.com/avatars/Profile_avatar_placeholder_large.png';
 
   const defaultDescription =
     'Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.';

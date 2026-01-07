@@ -60,8 +60,8 @@ export const usernameSchema = z
   .min(3, 'Username must be at least 3 characters')
   .max(20, 'Username must be at most 20 characters')
   .regex(
-    /^[a-z0-9_-]+$/,
-    'Username can only contain lowercase letters, numbers, hyphens and underscores'
+    /^[a-zA-Z0-9_-]+$/,
+    'Username can only contain letters, numbers, hyphens and underscores'
   )
   .transform((val) => val.toLowerCase());
 
@@ -84,7 +84,7 @@ export const slugSchema = z
   .string()
   .min(3, 'Slug must be at least 3 characters')
   .max(30, 'Slug must be at most 30 characters')
-  .regex(/^[a-z0-9-]+$/, 'Slug can only contain lowercase letters, numbers and hyphens')
+  .regex(/^[a-zA-Z0-9-]+$/, 'Slug can only contain letters, numbers and hyphens')
   .transform((val) => val.toLowerCase());
 
 // ✅ Schema de registro

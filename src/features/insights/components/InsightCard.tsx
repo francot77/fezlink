@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { formatMetricValue } from '@/features/metrics/utils/format';
 import { typeColorsCard } from '@/features/metrics/constants/typeColors';
 import { GlassCard } from '@/shared/ui';
+import { useTranslations } from 'next-intl';
 
 interface InsightCardProps {
   insight: any;
@@ -10,6 +11,7 @@ interface InsightCardProps {
 }
 
 export function InsightCard({ insight, onClick }: InsightCardProps) {
+  const t = useTranslations('insights');
   const colors = typeColorsCard[insight.type] || typeColorsCard.info;
   const Icon = insight.icon;
 
@@ -56,7 +58,7 @@ export function InsightCard({ insight, onClick }: InsightCardProps) {
       {/* Footer with metric */}
       {insight.metricValue !== undefined && (
         <div className="mt-3 pt-3 border-t border-gray-800/50 flex items-center justify-between">
-          <span className="text-xs text-gray-500 uppercase tracking-wider">{insight.category}</span>
+          <span className="text-xs text-gray-500 uppercase tracking-wider">{t(`category.${insight.category}`)}</span>
           <span className={`text-sm font-semibold ${colors.icon}`}>
             {formatMetricValue(insight.metricValue, insight.metricUnit)}
           </span>
@@ -68,11 +70,10 @@ export function InsightCard({ insight, onClick }: InsightCardProps) {
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className={`h-1 flex-1 rounded-full transition-all ${
-              i < Math.floor(insight.priority / 20)
+            className={`h-1 flex-1 rounded-full transition-all ${i < Math.floor(insight.priority / 20)
                 ? colors.icon.replace('text-', 'bg-')
                 : 'bg-gray-800'
-            }`}
+              }`}
           />
         ))}
       </div>

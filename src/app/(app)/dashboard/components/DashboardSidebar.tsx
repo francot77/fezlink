@@ -16,6 +16,8 @@ interface DashboardSidebarProps {
     isMobileSidebarOpen: boolean;
     setIsMobileSidebarOpen: (isOpen: boolean) => void;
     onLogout: () => void;
+    quickMenuEnabled: boolean;
+    onQuickMenuChange: (enabled: boolean) => void;
     translations: {
         menu: string;
         close: string;
@@ -30,6 +32,8 @@ export const DashboardSidebar = ({
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
     onLogout,
+    quickMenuEnabled,
+    onQuickMenuChange,
     translations: t,
 }: DashboardSidebarProps) => {
     return (
@@ -52,14 +56,14 @@ export const DashboardSidebar = ({
                             <button
                                 onClick={() => onSectionChange(section.id)}
                                 className={`group relative flex w-full min-w-0 items-start gap-3 rounded-xl border px-4 py-3 text-left transition-all duration-300 ${activeSection === section.id
-                                        ? 'border-blue-500/50 bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-white shadow-lg shadow-blue-500/20'
-                                        : 'border-transparent bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10 hover:text-white'
+                                    ? 'border-blue-500/50 bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-white shadow-lg shadow-blue-500/20'
+                                    : 'border-transparent bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10 hover:text-white'
                                     }`}
                             >
                                 <div
                                     className={`mt-0.5 transition-transform duration-300 ${activeSection === section.id
-                                            ? 'text-blue-400 scale-110'
-                                            : 'text-gray-400 group-hover:text-blue-400 group-hover:scale-110'
+                                        ? 'text-blue-400 scale-110'
+                                        : 'text-gray-400 group-hover:text-blue-400 group-hover:scale-110'
                                         }`}
                                 >
                                     {section.icon}
@@ -101,8 +105,8 @@ export const DashboardSidebar = ({
                             <button
                                 onClick={() => onSectionChange(section.id)}
                                 className={`group relative flex w-full min-w-0 items-start gap-3 rounded-xl border px-4 py-4 text-left transition-all duration-300 active:scale-95 ${activeSection === section.id
-                                        ? 'border-blue-500/50 bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-white shadow-lg shadow-blue-500/20'
-                                        : 'border-transparent bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10 hover:text-white'
+                                    ? 'border-blue-500/50 bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-white shadow-lg shadow-blue-500/20'
+                                    : 'border-transparent bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10 hover:text-white'
                                     }`}
                             >
                                 <div
@@ -120,12 +124,33 @@ export const DashboardSidebar = ({
                         </li>
                     ))}
                 </ul>
-                <button
-                    onClick={onLogout}
-                    className="flex justify-center items-center h-10 bg-gradient-to-r from-red-900 rounded-lg to-black p-4 m-4"
-                >
-                    <LogOut size={24} color="red" /> {t.logout}{' '}
-                </button>
+                <div className="mt-auto pt-4 space-y-4">
+                    {/* Quick Menu Toggle */}
+                    <div className="px-1">
+                        <label className="flex items-center justify-between cursor-pointer group rounded-xl border border-white/5 bg-white/5 p-3 transition-colors hover:bg-white/10 hover:border-white/10">
+                            <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+                                Menú Rápido
+                            </span>
+                            <div className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={quickMenuEnabled}
+                                    onChange={(e) => onQuickMenuChange(e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <button
+                        onClick={onLogout}
+                        className="group relative flex w-full items-center gap-3 rounded-xl border border-red-500/10 bg-gradient-to-r from-red-500/10 to-red-900/10 px-4 py-3 text-left text-red-200 transition-all duration-300 hover:border-red-500/30 hover:from-red-500/20 hover:to-red-900/20 hover:text-white hover:shadow-lg hover:shadow-red-900/20 active:scale-95"
+                    >
+                        <LogOut size={20} className="text-red-400 transition-transform duration-300 group-hover:scale-110 group-hover:text-red-300" />
+                        <span className="font-semibold">{t.logout}</span>
+                    </button>
+                </div>
             </aside>
 
             {/* Backdrop for mobile sidebar */}

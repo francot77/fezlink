@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Check, Sparkles } from 'lucide-react';
 import React from 'react';
 
@@ -37,10 +38,10 @@ export const GradientPickerTab = ({
 }: GradientPickerTabProps) => {
   return (
     <PremiumLock locked={!isPremium}>
-      <div className="space-y-4 animate-fade-in">
+      <div className="space-y-4 sm:w-3/4">
         <p className="text-sm text-gray-400">Select a gradient theme for your background</p>
 
-        <div className="grid grid-cols-3 overflow-x-auto max-h-50 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-3 overflow-y-auto max-h-64 gap-3 sm:grid-cols-3 lg:grid-cols-4 p-3 scrollbar-thin">
           {gradients.map((preset) => (
             <button
               key={preset.label}
@@ -49,11 +50,10 @@ export const GradientPickerTab = ({
                 if (!isPremium) return;
                 onBgColorChange(preset.value);
               }}
-              className={`group relative overflow-hidden rounded-xl h-24 transition-all duration-300 ${
-                bgColor === preset.value
-                  ? 'ring-2 ring-emerald-400 shadow-xl shadow-emerald-500/20'
-                  : 'ring-1 ring-white/10 hover:ring-white/20'
-              }`}
+              className={`group relative overflow-hidden rounded-xl h-24 transition-all duration-300 ${bgColor === preset.value
+                ? 'ring-2 ring-emerald-400 shadow-xl shadow-emerald-500/20'
+                : 'ring-1 ring-white/10 hover:ring-white/20'
+                }`}
               style={{ backgroundImage: preset.value }}
             >
               <div className="absolute inset-0 bg-black/20" />

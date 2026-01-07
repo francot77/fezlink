@@ -7,9 +7,10 @@ export type CustomModalProps = {
   onClose: () => void;
   onAccept: () => void;
   acceptText?: string;
+  variant?: 'primary' | 'danger';
 };
 
-const CustomModal = ({ title, children, onClose, onAccept, acceptText = 'Aceptar' }: CustomModalProps) => {
+const CustomModal = ({ title, children, onClose, onAccept, acceptText = 'Aceptar', variant = 'primary' }: CustomModalProps) => {
   return (
     <Modal
       isOpen
@@ -18,6 +19,7 @@ const CustomModal = ({ title, children, onClose, onAccept, acceptText = 'Aceptar
       onCancel={onClose}
       onAccept={onAccept}
       acceptText={acceptText}
+      variant={variant}
     />
   );
 };

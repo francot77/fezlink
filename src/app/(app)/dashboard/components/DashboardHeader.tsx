@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Home, Globe, Menu, X } from 'lucide-react';
 import { SupportedLanguage } from '@/types/i18n';
+import { Section } from './DashboardSidebar';
 
 interface DashboardHeaderProps {
     userName?: string | null;
@@ -8,6 +9,10 @@ interface DashboardHeaderProps {
     setLanguage: (lang: SupportedLanguage) => void;
     isMobileSidebarOpen: boolean;
     setIsMobileSidebarOpen: (isOpen: boolean) => void;
+    quickMenuEnabled?: boolean;
+    sections?: Section[];
+    activeSection?: string;
+    onSectionChange?: (id: string) => void;
     translations: {
         welcome: string;
         dashboardTitle: string;
@@ -16,6 +21,7 @@ interface DashboardHeaderProps {
         home: string;
         menu: string;
         close: string;
+        logout?: string;
     };
 }
 
@@ -25,6 +31,10 @@ export const DashboardHeader = ({
     setLanguage,
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
+    quickMenuEnabled,
+    sections,
+    activeSection,
+    onSectionChange,
     translations: t,
 }: DashboardHeaderProps) => {
     return (
@@ -111,16 +121,48 @@ export const DashboardHeader = ({
                 </div>
             </div>
 
-            {/* Mobile menu button */}
-            <div className="fixed top-2 left-2 flex gap-4 z-40">
-                <button
-                    onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                    className="menu-button flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl shadow-blue-500/40 transition-all duration-300 hover:scale-110 active:scale-95 md:hidden"
-                    aria-label={isMobileSidebarOpen ? t.close : t.menu}
-                >
-                    {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-            </div>
+            {/* Mobile menu button or Quick Pills */}
+            {quickMenuEnabled && sections && onSectionChange ? (
+                <div className="fixed top-2 inset-x-0 z-40 flex justify-center pointer-events-none md:hidden animate-in fade-in slide-in-from-top-2 duration-500">
+                    <div className="flex items-center gap-1.5 p-1.5 rounded-full border border-white/10 bg-gray-900/90 backdrop-blur-xl shadow-2xl pointer-events-auto overflow-x-auto max-w-[calc(100vw-16px)] no-scrollbar ring-1 ring-white/5">
+                        {sections
+                            .filter(section => section.id !== 'premium')
+                            .map((section) => (
+                                <button
+                                    key={section.id}
+                                    onClick={() => onSectionChange(section.id)}
+                                    className={`group relative flex items-center justify-center h-9 w-9 rounded-full transition-all duration-300 ${activeSection === section.id
+                                            ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg shadow-green-500/30 scale-105'
+                                            : 'text-gray-400 hover:bg-white/10 hover:text-white hover:scale-110'
+                                        }`}
+                                    aria-label={section.label}
+                                >
+                                    <span className="relative z-10 transition-transform duration-200 group-active:scale-90">
+                                        {section.icon}
+                                    </span>
+                                </button>
+                            ))}
+                        <div className="w-px h-4 bg-white/10 mx-1" />
+                        <button
+                            onClick={() => setIsMobileSidebarOpen(true)}
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white hover:scale-110 transition-all duration-300 active:scale-95"
+                            aria-label={t.menu}
+                        >
+                            <Menu size={18} />
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="fixed top-2 left-2 flex gap-4 z-40">
+                    <button
+                        onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                        className="menu-button flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl shadow-blue-500/40 transition-all duration-300 hover:scale-110 hover:shadow-green-500/50 active:scale-95 md:hidden ring-2 ring-transparent hover:ring-white/20"
+                        aria-label={isMobileSidebarOpen ? t.close : t.menu}
+                    >
+                        {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
+            )}
         </>
     );
 };
