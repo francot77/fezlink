@@ -1,0 +1,17 @@
+{
+  "common": {
+    "home": "Home",
+    "menu": "Menu",
+    "close": "Close",
+    "errors": {
+      "notFound": {
+        "badge": "404 - Not Found",
+        "title": "We couldn't find that page",
+        "description": "Something went wrong. You'll be redirected to the homepage in {count} {count, plural, one {second} other {seconds}}, or you can head back now.",
+        "returnHome": "Return home now",
+        "redirectingIn": "Redirecting in",
+        "seconds": "{count, plural, one {second} other {seconds}}"
+      }
+    }
+  }
+}

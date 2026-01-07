@@ -1,62 +1,62 @@
-'use client'
+'use client';
 
-import NavBar from '@/components/navbar'
-import Button from '@/components/button'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
-import { useTranslations } from 'next-intl'
+import NavBar from '@/components/navbar';
+import Button from '@/components/button';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function Home() {
-  const router = useRouter()
-  const t = useTranslations('landing')
+  const router = useRouter();
+  const t = useTranslations('landing');
 
-  const [globalClicks, setGlobalClicks] = useState<number | null>(null)
-  const [animatedCount, setAnimatedCount] = useState(0)
-  const [isVisible, setIsVisible] = useState(false)
-  const heroRef = useRef<HTMLDivElement>(null)
-  const featuresRef = useRef<HTMLElement>(null)
-  const stepsRef = useRef<HTMLElement>(null)
+  const [globalClicks, setGlobalClicks] = useState<number | null>(null);
+  const [animatedCount, setAnimatedCount] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const featuresRef = useRef<HTMLElement>(null);
+  const stepsRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const fetchGlobalClicks = async () => {
       try {
-        const response = await fetch('/api/public/global')
-        if (!response.ok) return
-        const data: { count?: number } = await response.json()
-        setGlobalClicks(data.count ?? 0)
+        const response = await fetch('/api/public/global');
+        if (!response.ok) return;
+        const data: { count?: number } = await response.json();
+        setGlobalClicks(data.count ?? 0);
       } catch {
         // silent fail — metrics should never block UX
       }
-    }
+    };
 
-    fetchGlobalClicks()
+    fetchGlobalClicks();
 
     // Trigger entrance animations
-    setTimeout(() => setIsVisible(true), 100)
-  }, [])
+    setTimeout(() => setIsVisible(true), 100);
+  }, []);
 
   // Animated counter
   useEffect(() => {
-    if (globalClicks === null) return
+    if (globalClicks === null) return;
 
-    const duration = 2000
-    const steps = 60
-    const increment = globalClicks / steps
-    let current = 0
+    const duration = 2000;
+    const steps = 60;
+    const increment = globalClicks / steps;
+    let current = 0;
 
     const timer = setInterval(() => {
-      current += increment
+      current += increment;
       if (current >= globalClicks) {
-        setAnimatedCount(globalClicks)
-        clearInterval(timer)
+        setAnimatedCount(globalClicks);
+        clearInterval(timer);
       } else {
-        setAnimatedCount(Math.floor(current))
+        setAnimatedCount(Math.floor(current));
       }
-    }, duration / steps)
+    }, duration / steps);
 
-    return () => clearInterval(timer)
-  }, [globalClicks])
+    return () => clearInterval(timer);
+  }, [globalClicks]);
 
   // Intersection Observer for scroll animations
   useEffect(() => {
@@ -64,32 +64,42 @@ export default function Home() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in-up')
+            entry.target.classList.add('animate-fade-in-up');
           }
-        })
+        });
       },
       { threshold: 0.1 }
-    )
+    );
 
-    const elements = document.querySelectorAll('.observe-scroll')
-    elements.forEach((el) => observer.observe(el))
+    const elements = document.querySelectorAll('.observe-scroll');
+    elements.forEach((el) => observer.observe(el));
 
-    return () => observer.disconnect()
-  }, [])
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
       <style jsx>{`
         @keyframes float {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
+          0%,
+          100% {
+            transform: translateY(0px) scale(1);
+          }
+          50% {
+            transform: translateY(-20px) scale(1.05);
+          }
         }
-        
+
         @keyframes pulse-glow {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.4; }
+          0%,
+          100% {
+            opacity: 0.2;
+          }
+          50% {
+            opacity: 0.4;
+          }
         }
-        
+
         @keyframes fade-in-up {
           from {
             opacity: 0;
@@ -100,7 +110,7 @@ export default function Home() {
             transform: translateY(0);
           }
         }
-        
+
         @keyframes slide-in-left {
           from {
             opacity: 0;
@@ -111,7 +121,7 @@ export default function Home() {
             transform: translateX(0);
           }
         }
-        
+
         @keyframes slide-in-right {
           from {
             opacity: 0;
@@ -122,69 +132,71 @@ export default function Home() {
             transform: translateX(0);
           }
         }
-        
+
         .animate-fade-in-up {
           animation: fade-in-up 0.8s ease-out forwards;
         }
-        
+
         .animate-slide-in-left {
           animation: slide-in-left 0.8s ease-out forwards;
         }
-        
+
         .animate-slide-in-right {
           animation: slide-in-right 0.8s ease-out forwards;
         }
-        
+
         .floating {
           animation: float 6s ease-in-out infinite;
         }
-        
+
         .pulse-glow {
           animation: pulse-glow 4s ease-in-out infinite;
         }
-        
+
         .hover-lift {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .hover-lift:hover {
           transform: translateY(-8px);
           box-shadow: 0 20px 60px rgba(16, 185, 129, 0.3);
         }
-        
+
         .glass-card {
           background: rgba(255, 255, 255, 0.03);
           backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.1);
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .glass-card:hover {
           background: rgba(255, 255, 255, 0.06);
           border-color: rgba(255, 255, 255, 0.2);
           transform: translateY(-4px) scale(1.02);
         }
-        
+
         .gradient-border {
           position: relative;
           background: linear-gradient(to right, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
           border-radius: 1rem;
         }
-        
+
         .gradient-border::before {
           content: '';
           position: absolute;
           inset: 0;
           border-radius: 1rem;
           padding: 2px;
-          background: linear-gradient(135deg, #10B981, #06B6D4, #8B5CF6);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(135deg, #10b981, #06b6d4, #8b5cf6);
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0.5;
           transition: opacity 0.3s;
         }
-        
+
         .gradient-border:hover::before {
           opacity: 1;
         }
@@ -193,8 +205,14 @@ export default function Home() {
       {/* Animated background blobs */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-10 top-16 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl pulse-glow" />
-        <div className="absolute bottom-12 right-0 h-80 w-80 rounded-full bg-purple-600/20 blur-3xl pulse-glow" style={{ animationDelay: '2s' }} />
-        <div className="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl pulse-glow" style={{ animationDelay: '1s' }} />
+        <div
+          className="absolute bottom-12 right-0 h-80 w-80 rounded-full bg-purple-600/20 blur-3xl pulse-glow"
+          style={{ animationDelay: '2s' }}
+        />
+        <div
+          className="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl pulse-glow"
+          style={{ animationDelay: '1s' }}
+        />
       </div>
 
       <NavBar />
@@ -202,7 +220,9 @@ export default function Home() {
       <div className="relative mx-auto flex max-w-6xl flex-col gap-20 px-4 pb-20 pt-28 md:px-8 lg:px-10">
         {/* HERO */}
         <section ref={heroRef} className="grid items-center gap-12 md:grid-cols-2">
-          <div className={`space-y-8 text-center md:text-left ${isVisible ? 'animate-slide-in-left' : 'opacity-0'}`}>
+          <div
+            className={`space-y-8 text-center md:text-left ${isVisible ? 'animate-slide-in-left' : 'opacity-0'}`}
+          >
             <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm text-emerald-200 ring-1 ring-white/10 hover:bg-white/10 hover:ring-emerald-400/30 transition-all duration-300">
               <span className="text-lg animate-pulse">⚡</span>
               <p>{t('hero.badge')}</p>
@@ -216,9 +236,7 @@ export default function Home() {
                 <br />
                 {t('hero.title.line3')}
               </h1>
-              <p className="text-lg text-gray-300 md:text-xl">
-                {t('hero.subtitle')}
-              </p>
+              <p className="text-lg text-gray-300 md:text-xl">{t('hero.subtitle')}</p>
             </div>
 
             <ul className="space-y-3 text-left text-base text-gray-200 md:text-lg">
@@ -254,13 +272,18 @@ export default function Home() {
                 className="group w-full rounded-xl border border-white/20 px-5 py-3 text-base font-medium text-white transition-all duration-300 hover:border-emerald-400/50 hover:bg-white/5 hover:shadow-lg hover:shadow-emerald-500/20 sm:w-auto"
                 onClick={() => router.push('/dashboard')}
               >
-                <span className="group-hover:text-emerald-300 transition-colors">{t('hero.cta.secondary')}</span>
+                <span className="group-hover:text-emerald-300 transition-colors">
+                  {t('hero.cta.secondary')}
+                </span>
               </button>
             </div>
           </div>
 
           {/* PREVIEW */}
-          <div className={`relative flex justify-center ${isVisible ? 'animate-slide-in-right' : 'opacity-0'}`} style={{ animationDelay: '200ms' }}>
+          <div
+            className={`relative flex justify-center ${isVisible ? 'animate-slide-in-right' : 'opacity-0'}`}
+            style={{ animationDelay: '200ms' }}
+          >
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/5 via-white/0 to-cyan-500/10 blur-2xl" />
             <div className="relative w-full max-w-md floating">
               <div className="glass-card rounded-3xl p-6 shadow-2xl">
@@ -275,7 +298,10 @@ export default function Home() {
                     {globalClicks === null ? '—' : animatedCount.toLocaleString()}
                   </p>
                   <div className="mt-2 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-1000" style={{ width: globalClicks ? '100%' : '0%' }} />
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-1000"
+                      style={{ width: globalClicks ? '100%' : '0%' }}
+                    />
                   </div>
                 </div>
 
@@ -306,7 +332,7 @@ export default function Home() {
             {[
               { icon: '🎨', accent: 'from-emerald-400/25 to-green-500/15' },
               { icon: '📊', accent: 'from-cyan-400/30 to-blue-500/20' },
-              { icon: '📱', accent: 'from-fuchsia-400/25 to-purple-500/20' }
+              { icon: '📱', accent: 'from-fuchsia-400/25 to-purple-500/20' },
             ].map((feature, index) => (
               <div
                 key={index}
@@ -324,14 +350,15 @@ export default function Home() {
         </section>
 
         {/* HOW IT WORKS */}
-        <section ref={stepsRef} className="observe-scroll opacity-0 grid gap-10 rounded-3xl glass-card px-6 py-12 md:grid-cols-2 md:px-10">
+        <section
+          ref={stepsRef}
+          className="observe-scroll opacity-0 grid gap-10 rounded-3xl glass-card px-6 py-12 md:grid-cols-2 md:px-10"
+        >
           <div className="space-y-6">
             <h3 className="text-3xl font-semibold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
               {t('howItWorks.title')}
             </h3>
-            <p className="text-gray-300">
-              {t('howItWorks.subtitle')}
-            </p>
+            <p className="text-gray-300">{t('howItWorks.subtitle')}</p>
 
             <div className="space-y-4">
               {[0, 1, 2].map((index) => (
@@ -360,11 +387,22 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/30 pointer-events-none" />
               <div className="relative p-6 space-y-6">
                 <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-emerald-400 shadow-xl" style={{ boxShadow: '0 20px 40px rgba(16, 185, 129, 0.3)' }}>
-                    <Image src="/hero.webp" width={96} height={96} alt="Creator avatar" className="h-full w-full object-cover" />
+                  <div
+                    className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-emerald-400 shadow-xl"
+                    style={{ boxShadow: '0 20px 40px rgba(16, 185, 129, 0.3)' }}
+                  >
+                    <Image
+                      src="/hero.webp"
+                      width={96}
+                      height={96}
+                      alt="Creator avatar"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-bold tracking-tight">{t('bioPreview.username')}</h3>
+                    <h3 className="text-2xl font-bold tracking-tight">
+                      {t('bioPreview.username')}
+                    </h3>
                     <p className="text-xs text-white/80">{t('bioPreview.bio')}</p>
                   </div>
                 </div>
@@ -378,12 +416,17 @@ export default function Home() {
                   </div>
                   <ul className="space-y-2">
                     {[0, 1, 2].map((index) => (
-                      <li key={index} className="flex items-center gap-2 rounded-xl bg-black/40 border border-white/10 p-2.5">
+                      <li
+                        key={index}
+                        className="flex items-center gap-2 rounded-xl bg-black/40 border border-white/10 p-2.5"
+                      >
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-emerald-400">
                             {t(`bioPreview.links.${index}.title`)}
                           </p>
-                          <p className="text-xs text-white/60">{t(`bioPreview.links.${index}.url`)}</p>
+                          <p className="text-xs text-white/60">
+                            {t(`bioPreview.links.${index}.url`)}
+                          </p>
                         </div>
                       </li>
                     ))}
@@ -395,5 +438,5 @@ export default function Home() {
         </section>
       </div>
     </main>
-  )
+  );
 }

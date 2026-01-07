@@ -1,19 +1,21 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { AlertTriangle } from "lucide-react";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function NotFound() {
   const router = useRouter();
   const [counter, setCounter] = useState(5);
+  const t = useTranslations('common.errors.notFound');
 
   useEffect(() => {
     const countdown = setInterval(() => {
       setCounter((prev) => {
         if (prev <= 1) {
-          router.push("/");
+          router.push('/');
           return 0;
         }
         return prev - 1;
@@ -35,14 +37,14 @@ export default function NotFound() {
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10">
             <AlertTriangle className="h-6 w-6" aria-hidden />
           </span>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">404 - Not Found</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">
+            {t('badge')}
+          </p>
         </div>
 
         <div className="mt-6 space-y-4">
-          <h1 className="text-3xl font-bold sm:text-4xl">We couldn&apos;t find that page</h1>
-          <p className="text-lg text-gray-200 sm:text-xl">
-            Something went wrong. You&apos;ll be redirected to the homepage in {counter} seconds, or you can head back now.
-          </p>
+          <h1 className="text-3xl font-bold sm:text-4xl">{t('title')}</h1>
+          <p className="text-lg text-gray-200 sm:text-xl">{t('description', { count: counter })}</p>
         </div>
 
         <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -50,14 +52,18 @@ export default function NotFound() {
             href="/"
             className="inline-flex items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-500/20 px-6 py-3 text-sm font-semibold text-emerald-50 transition hover:border-emerald-300/60 hover:bg-emerald-500/30 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
           >
-            Return home now
+            {t('returnHome')}
           </Link>
           <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-gray-300">
-            <span className="text-xs uppercase tracking-[0.2em] text-gray-400">Redirecting in</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-gray-400">
+              {t('redirectingIn')}
+            </span>
             <span className="text-lg font-semibold text-emerald-200" aria-live="polite">
               {counter}
             </span>
-            <span className="text-xs uppercase tracking-[0.2em] text-gray-400">seconds</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-gray-400">
+              {t('seconds', { count: counter })}
+            </span>
           </div>
         </div>
       </div>

@@ -7,6 +7,12 @@ export interface IUser extends Document {
   password: string;
   accountType: 'free' | 'premium';
   premiumExpiresAt?: number;
+  apiKeys?: {
+    key: string;
+    name: string;
+    createdAt: Date;
+    lastUsed?: Date;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +47,14 @@ const UserSchema = new Schema<IUser>(
       type: Number,
       required: false,
     },
+    apiKeys: [
+      {
+        key: { type: String, required: true },
+        name: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+        lastUsed: { type: Date },
+      },
+    ],
   },
   {
     timestamps: true,

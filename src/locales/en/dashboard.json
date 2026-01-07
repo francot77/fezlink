@@ -1,0 +1,24 @@
+{
+  "dashboard": {
+    "menu": {
+      "links": "Links",
+      "linksDesc": "Manage your short links",
+      "analytics": "Analytics",
+      "analyticsDesc": "View your link stats",
+      "biopage": "Bio Page",
+      "biopageDesc": "Customize your bio page",
+      "insights": "Insights",
+      "insightsDesc": "AI-powered insights",
+      "subscription": "Subscription",
+      "subscriptionDesc": "Manage your plan"
+    },
+    "welcome": "Welcome",
+    "title": "Dashboard",
+    "description": "Manage your links and bio page",
+    "language": "Language",
+    "logout": "Logout",
+    "loading": "Loading...",
+    "logoutConfirmTitle": "Confirm Logout",
+    "logoutConfirmMessage": "Are you sure you want to log out?"
+  }
+}

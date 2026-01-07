@@ -1,0 +1,7 @@
+* @your-org/fezlink-core
+src/shared/** @your-org/ui
+src/features/links/** @your-org/links
+src/services/** @your-org/services
+src/workers/** @your-org/workers
+src/app/api/** @your-org/backend
+src/lib/** @your-org/lib

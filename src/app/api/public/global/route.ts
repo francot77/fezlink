@@ -3,9 +3,9 @@ import dbConnect from '@/lib/mongodb';
 import GlobalClicks from '@/app/models/globalClicks';
 
 export async function GET() {
-    await dbConnect();
+  await dbConnect();
 
-    const globalDoc = await GlobalClicks.findOne();
+  const globalDoc = await GlobalClicks.findOne();
 
-    return NextResponse.json({ count: globalDoc?.count ?? 0 });
+  return NextResponse.json({ count: globalDoc?.count ?? 0 });
 }

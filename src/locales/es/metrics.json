@@ -1,0 +1,83 @@
+{
+  "metrics": {
+    "title": "Analíticas del enlace",
+    "subtitle": "Analiza el rendimiento",
+    "viewing": "Viendo",
+    "selectLink": "Selecciona un link",
+    "empty": "Aún no hay links para mostrar métricas.",
+    "total": "Total de clics",
+    "from": "Desde",
+    "to": "Hasta",
+    "quickRanges": "Rangos rápidos",
+    "lastWeek": "Últimos 7 días",
+    "lastMonth": "Últimos 30 días",
+    "lastYear": "Último año",
+    "specificMonth": "Mes específico",
+    "specificYear": "Año específico",
+    "country": "País",
+    "all": "Todos",
+    "source": "Fuente",
+    "allSources": "Todas",
+    "deviceType": "Dispositivo",
+    "allDevices": "Todos",
+    "loading": "Cargando...",
+    "noData": "No hay datos para este período",
+    "noDataHint": "Prueba cambiando tus filtros o rango de fechas",
+    "countryMetrics": "Principales países",
+    "countryTotalsEmpty": "Sin datos de país",
+    "countryClicks": "clics",
+    "deviceMetrics": "Dispositivos",
+    "unknownDevice": "Desconocido",
+    "deviceTotalsEmpty": "Sin datos de dispositivo",
+    "sourceMetrics": "Fuentes de tráfico",
+    "sourceTotalsEmpty": "Sin datos de fuente",
+    "clickTrend": "Tendencia de clics",
+    "weeklyChange": "vs período anterior",
+    "trendNew": "Nuevo",
+    "trendNoData": "Sin datos",
+    "filters": "Filtros",
+    "clearFilters": "Limpiar filtros",
+    "chart": {
+      "monthly": "Mensual",
+      "clicksLabel": "clics",
+      "total": "Total",
+      "average": "Promedio",
+      "max": "Máximo",
+      "peakMonth": "Mes pico",
+      "peakDay": "Día pico",
+      "monthlyBadge": "Datos mensuales",
+      "minLabel": "Min:"
+      ,
+      "type": {
+        "line": "Línea",
+        "bar": "Barras"
+      }
+    },
+    "legend": {
+      "totalClicks": "Clicks totales",
+      "periods": "{count} períodos"
+    },
+    "labels": {
+      "device": {
+        "mobile": "Móvil",
+        "desktop": "Escritorio",
+        "tablet": "Tableta",
+        "unknown": "Desconocido"
+      },
+      "source": {
+        "instagram": "Instagram",
+        "instagram_bio": "Instagram",
+        "whatsapp": "WhatsApp",
+        "qr_local": "Código QR",
+        "direct": "Directo",
+        "referral": "Referencia",
+        "facebook": "Facebook",
+        "twitter": "Twitter",
+        "linkedin": "LinkedIn",
+        "email": "Email",
+        "tiktok": "TikTok",
+        "pinterest": "Pinterest"
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+    "title": "Insights",
+    "loadingInsights": "Loading insights...",
+    "loadError": "Failed to load insights",
+    "retry": "Retry",
+    "generatingInsights": "Generating insights...",
+    "calculatingInsights": "Calculating insights...",
+    "estimatedWaitTime": "Estimated time: {seconds}s",
+    "unknownError": "Unknown error",
+    "insightsDetected": "insights detected",
+    "clicks": "clicks",
+    "links": "links",
+    "refreshInsights": "Refresh insights",
+    "oneYear": "1 year",
+    "emptyCategory": "No insights in this category",
+    "categoryLabel": "Category",
+    "primaryValue": "Primary Value",
+    "vsPrevPeriod": "vs previous period",
+    "trend": "Trend",
+    "details": "Details",
+    "additionalInfo": "Additional Information",
+    "relatedItems": "Related Items",
+    "priority": "Priority",
+    "type": {
+        "positive": "positive",
+        "opportunity": "opportunity",
+        "warning": "warning",
+        "critical": "critical",
+        "info": "info"
+    },
+    "category": {
+        "all": "All",
+        "traffic": "Traffic",
+        "geography": "Geography",
+        "performance": "Performance",
+        "temporal": "Temporal",
+        "device": "Device",
+        "source": "Source"
+    }
+}

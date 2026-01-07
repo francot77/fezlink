@@ -30,5 +30,3 @@ export async function emitAnalyticsEvent(event: ClickEvent) {
     console.error('[AnalyticsEvent]', err);
   }
 }
-
-

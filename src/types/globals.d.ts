@@ -1,51 +1,51 @@
-export { }
+export {};
 
 // Create a type for the roles
-export type Roles = 'admin' | 'moderator'
-export type AccountType = 'free' | 'premium'
+export type Roles = 'admin' | 'moderator';
+export type AccountType = 'free' | 'premium';
 
 declare global {
-    interface CustomJwtSessionClaims {
-        metadata: {
-            role?: Roles,
-            accountType?: AccountType
-            expiresAt?: string
-        }
-    }
+  interface CustomJwtSessionClaims {
+    metadata: {
+      role?: Roles;
+      accountType?: AccountType;
+      expiresAt?: string;
+    };
+  }
 }
 export type LinkType = {
-    _id: string
-    shortUrl: string
-    shortId?: string
-    slug?: string
-    destinationUrl: string
-}
+  _id: string;
+  shortUrl: string;
+  shortId?: string;
+  slug?: string;
+  destinationUrl: string;
+};
 export type LinkStat = {
-    country: string,
-    clicksCount: number
-}
+  country: string;
+  clicksCount: number;
+};
 
 export type SelectedLink = {
-    shortUrl: string
-    shortId?: string
-    slug?: string
-    label: string
-}
+  shortUrl: string;
+  shortId?: string;
+  slug?: string;
+  label: string;
+};
 
 export type BiopageType = {
-    slug: string
-    links: SelectedLink[]
-    backgroundColor: string
-    textColor: string
-    avatarUrl?: string
-    description?: string
-    background: {
-        base: string,
-        image: {
-            url: string,
-            blur: number,
-            positionX: number,
-            positionY: number,
-        }
-    }
-}
+  slug: string;
+  links: SelectedLink[];
+  backgroundColor: string;
+  textColor: string;
+  avatarUrl?: string;
+  description?: string;
+  background: {
+    base: string;
+    image: {
+      url: string;
+      blur: number;
+      positionX: number;
+      positionY: number;
+    };
+  };
+};

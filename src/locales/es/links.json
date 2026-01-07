@@ -1,0 +1,29 @@
+{
+    "links": {
+        "clicks": "clicks",
+        "viewMetrics": "Ver métricas",
+        "stats": "Analíticas",
+        "openLink": "Abrir",
+        "delete": "Eliminar",
+        "activeLinks": "Links activos",
+        "totalClicks": "Clicks totales",
+        "averagePerLink": "Promedio",
+        "addNewLink": "Crear nuevo enlace corto",
+        "addLink": "Crear enlace",
+        "add": "Crear",
+        "myLinks": "Tus enlaces",
+        "loading": "Cargando",
+        "empty": "Aún no hay enlaces. Crea tu primer enlace para empezar.",
+        "placeholder": "Pega tu URL larga aquí...",
+        "copy": "Copiar",
+        "copied": "¡Copiado!",
+        "copyInstagram": "Instagram",
+        "copyWhatsapp": "WhatsApp",
+        "copyQr": "Código QR",
+        "quickShare": "Compartir rápido",
+        "search": "Buscar enlaces...",
+        "clear": "Limpiar",
+        "deleting": "Eliminando...",
+        "noResults": "No se encontraron enlaces"
+    }
+}

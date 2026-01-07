@@ -1,0 +1,82 @@
+{
+  "metrics": {
+    "title": "Link Analytics",
+    "subtitle": "Analyze performance",
+    "viewing": "Viewing",
+    "selectLink": "Select a link",
+    "empty": "There are no links to show metrics yet.",
+    "total": "Total clicks",
+    "from": "From",
+    "to": "To",
+    "quickRanges": "Quick ranges",
+    "lastWeek": "Last 7 days",
+    "lastMonth": "Last 30 days",
+    "lastYear": "Last year",
+    "specificMonth": "Specific month",
+    "specificYear": "Specific year",
+    "country": "Country",
+    "all": "All",
+    "source": "Source",
+    "allSources": "All sources",
+    "deviceType": "Device",
+    "allDevices": "All devices",
+    "loading": "Loading...",
+    "noData": "No data available for this period",
+    "noDataHint": "Try changing your filters or date range",
+    "countryMetrics": "Top countries",
+    "countryTotalsEmpty": "No country data yet",
+    "countryClicks": "clicks",
+    "deviceMetrics": "Devices",
+    "unknownDevice": "Unknown",
+    "deviceTotalsEmpty": "No device data",
+    "sourceMetrics": "Traffic sources",
+    "sourceTotalsEmpty": "No source data",
+    "clickTrend": "Click trends",
+    "weeklyChange": "vs last period",
+    "trendNew": "New",
+    "trendNoData": "No data",
+    "filters": "Filters",
+    "clearFilters": "Clear filters",
+    "chart": {
+      "monthly": "Monthly",
+      "clicksLabel": "clicks",
+      "total": "Total",
+      "average": "Average",
+      "max": "Maximum",
+      "peakMonth": "Peak month",
+      "peakDay": "Peak day",
+      "monthlyBadge": "Monthly data",
+      "minLabel": "Min:",
+      "type": {
+        "line": "Line",
+        "bar": "Bars"
+      }
+    },
+    "legend": {
+      "totalClicks": "Total clicks",
+      "periods": "{count} periods"
+    },
+    "labels": {
+      "device": {
+        "mobile": "Mobile",
+        "desktop": "Desktop",
+        "tablet": "Tablet",
+        "unknown": "Unknown"
+      },
+      "source": {
+        "instagram": "Instagram",
+        "instagram_bio": "Instagram",
+        "whatsapp": "WhatsApp",
+        "qr_local": "QR Code",
+        "direct": "Direct",
+        "referral": "Referral",
+        "facebook": "Facebook",
+        "twitter": "Twitter",
+        "linkedin": "LinkedIn",
+        "email": "Email",
+        "tiktok": "TikTok",
+        "pinterest": "Pinterest"
+      }
+    }
+  }
+}

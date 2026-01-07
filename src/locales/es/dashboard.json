@@ -1,0 +1,24 @@
+{
+  "dashboard": {
+    "menu": {
+      "links": "Enlaces",
+      "linksDesc": "Gestiona tus enlaces cortos",
+      "analytics": "Analítica",
+      "analyticsDesc": "Ver estadísticas de enlaces",
+      "biopage": "Página Bio",
+      "biopageDesc": "Personaliza tu página bio",
+      "insights": "Insights",
+      "insightsDesc": "Insights impulsados por IA",
+      "subscription": "Suscripción",
+      "subscriptionDesc": "Gestiona tu plan"
+    },
+    "welcome": "Bienvenido",
+    "title": "Panel de Control",
+    "description": "Gestiona tus enlaces y página bio",
+    "language": "Idioma",
+    "logout": "Cerrar sesión",
+    "loading": "Cargando...",
+    "logoutConfirmTitle": "Confirmar cierre de sesión",
+    "logoutConfirmMessage": "¿Estás seguro de que quieres cerrar sesión?"
+  }
+}

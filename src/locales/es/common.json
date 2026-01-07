@@ -1,0 +1,17 @@
+{
+  "common": {
+    "home": "Inicio",
+    "menu": "Menú",
+    "close": "Cerrar",
+    "errors": {
+      "notFound": {
+        "badge": "404 - No encontrado",
+        "title": "No pudimos encontrar esa página",
+        "description": "Algo salió mal. Serás redirigido a inicio en {count} {count, plural, one {segundo} other {segundos}}, o puedes volver ahora.",
+        "returnHome": "Volver a inicio ahora",
+        "redirectingIn": "Redirigiendo en",
+        "seconds": "{count, plural, one {segundo} other {segundos}}"
+      }
+    }
+  }
+}
