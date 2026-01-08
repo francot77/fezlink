@@ -17,7 +17,7 @@ import Stats from '@/components/stats';
 import BiopageEditor from './biopageeditor';
 import ProfileEditor from '@/features/profile/ProfileEditor';
 import ConfigSection from '@/features/config/ConfigSection';
-import PremiumFeatures from '@/components/premiumfeatures';
+import { PricingSection } from '@/components/PricingSection';
 import { useSession } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
 import InsightsDashboard from '@/features/insights/InsightsDashboard';
@@ -114,20 +114,7 @@ const DashboardPage: React.FC = () => {
       label: t('menu.subscription'),
       description: t('menu.subscriptionDesc'),
       icon: <Flame size={18} />,
-      content: (
-        <div className="flex flex-wrap justify-center gap-4">
-          <PremiumFeatures
-            language={language}
-            time={'mensual'}
-            priceId={'pri_01jwryd6rgxfdh50rknhcqh1aq'}
-          />
-          <PremiumFeatures
-            language={language}
-            time={'anual'}
-            priceId={'pri_01jwryfkyzp3jrbj7xw8hjp585'}
-          />
-        </div>
-      ),
+      content: <PricingSection showManageActions={true} />,
       color: '#f97316', // orange-500
     },
     {
@@ -157,7 +144,7 @@ const DashboardPage: React.FC = () => {
   // Let's block everything except maybe Config/Profile if we wanted to be nice, 
   // but strictly following "ver primero una pantalla" -> Block main view.
   const isVerified = user?.isVerified;
-  
+
   // Allow access to Profile and Config even if not verified, so they can logout or change email
   const isAllowedSection = ['config', 'profile'].includes(activeSection);
   const showVerificationWarning = !isVerified && !isAllowedSection;

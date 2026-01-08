@@ -4,3 +4,4 @@ export { Card } from './Card';
 export { Badge } from './Badge';
 export { Skeleton } from './Skeleton';
 export * from './GlassCard';
+export { Tooltip } from './Tooltip';

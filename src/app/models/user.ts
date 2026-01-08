@@ -15,6 +15,11 @@ export interface IUser extends Document {
   lastVerificationEmailSent?: Date;
   accountType: 'free' | 'starter' | 'pro';
   premiumExpiresAt?: number;
+  // Paddle Fields
+  subscriptionId?: string;
+  customerId?: string;
+  subscriptionStatus?: 'active' | 'past_due' | 'paused' | 'canceled' | 'trialing';
+  nextBillDate?: Date;
   apiKeys?: {
     key: string;
     name: string;
@@ -81,6 +86,24 @@ const UserSchema = new Schema<IUser>(
     },
     premiumExpiresAt: {
       type: Number,
+      required: false,
+    },
+    // Paddle Subscription Fields
+    subscriptionId: {
+      type: String,
+      required: false,
+    },
+    customerId: {
+      type: String,
+      required: false,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ['active', 'past_due', 'paused', 'canceled', 'trialing'],
+      required: false,
+    },
+    nextBillDate: {
+      type: Date,
       required: false,
     },
     apiKeys: [

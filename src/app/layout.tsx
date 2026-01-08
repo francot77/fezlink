@@ -4,7 +4,8 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Toaster } from 'sonner';
 import './globals.css';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getMessages } from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl';
 const workSans = Work_Sans({
   variable: '--font-worksans',
   subsets: ['latin'],
@@ -59,13 +60,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
     <html lang={locale}>
       <head>
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={`${workSans.className} antialiased`}>
-        {children}
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
         <Toaster />

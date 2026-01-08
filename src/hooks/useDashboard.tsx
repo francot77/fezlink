@@ -2,7 +2,7 @@ import { useState } from 'react';
 import useLinks from './useLinks';
 import { useRouter } from 'next/navigation';
 import BiopageEditor from '@/app/(app)/dashboard/biopageeditor';
-import PremiumFeatures from '@/components/premiumfeatures';
+import { PricingSection } from '@/components/PricingSection';
 import Stats from '@/components/stats';
 import LinkManager from '@/features/links/components/LinkManager';
 
@@ -60,9 +60,8 @@ export const useDashboard = () => {
     2: <Stats links={linkState.links} />,
     3: <BiopageEditor />,
     4: (
-      <div className="flex justify-center items-center gap-4 flex-wrap">
-        <PremiumFeatures time={'mensual'} priceId={'pri_01jwryd6rgxfdh50rknhcqh1aq'} />
-        <PremiumFeatures time={'anual'} priceId={'pri_01jwryfkyzp3jrbj7xw8hjp585'} />
+      <div className="w-full">
+        <PricingSection />
       </div>
     ),
   };
