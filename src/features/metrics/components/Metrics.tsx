@@ -15,6 +15,7 @@ import {
 } from '../utils/metricsHelpers';
 import { useTranslations } from 'next-intl';
 import { COUNTRY_NAMES } from '@/lib/countryNames';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MetricsProps {
   linkId: string;
@@ -42,6 +43,8 @@ const getCountryName = (countryCode: string): string => {
 
 export default function Metrics({ linkId, selectedUrl, language = 'en' }: MetricsProps) {
   const t = useTranslations('metrics');
+  const { user } = useAuth();
+  const isPremium = user?.accountType === 'starter' || user?.accountType === 'pro';
 
   // Estado de filtros
   const [filters, setFilters] = useState<FiltersType>({
@@ -132,6 +135,7 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: Metric
         availableCountries={data.availableCountries}
         availableSources={data.availableSources}
         availableDevices={data.availableDevices}
+        maxDateRange={isPremium ? undefined : 7}
         translations={{
           filters: t('filters'),
           clearFilters: t('clearFilters'),
@@ -290,31 +294,28 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: Metric
                   onClick={() =>
                     handleFiltersChange({ country: code === filters.country ? '' : code })
                   }
-                  className={`group relative overflow-hidden rounded-xl border transition-all duration-300 active:scale-95 animate-in fade-in slide-in-from-bottom-2 ${
-                    filters.country === code
-                      ? 'border-purple-400/60 bg-purple-500/20 shadow-lg shadow-purple-500/20 scale-105'
-                      : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 hover:scale-102'
-                  }`}
+                  className={`group relative overflow-hidden rounded-xl border transition-all duration-300 active:scale-95 animate-in fade-in slide-in-from-bottom-2 ${filters.country === code
+                    ? 'border-purple-400/60 bg-purple-500/20 shadow-lg shadow-purple-500/20 scale-105'
+                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 hover:scale-102'
+                    }`}
                   style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}
                   title={countryName}
                 >
                   <div
-                    className={`absolute inset-0 bg-gradient-to-br ${
-                      filters.country === code
-                        ? 'from-purple-500/10 to-pink-500/10'
-                        : 'from-white/0 to-white/0 group-hover:from-white/5 group-hover:to-white/5'
-                    } transition-all duration-300`}
+                    className={`absolute inset-0 bg-gradient-to-br ${filters.country === code
+                      ? 'from-purple-500/10 to-pink-500/10'
+                      : 'from-white/0 to-white/0 group-hover:from-white/5 group-hover:to-white/5'
+                      } transition-all duration-300`}
                   />
 
                   <div className="relative flex items-center justify-between p-3 sm:p-4">
                     <div className="flex items-center gap-2 sm:gap-3 text-left min-w-0 flex-1">
                       {/* Flag emoji */}
                       <div
-                        className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg text-2xl sm:text-3xl transition-all duration-300 ${
-                          filters.country === code
-                            ? 'bg-purple-500/20 scale-110'
-                            : 'bg-white/5 group-hover:scale-110'
-                        }`}
+                        className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg text-2xl sm:text-3xl transition-all duration-300 ${filters.country === code
+                          ? 'bg-purple-500/20 scale-110'
+                          : 'bg-white/5 group-hover:scale-110'
+                          }`}
                       >
                         {flag}
                       </div>

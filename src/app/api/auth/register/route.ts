@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/api/auth/register/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import dbConnect from '@/lib/mongodb';
 import User from '@/app/models/user';
 import bcrypt from 'bcryptjs';
 import rateLimit from '@/lib/rate-limit';
-import { validateRequestBody, registerSchema } from '@/core/utils/validation';
-import { logger, SecurityEvents } from '@/lib/logger';
-import { withErrorHandler, AppError } from '@/lib/error-handler';
+import { registerSchema, validateRequestBody } from '@/core/utils/validation';
+import { SecurityEvents, logger } from '@/lib/logger';
+import { AppError, withErrorHandler } from '@/lib/error-handler';
 import { getClientIp } from '@/lib/get-client-ip';
+import { sendVerificationEmail } from '@/lib/email';
 
 // ✅ Rate limiter específico para registro
 const registerLimiter = rateLimit({
@@ -53,7 +55,7 @@ async function registerHandler(req: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  const { email, username, password } = validation.data;
+  const { email, username, password, language } = validation.data;
 
   await dbConnect();
 
@@ -85,7 +87,11 @@ async function registerHandler(req: NextRequest) {
   // ✅ 4. Hash password con bcrypt (cost factor 12 para mayor seguridad)
   const hashedPassword = await bcrypt.hash(password, 12);
 
-  // ✅ 5. Crear usuario
+  // ✅ 5. Generar token de verificación
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+  // ✅ 6. Crear usuario
   try {
     const user = await User.create({
       email,
@@ -97,9 +103,25 @@ async function registerHandler(req: NextRequest) {
       createdAt: new Date(),
       isTwoFactorEnabled: false,
       twoFactorSecret: undefined,
+      verificationToken: hashedToken,
+      verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      language: language || 'en',
     });
 
-    // ✅ 6. Log exitoso (sin datos sensibles)
+    // ✅ 7. Enviar email de verificación - DESHABILITADO AUTOMÁTICAMENTE
+    // El usuario debe solicitarlo manualmente desde el Dashboard
+    /*
+    try {
+      await sendVerificationEmail(email, rawToken, username, user.language);
+    } catch (emailError) {
+      logger.error('Failed to send verification email during registration', {
+        error: emailError,
+        userId: user._id,
+      });
+    }
+    */
+
+    // ✅ 8. Log exitoso (sin datos sensibles)
     logger.info('User registered successfully', {
       userId: user._id.toString(),
       username: user.username,

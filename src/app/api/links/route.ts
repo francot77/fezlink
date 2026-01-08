@@ -20,6 +20,11 @@ async function createLinkHandler(req: NextRequest) {
     throw new AppError(401, 'Unauthorized');
   }
 
+  // Check if user is verified
+  if (!session.isVerified) {
+    throw new AppError(403, 'Email verification required to create links');
+  }
+
   // 1. Rate Limiting
   try {
     await createLinkLimiter.check(req, 10);

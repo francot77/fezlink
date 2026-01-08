@@ -47,7 +47,7 @@ export async function runInsightsWorker(
   const pendingCaches = await InsightsCache.find({
     status: 'pending',
     version: CURRENT_VERSION,
-    expiresAt: { $gt: new Date() },
+    // No filtramos por expiresAt para procesar items que pudieron expirar en cola
   })
     .sort({ createdAt: 1 })
     .limit(workerConfig.batchSize)

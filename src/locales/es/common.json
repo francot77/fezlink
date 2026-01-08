@@ -1,4 +1,17 @@
 {
+  "email": {
+    "verification": {
+      "subject": "Verifica tu cuenta - FezLink",
+      "title": "Verifica tu cuenta",
+      "greeting": "Hola, {name}",
+      "message": "Gracias por registrarte en FezLink. Para completar tu registro y asegurar tu cuenta, por favor verifica tu dirección de correo electrónico.",
+      "button": "Verificar Email",
+      "altLinkMessage": "Si el botón no funciona, puedes copiar y pegar el siguiente enlace en tu navegador:",
+      "expiryMessage": "Este enlace es válido por 24 horas.",
+      "ignoreMessage": "Si no has creado esta cuenta, puedes ignorar este mensaje.",
+      "copyright": "© {year} FezLink. Todos los derechos reservados."
+    }
+  },
   "common": {
     "home": "Inicio",
     "menu": "Menú",

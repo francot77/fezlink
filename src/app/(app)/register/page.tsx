@@ -1,23 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { useEffect, useState } from 'react';
 import debounce from 'lodash.debounce';
 import {
-  Mail,
-  User,
-  Lock,
-  Loader2,
-  Check,
-  X,
-  Github,
-  Chrome,
-  Sparkles,
   ArrowRight,
+  Check,
+  Chrome,
+  Github,
+  Loader2,
+  Lock,
+  Mail,
+  Sparkles,
+  User,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -82,9 +86,38 @@ export default function RegisterPage() {
         return;
       }
 
-      window.location.href = '/login';
-    } catch {
-      setError('Network error. Please check your connection.');
+      // Auto-login after successful registration
+      try {
+        // Force trim values to match backend storage
+        const loginEmail = email.trim().toLowerCase();
+
+        const loginRes = await signIn('credentials', {
+          email: loginEmail,
+          password,
+          redirect: false,
+        });
+
+        if (loginRes?.error) {
+          console.error('Auto-login failed with trimmed credentials:', loginRes.error);
+          // Fallback if login fails
+          window.location.href = `/verify/sent?email=${encodeURIComponent(loginEmail)}`;
+        } else {
+          // Success! 
+          // 1. Force router refresh to update server components (if any)
+          router.refresh();
+          // 2. Redirect using router for smoother transition, but wait a tick for cookie
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 100);
+        }
+      } catch (loginError) {
+        console.error('Auto-login exception:', loginError);
+        window.location.href = `/verify/sent?email=${encodeURIComponent(email)}`;
+      }
+
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong');
       setLoading(false);
     }
   }
@@ -176,13 +209,12 @@ export default function RegisterPage() {
                     }
                     required
                     minLength={3}
-                    className={`w-full rounded-xl border px-4 py-3 pl-11 pr-11 text-white placeholder-gray-500 backdrop-blur-sm transition focus:outline-none focus:ring-2 ${
-                      username.length >= 3 && usernameAvailable === true
-                        ? 'border-emerald-400/50 bg-emerald-500/10 focus:border-emerald-400 focus:ring-emerald-500/20'
-                        : username.length >= 3 && usernameAvailable === false
-                          ? 'border-red-400/50 bg-red-500/10 focus:border-red-400 focus:ring-red-500/20'
-                          : 'border-white/10 bg-white/5 focus:border-cyan-400/50 focus:ring-cyan-500/20'
-                    }`}
+                    className={`w-full rounded-xl border px-4 py-3 pl-11 pr-11 text-white placeholder-gray-500 backdrop-blur-sm transition focus:outline-none focus:ring-2 ${username.length >= 3 && usernameAvailable === true
+                      ? 'border-emerald-400/50 bg-emerald-500/10 focus:border-emerald-400 focus:ring-emerald-500/20'
+                      : username.length >= 3 && usernameAvailable === false
+                        ? 'border-red-400/50 bg-red-500/10 focus:border-red-400 focus:ring-red-500/20'
+                        : 'border-white/10 bg-white/5 focus:border-cyan-400/50 focus:ring-cyan-500/20'
+                      }`}
                   />
                   <User
                     size={18}
@@ -267,11 +299,10 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={!isFormValid}
-                className={`group relative w-full overflow-hidden rounded-xl px-6 py-3 font-semibold text-white transition-all duration-300 ${
-                  isFormValid
-                    ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 shadow-lg shadow-emerald-500/30 hover:scale-105 hover:shadow-emerald-500/40'
-                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                }`}
+                className={`group relative w-full overflow-hidden rounded-xl px-6 py-3 font-semibold text-white transition-all duration-300 ${isFormValid
+                  ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 shadow-lg shadow-emerald-500/30 hover:scale-105 hover:shadow-emerald-500/40'
+                  : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  }`}
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {loading ? (

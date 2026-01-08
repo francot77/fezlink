@@ -3,9 +3,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/shared/ui';
+import { Sparkles, Lock } from 'lucide-react';
 import { useInsightsDashboard } from './hooks/useInsightsDashboard';
 import { InsightCard } from './components/InsightCard';
 import { InsightDetail } from './components/InsightDetail';
@@ -15,6 +16,22 @@ import { InsightsFilters } from './components/InsightsFilters';
 
 export default function InsightsDashboard() {
   const t = useTranslations('insights');
+  const [accountType, setAccountType] = useState<string | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/accounttype')
+      .then((res) => res.json())
+      .then((data) => {
+        setAccountType(data.accountType);
+        setCheckingAuth(false);
+      })
+      .catch(() => {
+        setAccountType('free');
+        setCheckingAuth(false);
+      });
+  }, []);
+
   const {
     period,
     setPeriod,
@@ -41,6 +58,36 @@ export default function InsightsDashboard() {
       });
     }
   }, [response, t]);
+
+  if (checkingAuth) {
+    return <LoadingState message={t('loadingInsights')} />;
+  }
+
+  if (accountType !== 'pro') {
+    return (
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl p-12 text-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/10" />
+        <div className="relative flex flex-col items-center gap-6">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 ring-1 ring-white/10">
+            <Lock size={40} className="text-purple-400" />
+          </div>
+          <div className="space-y-2 max-w-md">
+            <h2 className="text-2xl font-bold text-white">Pro Plan Required</h2>
+            <p className="text-gray-400">
+              Unlock AI-powered insights, advanced analytics patterns, and automated suggestions with the Pro plan.
+            </p>
+          </div>
+          <button
+            onClick={() => window.location.href = '/pricing'}
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 font-semibold text-white shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105 hover:shadow-purple-500/40"
+          >
+            <Sparkles size={18} />
+            Upgrade to Pro
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Loading states
   if (loading && !response) {

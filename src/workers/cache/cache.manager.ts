@@ -46,7 +46,8 @@ export async function getOrCreateCache(
   }
 
   // Crear nuevo cache en estado pending
-  const ttlHours = getTTLHours(period);
+  // Usar un TTL inicial mínimo de 24h para evitar que expiren en la cola del worker
+  const ttlHours = Math.max(24, getTTLHours(period));
   const expiresAt = new Date(Date.now() + ttlHours * 60 * 60 * 1000);
 
   try {
@@ -89,7 +90,7 @@ export async function findPendingCaches(limit: number) {
     .find({
       status: 'pending',
       version: CURRENT_VERSION,
-      expiresAt: { $gt: new Date() },
+      // No filtramos por expiresAt para ser consistentes con el worker
     })
     .sort({ createdAt: 1 }) // FIFO
     .limit(limit)

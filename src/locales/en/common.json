@@ -1,4 +1,17 @@
 {
+  "email": {
+    "verification": {
+      "subject": "Verify your account - FezLink",
+      "title": "Verify your account",
+      "greeting": "Hello, {name}",
+      "message": "Thanks for signing up for FezLink. To complete your registration and secure your account, please verify your email address.",
+      "button": "Verify Email",
+      "altLinkMessage": "If the button doesn't work, you can copy and paste the following link into your browser:",
+      "expiryMessage": "This link is valid for 24 hours.",
+      "ignoreMessage": "If you didn't create this account, you can ignore this message.",
+      "copyright": "© {year} FezLink. All rights reserved."
+    }
+  },
   "common": {
     "home": "Home",
     "menu": "Menu",

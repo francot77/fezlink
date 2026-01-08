@@ -5,7 +5,7 @@ import dbConnect from '@/lib/mongodb';
 import AnalyticsDaily from '@/app/models/analyticsDaily';
 import AnalyticsMonthly from '@/app/models/analyticsMonthly';
 import { Link } from '@/app/models/links';
-import { requireAuth } from '@/lib/auth-helpers';
+import { requireAuth, isPremiumActive } from '@/lib/auth-helpers';
 import { isValidObjectId } from '@/core/utils/validation';
 import { logger, logRequest, SecurityEvents } from '@/lib/logger';
 import { withErrorHandler, AppError } from '@/lib/error-handler';
@@ -182,7 +182,7 @@ async function getAnalyticsHandler(
   { params }: { params: Promise<{ linkId: string }> }
 ) {
   // ✅ 1. Autenticación obligatoria
-  const { userId } = await requireAuth();
+  const { userId, session } = await requireAuth();
 
   // ✅ 2. Log del request
   await logRequest(req, userId);
@@ -222,12 +222,28 @@ async function getAnalyticsHandler(
 
   const { from, to, device, source, country } = validatedParams;
 
+  // ✅ RESTRICCIÓN PLAN FREE: Máximo 7 días de historia
+  let finalFrom = from;
+  if (!isPremiumActive(session)) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const limitDateStr = sevenDaysAgo.toISOString().slice(0, 10);
+
+    if (finalFrom < limitDateStr) {
+      finalFrom = limitDateStr;
+    }
+  }
+
   // ✅ 5. Validar rango de fechas
-  const fromDate = new Date(from);
+  const fromDate = new Date(finalFrom);
   const toDate = new Date(to);
 
   if (fromDate > toDate) {
-    throw new AppError(400, 'from date must be before to date');
+    // Si al ajustar la fecha, from > to, significa que el usuario pidió datos muy antiguos.
+    // En este caso, devolvemos datos vacíos o ajustamos to también, o lanzamos error.
+    // Para ser amigables, si es free y pidió algo viejo, le damos los últimos 7 días por defecto o error.
+    // Si ajustamos finalFrom y quedó mayor a to, es porque to también era viejo.
+    throw new AppError(403, 'Free plan is limited to last 7 days of analytics');
   }
 
   const daysDiff = (toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
@@ -330,7 +346,7 @@ async function getAnalyticsHandler(
   logger.info('Analytics retrieved successfully', {
     userId,
     linkId,
-    from,
+    from: finalFrom,
     to,
     hasFilters: !!(device || source || country),
   });

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import CustomModal from '@/components/Modalv2';
 
 interface UsernameModalProps {

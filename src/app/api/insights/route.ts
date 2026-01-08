@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // app/api/insights/route.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -8,6 +9,7 @@ import dbConnect from '@/lib/mongodb';
 import { authOptions } from '@/lib/auth-options';
 import type { InsightPeriod } from '@/types/insights.types';
 import insightsCache from '@/app/models/insightsCache';
+import { requirePro } from '@/lib/auth-helpers';
 
 const CURRENT_VERSION = 'v2';
 
@@ -259,11 +261,7 @@ export async function DELETE(request: NextRequest) {
   try {
     await dbConnect();
 
-    const userId = await getUserIdFromRequest(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { userId } = await requirePro();
 
     const searchParams = request.nextUrl.searchParams;
     const period = searchParams.get('period') as InsightPeriod;

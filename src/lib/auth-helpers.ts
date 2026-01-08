@@ -8,7 +8,9 @@ export interface AuthSession {
   userId: string;
   email: string;
   isPremium: boolean;
+  accountType: 'free' | 'starter' | 'pro';
   premiumExpiresAt?: number;
+  isVerified: boolean;
 }
 
 export async function getAuth(): Promise<{
@@ -30,27 +32,46 @@ export async function getAuth(): Promise<{
     return { userId: null, session: null };
   }
 
+  // Compatibilidad: starter y pro se consideran "premium" para lógica legacy
+  const isLegacyPremium = user.accountType === 'starter' || user.accountType === 'pro' || user.accountType === 'premium' as any;
+
   return {
     userId: session.user.id,
     session: {
       userId: session.user.id,
       email: user.email,
-      isPremium: user.accountType === 'premium',
+      isPremium: isLegacyPremium,
+      accountType: (user.accountType === 'premium' as any ? 'pro' : user.accountType) || 'free',
       premiumExpiresAt: user.premiumExpiresAt,
+      isVerified: user.isVerified,
     },
   };
 }
 
 /**
- * Verifica si el usuario tiene premium activo
+ * Verifica si el usuario tiene algún plan de pago activo (Starter o Pro)
  */
 export function isPremiumActive(session: AuthSession | null): boolean {
-  if (!session || !session.isPremium) return false;
+  if (!session) return false;
+  
+  // Si es free, no es premium
+  if (session.accountType === 'free') return false;
 
-  const expirationDate = session.premiumExpiresAt;
-  if (!expirationDate) return false;
+  // Si tiene fecha de expiración, verificarla
+  if (session.premiumExpiresAt) {
+    return session.premiumExpiresAt > Date.now();
+  }
 
-  return expirationDate > Date.now();
+  // Si tiene plan starter/pro y no tiene fecha de expiración (lifetime o managed elsewhere), es válido
+  return true;
+}
+
+/**
+ * Verifica si el usuario tiene plan PRO activo
+ */
+export function isProActive(session: AuthSession | null): boolean {
+  if (!isPremiumActive(session)) return false;
+  return session?.accountType === 'pro';
 }
 
 /**
@@ -67,13 +88,26 @@ export async function requireAuth() {
 }
 
 /**
- * Middleware helper para endpoints que requieren premium
+ * Middleware helper para endpoints que requieren premium (Starter o Pro)
  */
 export async function requirePremium() {
   const { userId, session } = await requireAuth();
 
   if (!isPremiumActive(session)) {
     throw new Error('Premium subscription required');
+  }
+
+  return { userId, session };
+}
+
+/**
+ * Middleware helper para endpoints que requieren plan PRO
+ */
+export async function requirePro() {
+  const { userId, session } = await requireAuth();
+
+  if (!isProActive(session)) {
+    throw new Error('Pro subscription required');
   }
 
   return { userId, session };

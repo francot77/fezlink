@@ -8,12 +8,12 @@ export async function PUT(req: Request) {
   try {
     const { userId } = await requirePremium();
     const body = await req.json();
-    
+
     const validation = slugSchema.safeParse(body.slug);
-    
+
     if (!validation.success) {
       return NextResponse.json(
-        { error: validation.error.issues[0].message }, 
+        { error: validation.error.issues[0].message },
         { status: 400 }
       );
     }
@@ -21,7 +21,7 @@ export async function PUT(req: Request) {
     const slug = validation.data;
 
     await dbConnect();
-    
+
     // Check if slug is already taken by another user
     const existing = await Biopage.findOne({ slug });
     if (existing && existing.userId !== userId) {
@@ -29,8 +29,8 @@ export async function PUT(req: Request) {
     }
 
     const updated = await Biopage.findOneAndUpdate(
-      { userId }, 
-      { $set: { slug } }, 
+      { userId },
+      { $set: { slug } },
       { new: true }
     );
 

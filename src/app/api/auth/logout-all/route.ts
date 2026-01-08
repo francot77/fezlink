@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server';
 import { getAuth } from '@/lib/auth-helpers';
 import dbConnect from '@/lib/mongodb';

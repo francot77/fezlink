@@ -104,8 +104,8 @@ export const ImagePickerTab = ({
                   label="Zoom"
                   value={backgroundZoom}
                   onChange={onBackgroundZoomChange}
-                  min={0.5}
-                  max={200}
+                  min={-100}
+                  max={300}
                   step={1}
                   unit="%"
                 />

@@ -25,7 +25,8 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         await dbConnect();
-        const user = await User.findOne({ email: credentials.email });
+        // Ensure email is lowercase to match registration
+        const user = await User.findOne({ email: credentials.email.toLowerCase().trim() });
         if (!user) {
           console.log('>>> [Auth] User not found');
           return null;
@@ -68,86 +69,90 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.username,
-          tokenVersion: user.tokenVersion,
-          isTwoFactorEnabled: user.isTwoFactorEnabled,
-          isVerified: user.isVerified,
-        };
-      },
-    }),
-  ],
-  session: { strategy: 'jwt' },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.version = user.tokenVersion;
-        token.isTwoFactorEnabled = user.isTwoFactorEnabled;
-        token.isVerified = user.isVerified;
-        console.log('>>> LOGIN: Setting token version to:', token.version);
-      }
-
-      // Verify token version matches database
-      if (token.id) {
-        try {
-          // await dbConnect(); // Connection is handled inside if(!user) block now
-          // const dbUser = await User.findById(token.id).select('tokenVersion isTwoFactorEnabled isVerified');
-
-          // If we are just logging in (user is present), we don't need to check DB yet
-          // But if it's a subsequent request (user is undefined), we must check
-          if (!user) {
-            let dbUser;
-            const now = Date.now();
-            const cached = userSessionCache.get(token.id as string);
-
-            // Check cache first
-            if (cached && (now - cached.timestamp < CACHE_TTL)) {
-              dbUser = cached.data;
-              // console.log('>>> CACHE HIT for user:', token.id);
-            } else {
-              await dbConnect();
-              dbUser = await User.findById(token.id).select('email tokenVersion isTwoFactorEnabled isVerified');
-              if (dbUser) {
-                userSessionCache.set(token.id as string, { data: dbUser, timestamp: now });
-                // Clean up old cache entries periodically could be added here, but Map size is manageable for active users
-              }
-            }
-
-            if (dbUser) {
-              const currentVersion = dbUser.tokenVersion || 0;
-              const tokenVersion = token.version || 0;
-              token.isTwoFactorEnabled = dbUser.isTwoFactorEnabled; // Keep it fresh
-              token.isVerified = dbUser.isVerified; // Keep it fresh
-
-              // Only log periodically or on mismatch to reduce noise
-              if (currentVersion !== tokenVersion) {
-                console.log(`>>> CHECK: User ${dbUser.email} | DB Version: ${currentVersion} | Token Version: ${tokenVersion}`);
-                console.log('>>> INVALIDATING SESSION due to version mismatch');
-                return null as any;
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error verifying token version:', error);
+            id: user._id.toString(),
+            email: user.email,
+            name: user.username,
+            tokenVersion: user.tokenVersion,
+            isTwoFactorEnabled: user.isTwoFactorEnabled,
+            isVerified: user.isVerified,
+            accountType: user.accountType || 'free',
+          };
+        },
+      }),
+    ],
+    session: { strategy: 'jwt' },
+    callbacks: {
+      async jwt({ token, user }) {
+        if (user) {
+          token.id = user.id;
+          token.version = user.tokenVersion;
+          token.isTwoFactorEnabled = user.isTwoFactorEnabled;
+          token.isVerified = user.isVerified;
+          token.accountType = user.accountType;
+          console.log('>>> LOGIN: Setting token version to:', token.version);
         }
-      }
-
-      return token;
-    },
-    async session({ session, token }) {
-      // If token is invalid (null) or doesn't have id, return empty session (unauthenticated)
-      if (!token || !token.id) {
-        return null as any;
-      }
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
-        session.user.isVerified = token.isVerified;
-      }
-      return session;
-    },
+  
+        // Verify token version matches database
+        if (token.id) {
+          try {
+            // await dbConnect(); // Connection is handled inside if(!user) block now
+            // const dbUser = await User.findById(token.id).select('tokenVersion isTwoFactorEnabled isVerified');
+  
+            // If we are just logging in (user is present), we don't need to check DB yet
+            // But if it's a subsequent request (user is undefined), we must check
+            if (!user) {
+              let dbUser;
+              const now = Date.now();
+              const cached = userSessionCache.get(token.id as string);
+  
+              // Check cache first
+              if (cached && (now - cached.timestamp < CACHE_TTL)) {
+                dbUser = cached.data;
+                // console.log('>>> CACHE HIT for user:', token.id);
+              } else {
+                await dbConnect();
+                dbUser = await User.findById(token.id).select('email tokenVersion isTwoFactorEnabled isVerified accountType');
+                if (dbUser) {
+                  userSessionCache.set(token.id as string, { data: dbUser, timestamp: now });
+                  // Clean up old cache entries periodically could be added here, but Map size is manageable for active users
+                }
+              }
+  
+              if (dbUser) {
+                const currentVersion = dbUser.tokenVersion || 0;
+                const tokenVersion = token.version || 0;
+                token.isTwoFactorEnabled = dbUser.isTwoFactorEnabled; // Keep it fresh
+                token.isVerified = dbUser.isVerified; // Keep it fresh
+                token.accountType = dbUser.accountType || 'free';
+  
+                // Only log periodically or on mismatch to reduce noise
+                if (currentVersion !== tokenVersion) {
+                  console.log(`>>> CHECK: User ${dbUser.email} | DB Version: ${currentVersion} | Token Version: ${tokenVersion}`);
+                  console.log('>>> INVALIDATING SESSION due to version mismatch');
+                  return null as any;
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error verifying token version:', error);
+          }
+        }
+  
+        return token;
+      },
+      async session({ session, token }) {
+        // If token is invalid (null) or doesn't have id, return empty session (unauthenticated)
+        if (!token || !token.id) {
+          return null as any;
+        }
+        if (session.user) {
+          session.user.id = token.id as string;
+          session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
+          session.user.isVerified = token.isVerified;
+          session.user.accountType = token.accountType;
+        }
+        return session;
+      },
   },
   pages: {
     signIn: '/login',

@@ -11,7 +11,7 @@ export async function GET() {
 
     return NextResponse.json({
       isPremium: isPremiumActive(session),
-      accountType: session.isPremium ? 'premium' : 'free',
+      accountType: session.accountType || 'free',
       expiresAt: session.premiumExpiresAt,
     });
   } catch {

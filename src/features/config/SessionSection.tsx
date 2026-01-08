@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LogOut, AlertTriangle, ChevronRight } from 'lucide-react';
+import { AlertTriangle, ChevronRight, LogOut } from 'lucide-react';
 import Button from '@/components/button';
 import { signOut } from 'next-auth/react';
 

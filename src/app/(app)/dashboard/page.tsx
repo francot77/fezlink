@@ -27,6 +27,7 @@ import { useTranslations } from 'next-intl';
 import { DashboardHeader } from './components/DashboardHeader';
 import { SupportedLanguage } from '@/types/i18n';
 import { DashboardSidebar, Section } from './components/DashboardSidebar';
+import { VerifyEmailWarning } from './components/VerifyEmailWarning';
 
 import { useDashboard } from './hooks/useDashboard';
 
@@ -150,6 +151,17 @@ const DashboardPage: React.FC = () => {
     );
   }
 
+  // Check if user is verified (unless they are in Config or Profile sections, which might be allowed)
+  // But request says "ver primero una pantalla", implying blocking.
+  // However, usually we allow Config/Profile to change email or logout.
+  // Let's block everything except maybe Config/Profile if we wanted to be nice, 
+  // but strictly following "ver primero una pantalla" -> Block main view.
+  const isVerified = user?.isVerified;
+  
+  // Allow access to Profile and Config even if not verified, so they can logout or change email
+  const isAllowedSection = ['config', 'profile'].includes(activeSection);
+  const showVerificationWarning = !isVerified && !isAllowedSection;
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-gray-900 via-[#0b1224] to-black px-2 pb-16 text-white">
       {modalLogout && (
@@ -215,7 +227,11 @@ const DashboardPage: React.FC = () => {
                 : 'opacity-100 scale-100 animate-in fade-in slide-in-from-bottom-4 duration-500'
                 }`}
             >
-              {currentSection.content}
+              {showVerificationWarning ? (
+                <VerifyEmailWarning />
+              ) : (
+                currentSection.content
+              )}
             </div>
           </main>
         </div>

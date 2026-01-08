@@ -5,6 +5,7 @@ import { TwoFactorSection } from './TwoFactorSection';
 import { AccountSection } from './AccountSection';
 import { ChangePasswordSection } from './ChangePasswordSection';
 import { DeleteAccountSection } from './DeleteAccountSection';
+import { LogoutSection } from './LogoutSection';
 
 interface ConfigSectionProps {
   language: SupportedLanguage;
@@ -35,6 +36,7 @@ export default function ConfigSection({ language, setLanguage, translations }: C
             setLanguage={setLanguage}
             translations={translations?.language}
           />
+          <LogoutSection translations={translations?.logout} />
         </div>
 
         {/* Danger Zone - Separate for safety */}

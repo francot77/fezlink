@@ -8,6 +8,7 @@ declare module 'next-auth' {
       name: string;
       isTwoFactorEnabled: boolean;
       isVerified: boolean;
+      accountType: 'free' | 'starter' | 'pro';
     };
   }
 
@@ -18,6 +19,7 @@ declare module 'next-auth' {
     isTwoFactorEnabled: boolean;
     isVerified: boolean;
     tokenVersion: number;
+    accountType: 'free' | 'starter' | 'pro';
   }
 }
 
@@ -27,5 +29,6 @@ declare module 'next-auth/jwt' {
     version?: number;
     isTwoFactorEnabled: boolean;
     isVerified: boolean;
+    accountType: 'free' | 'starter' | 'pro';
   }
 }

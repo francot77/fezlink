@@ -92,6 +92,7 @@ export const registerSchema = z.object({
   email: emailSchema,
   username: usernameSchema,
   password: passwordSchema,
+  language: z.enum(['es', 'en']).optional().default('es'),
 });
 
 // ✅ Schema de creación de link

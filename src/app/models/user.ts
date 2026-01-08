@@ -9,7 +9,11 @@ export interface IUser extends Document {
   twoFactorSecret?: string;
   isTwoFactorEnabled: boolean;
   isVerified: boolean;
-  accountType: 'free' | 'premium';
+  language: 'es' | 'en';
+  verificationToken?: string;
+  verificationTokenExpiry?: Date;
+  lastVerificationEmailSent?: Date;
+  accountType: 'free' | 'starter' | 'pro';
   premiumExpiresAt?: number;
   apiKeys?: {
     key: string;
@@ -58,9 +62,21 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    verificationToken: {
+      type: String,
+      select: false,
+    },
+    verificationTokenExpiry: {
+      type: Date,
+      select: false,
+    },
+    lastVerificationEmailSent: {
+      type: Date,
+      required: false,
+    },
     accountType: {
       type: String,
-      enum: ['free', 'premium'],
+      enum: ['free', 'starter', 'pro'],
       default: 'free',
     },
     premiumExpiresAt: {

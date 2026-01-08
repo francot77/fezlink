@@ -18,6 +18,7 @@ interface MetricsFiltersProps {
   translations: any;
   tFn?: (key: string) => string;
   language: SupportedLanguage;
+  maxDateRange?: number;
 }
 
 export const MetricsFilters: React.FC<MetricsFiltersProps> = ({
@@ -30,6 +31,7 @@ export const MetricsFilters: React.FC<MetricsFiltersProps> = ({
   translations: t,
   tFn,
   language,
+  maxDateRange,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const currentYear = new Date().getFullYear();
@@ -40,6 +42,11 @@ export const MetricsFilters: React.FC<MetricsFiltersProps> = ({
     const d = new Date(currentYear, i, 1);
     return d.toLocaleString(locale, { month: 'long' });
   });
+
+  // Calculate min date limit if restriction is active
+  const minDateLimit = maxDateRange
+    ? new Date(Date.now() - maxDateRange * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    : undefined;
 
   const hasActiveFilters = filters.country || filters.deviceType || filters.source;
 
@@ -285,45 +292,49 @@ export const MetricsFilters: React.FC<MetricsFiltersProps> = ({
         </div>
 
         {/* Month Selector (collapsible on mobile) */}
-        <details className="group">
-          <summary className="cursor-pointer text-sm font-medium text-gray-300 list-none flex items-center justify-between">
-            <span>{t.specificMonth}</span>
-            <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {monthNames.map((month, index) => (
-              <button
-                key={month}
-                onClick={() => handleMonthSelect(index)}
-                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${filters.selectedMonth === index.toString()
-                  ? 'border-purple-400/60 bg-purple-500/20 text-purple-300 shadow-lg shadow-purple-500/20'
-                  : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
-                  }`}
-              >
-                {month}
-              </button>
-            ))}
-          </div>
-        </details>
+        {!maxDateRange && (
+          <details className="group">
+            <summary className="cursor-pointer text-sm font-medium text-gray-300 list-none flex items-center justify-between">
+              <span>{t.specificMonth}</span>
+              <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {monthNames.map((month, index) => (
+                <button
+                  key={month}
+                  onClick={() => handleMonthSelect(index)}
+                  className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${filters.selectedMonth === index.toString()
+                    ? 'border-purple-400/60 bg-purple-500/20 text-purple-300 shadow-lg shadow-purple-500/20'
+                    : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                    }`}
+                >
+                  {month}
+                </button>
+              ))}
+            </div>
+          </details>
+        )}
 
         {/* Year Selector */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-300">{t.specificYear}</label>
-          <div className="flex flex-wrap gap-2">
-            {availableYears.map((year) => (
-              <button
-                key={year}
-                onClick={() => handleYearSelect(year)}
-                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${filters.selectedYear === year
-                  ? 'border-cyan-400/60 bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20'
-                  : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
-                  }`}
-              >
-                {year}
-              </button>
-            ))}
+        {!maxDateRange && (
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-300">{t.specificYear}</label>
+            <div className="flex flex-wrap gap-2">
+              {availableYears.map((year) => (
+                <button
+                  key={year}
+                  onClick={() => handleYearSelect(year)}
+                  className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${filters.selectedYear === year
+                    ? 'border-cyan-400/60 bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                    : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                    }`}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Card>
   );
