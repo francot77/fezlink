@@ -10,13 +10,13 @@ interface SectionCardProps {
   defaultOpen?: boolean;
 }
 
-export function SectionCard({ 
-  title, 
-  description, 
-  icon: Icon, 
-  children, 
+export function SectionCard({
+  title,
+  description,
+  icon: Icon,
+  children,
   collapsible = false,
-  defaultOpen = true 
+  defaultOpen = true
 }: SectionCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -29,9 +29,9 @@ export function SectionCard({
   return (
     <section className={`group relative overflow-hidden rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl transition-all duration-300 hover:border-white/20 ${collapsible ? 'cursor-pointer' : ''}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      
+
       <div className="relative">
-        <header 
+        <header
           onClick={toggleOpen}
           className={`flex items-start justify-between gap-4 p-4 sm:p-6 ${collapsible ? 'select-none hover:bg-white/5 transition-colors' : ''}`}
         >
@@ -50,7 +50,7 @@ export function SectionCard({
               </p>
             )}
           </div>
-          
+
           {collapsible && (
             <div className={`p-1 rounded-full bg-white/5 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
               <ChevronDown size={20} />
@@ -59,7 +59,7 @@ export function SectionCard({
         </header>
 
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-4 sm:space-y-6 border-t border-white/5 mt-2">
+          <div className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-4 sm:space-y-6 mt-2">
             {children}
           </div>
         </div>
