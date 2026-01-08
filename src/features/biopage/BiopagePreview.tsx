@@ -60,7 +60,7 @@ export default function BiopagePreview({
       {/* Mobile Preview Frame */}
       <div className="mx-auto w-full max-w-[320px] aspect-[9/16] rounded-3xl border-3 border-gray-800 shadow-2xl overflow-hidden">
         <div className="h-full w-full overflow-y-auto">
-          <div className="relative min-h-full flex items-center justify-center p-6">
+          <div className="relative min-h-full flex items-center justify-center p-6 overflow-hidden">
             {/* Background Image Layer */}
             {backgroundImageUrl && (
               <div
