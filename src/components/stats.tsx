@@ -38,15 +38,26 @@ const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
          {/* Fallback to see list if needed */}
          <div className="mt-8 pt-8 border-t border-white/10">
             <h3 className="text-lg font-semibold text-white mb-4">{t('overview.allLinks')}</h3>
-             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+             <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {links.map((link) => (
                 <button
                   key={link.id}
                   onClick={() => setSelectedLink(link.id)}
-                  className="w-full break-words rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm text-gray-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="group relative w-full break-words rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm transition-all hover:border-blue-500/30 hover:bg-white/10 hover:shadow-md hover:shadow-blue-900/10 cursor-pointer"
                 >
-                  <div className="font-medium truncate">{link.slug || link.shortUrl}</div>
-                  <div className="text-xs text-gray-500 truncate">{link.destinationUrl}</div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-gray-200 transition-colors group-hover:text-blue-200 truncate">
+                        {link.slug || link.shortUrl}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate transition-colors group-hover:text-gray-400">
+                        {link.destinationUrl}
+                      </div>
+                    </div>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-gray-400 transition-all group-hover:border-blue-500/30 group-hover:bg-blue-500/20 group-hover:text-blue-400">
+                      <BarChart3 size={16} />
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>

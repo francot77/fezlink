@@ -111,21 +111,23 @@ export default function BioPageClient({ initialBioPage }: Props) {
                   <ul className="space-y-3">
                     {bioPage.links.map((link, index) => (
                       <li key={index}>
-                        <div className="flex items-center gap-3 rounded-xl bg-black/40 border border-white/10 p-3 transition hover:border-white/30">
+                        <a
+                          href={link.destinationUrl}
+                          onClick={(e) => handleLinkClick(link, e)}
+                          onAuxClick={(e) => handleLinkClick(link, e)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 rounded-xl bg-black/40 border border-white/10 p-3 transition hover:border-white/30 w-full"
+                        >
                           <div className="flex-1 text-center">
-                            <a
-                              href={link.destinationUrl}
-                              onClick={(e) => handleLinkClick(link, e)}
-                              onAuxClick={(e) => handleLinkClick(link, e)}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <span
                               className="block text-lg font-semibold"
                               style={{ color: bioPage.textColor }}
                             >
                               {link.label}
-                            </a>
+                            </span>
                           </div>
-                        </div>
+                        </a>
                       </li>
                     ))}
                   </ul>

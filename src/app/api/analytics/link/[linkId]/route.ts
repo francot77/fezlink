@@ -268,7 +268,8 @@ async function getAnalyticsHandler(
   }
 
   // ✅ 7. Procesar analytics (código existente)
-  const useMonthly = shouldUseMonthlyData(from, to);
+  // Usuarios Free nunca usan mensual porque solo ven 7 días
+  const useMonthly = isPremiumActive(session) && shouldUseMonthlyData(finalFrom, to);
   const AnalyticsModel = useMonthly ? AnalyticsMonthly : AnalyticsDaily;
   const dateField = useMonthly ? 'month' : 'date';
 
@@ -282,7 +283,7 @@ async function getAnalyticsHandler(
     return dateStr;
   };
 
-  const formattedFrom = formatForModel(from);
+  const formattedFrom = formatForModel(finalFrom);
   const formattedTo = formatForModel(to);
 
   const currentRows = await AnalyticsModel.find({
@@ -298,7 +299,7 @@ async function getAnalyticsHandler(
 
   const filteredCurrentRows = filterData(currentRows, filters);
 
-  const { prevFrom, prevTo } = getPreviousPeriod(from, to, useMonthly);
+  const { prevFrom, prevTo } = getPreviousPeriod(finalFrom, to, useMonthly);
   const prevFormattedFrom = formatForModel(prevFrom);
   const prevFormattedTo = formatForModel(prevTo);
 

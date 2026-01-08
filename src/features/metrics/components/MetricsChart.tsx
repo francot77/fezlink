@@ -38,6 +38,18 @@ export default function MetricsChart({
   const t = useTranslations('metrics');
   const locale = useLocale();
 
+  React.useEffect(() => {
+    const savedType = localStorage.getItem('metrics_chart_preference') as 'line' | 'bar';
+    if (savedType && (savedType === 'line' || savedType === 'bar')) {
+      setChartType(savedType);
+    }
+  }, []);
+
+  const handleChartTypeChange = (type: 'line' | 'bar') => {
+    setChartType(type);
+    localStorage.setItem('metrics_chart_preference', type);
+  };
+
   const formatMonthlyDate = (dateStr: string) => {
     const [year, month] = dateStr.split('-').map((v) => parseInt(v, 10));
     const d = new Date(year, (month || 1) - 1, 1);
@@ -309,7 +321,7 @@ export default function MetricsChart({
         {/* Chart type toggle */}
         <div className="flex items-center gap-2 rounded-lg bg-white/5 p-1 ring-1 ring-white/10">
           <button
-            onClick={() => setChartType('line')}
+            onClick={() => handleChartTypeChange('line')}
             className={`flex min-h-[32px] items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
               chartType === 'line'
                 ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-lg shadow-emerald-500/30'
@@ -320,7 +332,7 @@ export default function MetricsChart({
             <span className="hidden sm:inline">{t('chart.type.line')}</span>
           </button>
           <button
-            onClick={() => setChartType('bar')}
+            onClick={() => handleChartTypeChange('bar')}
             className={`flex min-h-[32px] items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
               chartType === 'bar'
                 ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-lg shadow-emerald-500/30'

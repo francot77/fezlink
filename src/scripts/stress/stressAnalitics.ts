@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/mongodb';
@@ -8,7 +9,7 @@ import { Link } from '@/app/models/links';
 import { runAnalyticsWorker } from '@/workers/analyticsWorker';
 
 const PARALLEL_WORKERS = 1;
-const USER_ID = '6952f0f4e1368bae6a04d2d6';
+const USER_ID = '6954719d7ace5ff1184e3719';
 
 export const COUNTRIES = [
   'AF',
@@ -207,7 +208,7 @@ async function seed() {
   const link = await Link.create({
     userId: USER_ID,
     destinationUrl: 'https://examplern5.com',
-    slug: 'stress-test-link',
+    slug: 'stress-test-linkssda',
   });
 
   console.log(`📦 Generating ${TOTAL_EVENTS} events...`);

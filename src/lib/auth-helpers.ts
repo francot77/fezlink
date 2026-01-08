@@ -33,15 +33,23 @@ export async function getAuth(): Promise<{
   }
 
   // Compatibilidad: starter y pro se consideran "premium" para lógica legacy
-  const isLegacyPremium = user.accountType === 'starter' || user.accountType === 'pro' || user.accountType === 'premium' as any;
+  // REMOVIDO: ya no aceptamos 'premium' como legacy válido
+  const isLegacyPremium = user.accountType === 'starter' || user.accountType === 'pro';
+
+  // Si viene 'premium' de la base de datos, lo tratamos como 'free' (o inválido)
+  // para forzar la migración o evitar accesos indebidos.
+  let effectiveAccountType = user.accountType as string;
+  if (effectiveAccountType === 'premium') {
+    effectiveAccountType = 'free'; // O podrías dejarlo como 'free' para que no tenga acceso a nada extra
+  }
 
   return {
     userId: session.user.id,
     session: {
       userId: session.user.id,
       email: user.email,
-      isPremium: isLegacyPremium,
-      accountType: (user.accountType === 'premium' as any ? 'pro' : user.accountType) || 'free',
+      isPremium: isLegacyPremium, // Solo true si es starter o pro
+      accountType: (effectiveAccountType as 'free' | 'starter' | 'pro') || 'free',
       premiumExpiresAt: user.premiumExpiresAt,
       isVerified: user.isVerified,
     },
@@ -53,7 +61,7 @@ export async function getAuth(): Promise<{
  */
 export function isPremiumActive(session: AuthSession | null): boolean {
   if (!session) return false;
-  
+
   // Si es free, no es premium
   if (session.accountType === 'free') return false;
 

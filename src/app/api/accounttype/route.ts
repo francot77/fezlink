@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAuth, isPremiumActive } from '@/lib/auth-helpers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const { session } = await getAuth();

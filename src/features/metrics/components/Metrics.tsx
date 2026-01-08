@@ -8,10 +8,10 @@ import { MetricCard } from './MetricCard';
 import { useMetricsData } from '../hooks/useMetricsData';
 import { MetricsFilters as FiltersType } from '../types/metrics';
 import {
-  getDeviceIcon,
-  getSourceIcon,
   formatDeviceLabel,
   formatSourceLabel,
+  getDeviceIcon,
+  getSourceIcon,
 } from '../utils/metricsHelpers';
 import { useTranslations } from 'next-intl';
 import { COUNTRY_NAMES } from '@/lib/countryNames';
@@ -44,7 +44,19 @@ const getCountryName = (countryCode: string): string => {
 export default function Metrics({ linkId, selectedUrl, language = 'en' }: MetricsProps) {
   const t = useTranslations('metrics');
   const { user } = useAuth();
-  const isPremium = user?.accountType === 'starter' || user?.accountType === 'pro';
+  const [accountType, setAccountType] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    // Si el usuario no está logueado o no tenemos datos aún, no hacemos fetch
+    if (!user) return;
+
+    fetch('/api/accounttype', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => setAccountType(data.accountType))
+      .catch(() => setAccountType('free'));
+  }, [user]);
+
+  const isPremium = accountType === 'starter' || accountType === 'pro';
 
   // Estado de filtros
   const [filters, setFilters] = useState<FiltersType>({

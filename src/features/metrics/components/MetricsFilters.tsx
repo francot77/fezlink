@@ -68,6 +68,7 @@ export const MetricsFilters: React.FC<MetricsFiltersProps> = ({
   };
 
   const handleMonthSelect = (monthIndex: number) => {
+    if (maxDateRange) return;
     const year = filters.selectedYear || currentYear.toString();
     const start = new Date(parseInt(year), monthIndex, 1);
     const end = new Date(parseInt(year), monthIndex + 1, 0);
@@ -81,6 +82,7 @@ export const MetricsFilters: React.FC<MetricsFiltersProps> = ({
   };
 
   const handleYearSelect = (year: string) => {
+    if (maxDateRange) return;
     onFiltersChange({ selectedYear: year });
 
     if (filters.selectedMonth) {
@@ -176,18 +178,24 @@ export const MetricsFilters: React.FC<MetricsFiltersProps> = ({
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-300">{t.quickRanges}</label>
           <div className="flex flex-wrap gap-2">
-            {(['week', 'month', 'year'] as const).map((preset) => (
-              <button
-                key={preset}
-                onClick={() => applyPreset(preset)}
-                className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${filters.activePreset === preset
-                  ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
-                  : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
-                  }`}
-              >
-                {t[preset === 'week' ? 'lastWeek' : preset === 'month' ? 'lastMonth' : 'lastYear']}
-              </button>
-            ))}
+            {(['week', 'month', 'year'] as const).map((preset) => {
+              const isDisabled = maxDateRange && (preset === 'month' || preset === 'year');
+              return (
+                <button
+                  key={preset}
+                  onClick={() => !isDisabled && applyPreset(preset)}
+                  disabled={!!isDisabled}
+                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${filters.activePreset === preset
+                    ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
+                    : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10'
+                    } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  title={isDisabled ? 'Upgrade to access historical data' : ''}
+                >
+                  {t[preset === 'week' ? 'lastWeek' : preset === 'month' ? 'lastMonth' : 'lastYear']}
+                  {isDisabled && <span className="ml-1 text-xs">🔒</span>}
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -201,6 +209,7 @@ export const MetricsFilters: React.FC<MetricsFiltersProps> = ({
             <input
               type="date"
               value={filters.startDate}
+              min={minDateLimit}
               max={filters.endDate}
               onChange={(e) =>
                 onFiltersChange({
