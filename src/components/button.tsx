@@ -2,12 +2,13 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  title: string;
+  title?: string;
   customStyles?: React.CSSProperties;
   children?: React.ReactNode;
+  variant?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({ title, customStyles, children, ...rest }) => {
+const Button: React.FC<ButtonProps> = ({ title, customStyles, children, variant, ...rest }) => {
   return (
     <button
       style={{

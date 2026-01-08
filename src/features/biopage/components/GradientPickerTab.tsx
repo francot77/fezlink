@@ -38,7 +38,7 @@ export const GradientPickerTab = ({
 }: GradientPickerTabProps) => {
   return (
     <PremiumLock locked={!isPremium}>
-      <div className="space-y-4 sm:w-3/4">
+      <div className="space-y-4 w-full sm:w-3/4">
         <p className="text-sm text-gray-400">Select a gradient theme for your background</p>
 
         <div className="grid grid-cols-3 overflow-y-auto max-h-64 gap-3 sm:grid-cols-3 lg:grid-cols-4 p-3 scrollbar-thin">

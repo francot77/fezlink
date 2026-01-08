@@ -2,12 +2,14 @@
 
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
-import { Mail, Lock, Loader2, Github, Chrome, LogIn, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Loader2, Github, Chrome, LogIn, ArrowRight, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [requires2FA, setRequires2FA] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,14 +19,28 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      console.log('>>> [Login] Submitting signIn request. Requires2FA:', requires2FA);
       const result = await signIn('credentials', {
         email,
         password,
+        otp: requires2FA ? otp : undefined,
         redirect: false,
       });
 
+      console.log('>>> [Login] SignIn result:', result);
+
       if (result?.error) {
-        setError('Invalid email or password. Please try again.');
+        if (result.error === '2FA_REQUIRED') {
+          setRequires2FA(true);
+          setLoading(false);
+          return; // Stop here and wait for user to enter OTP
+        }
+        
+        if (result.error === 'INVALID_2FA') {
+          setError('Invalid 2FA code. Please try again.');
+        } else {
+          setError('Invalid email or password. Please try again.');
+        }
         setLoading(false);
       } else if (result?.ok) {
         window.location.href = '/dashboard';
@@ -35,7 +51,7 @@ export default function LoginPage() {
     }
   }
 
-  const isFormValid = email && password && !loading;
+  const isFormValid = (email && password && !loading) && (!requires2FA || otp.length === 6);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-gray-950 via-black to-gray-900">
@@ -137,6 +153,36 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
+
+              {/* 2FA Input */}
+              {requires2FA && (
+                 <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-300">
+                  <label
+                    htmlFor="otp"
+                    className="flex items-center gap-2 text-sm font-medium text-cyan-300"
+                  >
+                    <ShieldCheck size={16} className="text-cyan-400" />
+                    Two-Factor Authentication Code
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="otp"
+                      type="text"
+                      placeholder="000000"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      required
+                      autoComplete="one-time-code"
+                      autoFocus
+                      className="w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 pl-11 text-white placeholder-gray-500 backdrop-blur-sm transition focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 tracking-widest font-mono text-lg"
+                    />
+                    <ShieldCheck
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Error Message */}
               {error && (

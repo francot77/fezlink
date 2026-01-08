@@ -53,8 +53,8 @@ export const ColorPickerTab = ({
   translations: t,
 }: ColorPickerProps) => {
   return (
-    <div className="space-y-3 sm:w-3/4">
-      <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-3 w-full sm:w-3/4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Background Color */}
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
           <label className="flex items-center gap-2 text-xs font-medium text-gray-300 mb-2">

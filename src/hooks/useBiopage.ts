@@ -33,7 +33,9 @@ export function useBiopage(translations: Record<string, string>) {
   const hasFetchedRef = useRef(false);
 
   const fetchBiopage = useCallback(async () => {
+    // Prevent double fetching in Strict Mode or rapid re-renders
     if (!user || hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
     setLoading(true);
 

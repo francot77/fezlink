@@ -3,6 +3,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 import { Badge } from '@/shared/ui';
 import { useInsightsDashboard } from './hooks/useInsightsDashboard';
 import { InsightCard } from './components/InsightCard';
@@ -29,6 +31,16 @@ export default function InsightsDashboard() {
     stats,
     handleRefresh,
   } = useInsightsDashboard();
+
+  useEffect(() => {
+    if (response?.meta?.limitReached && response.meta.nextUpdateAt) {
+      toast.info(t('dailyLimitReached'), {
+        description: t('nextUpdateAt', {
+          date: new Date(response.meta.nextUpdateAt).toLocaleString(),
+        }),
+      });
+    }
+  }, [response, t]);
 
   // Loading states
   if (loading && !response) {

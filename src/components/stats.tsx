@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { BarChart3, Compass } from 'lucide-react';
+import { BarChart3, Compass, ArrowLeft, LayoutDashboard } from 'lucide-react';
 import useLinks, { Link } from '@/hooks/useLinks';
 import { SupportedLanguage } from '@/types/i18n';
 import Metrics from '@/features/metrics/components/Metrics';
 import { useTranslations } from 'next-intl';
+import { DashboardOverview } from '@/app/(app)/dashboard/components/DashboardOverview';
 
 interface StatsProps {
   links?: Link[];
@@ -18,14 +19,52 @@ const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
   const [selectedLink, setSelectedLink] = useState<string>('');
   const t = useTranslations('metrics');
 
-  useEffect(() => {
-    if (links.length > 0) setSelectedLink(links[0].id);
-  }, [links]);
-
   const selected = links.find((link) => link.id === selectedLink);
+
+  if (!selectedLink) {
+    return (
+      <div className="space-y-6">
+         <div className="flex items-center gap-3 mb-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/20 text-blue-300">
+               <LayoutDashboard />
+            </div>
+            <div>
+               <h2 className="text-2xl font-bold text-white">{t('overview.title')}</h2>
+               <p className="text-sm text-gray-400">{t('overview.subtitle')}</p>
+            </div>
+         </div>
+         <DashboardOverview links={links} onSelectLink={setSelectedLink} />
+         
+         {/* Fallback to see list if needed */}
+         <div className="mt-8 pt-8 border-t border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-4">{t('overview.allLinks')}</h3>
+             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {links.map((link) => (
+                <button
+                  key={link.id}
+                  onClick={() => setSelectedLink(link.id)}
+                  className="w-full break-words rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm text-gray-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                >
+                  <div className="font-medium truncate">{link.slug || link.shortUrl}</div>
+                  <div className="text-xs text-gray-500 truncate">{link.destinationUrl}</div>
+                </button>
+              ))}
+            </div>
+         </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
+      <button 
+        onClick={() => setSelectedLink('')}
+        className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-2"
+      >
+        <ArrowLeft size={16} />
+        {t('overview.backToDashboard')}
+      </button>
+
       <div className="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-900/60 p-4 shadow-lg md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/20 text-blue-300">
@@ -53,11 +92,10 @@ const Stats = ({ links: providedLinks, language = 'en' }: StatsProps) => {
             <button
               key={link.id}
               onClick={() => setSelectedLink(link.id)}
-              className={`w-full break-words rounded-lg border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                selectedLink === link.id
+              className={`w-full break-words rounded-lg border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedLink === link.id
                   ? 'border-blue-500 bg-blue-500/20 text-white'
                   : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-500'
-              }`}
+                }`}
             >
               {link.destinationUrl}
             </button>

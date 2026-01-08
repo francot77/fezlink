@@ -25,10 +25,10 @@ export function useInsightsDashboard() {
     if (response?.status === 'pending' || response?.status === 'calculating') {
       const timer = setTimeout(() => {
         refetch();
-      }, 3000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [response?.status, refetch]);
+  }, [response, refetch]);
 
   const insights = useMemo(() => {
     if (!response || response.status !== 'completed') return [];

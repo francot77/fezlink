@@ -1,10 +1,14 @@
 // src/app/models/user.ts
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
   email: string;
   username: string;
   password: string;
+  tokenVersion: number;
+  twoFactorSecret?: string;
+  isTwoFactorEnabled: boolean;
+  isVerified: boolean;
   accountType: 'free' | 'premium';
   premiumExpiresAt?: number;
   apiKeys?: {
@@ -38,6 +42,22 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: true,
     },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
+    twoFactorSecret: {
+      type: String,
+      required: false,
+    },
+    isTwoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
     accountType: {
       type: String,
       enum: ['free', 'premium'],
@@ -61,8 +81,6 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-// Índices para búsquedas rápidas
-/* UserSchema.index({ email: 1 });
-UserSchema.index({ username: 1 }); */
+
 
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

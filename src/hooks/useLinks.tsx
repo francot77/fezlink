@@ -90,7 +90,7 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
   }, []);
 
   const deleteLink = useCallback(
-    async (id: string) => {
+    async (id: string, twoFactorCode?: string) => {
       if (deleteInput !== 'DELETE') {
         toast.info('Debes escribir DELETE para borrar el link', {
           richColors: true,
@@ -99,7 +99,30 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
         return;
       }
 
-      await fetch(`/api/links/${id}`, { method: 'DELETE' });
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (twoFactorCode) {
+        headers['x-2fa-code'] = twoFactorCode;
+      }
+
+      const res = await fetch(`/api/links/${id}`, { 
+        method: 'DELETE',
+        headers
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        if (data.error === '2FA_REQUIRED') {
+            throw new Error('2FA_REQUIRED');
+        }
+        if (data.error === 'INVALID_2FA') {
+            throw new Error('INVALID_2FA');
+        }
+        throw new Error('Failed to delete link');
+      }
+
       setLinks((prev) => prev.filter((link) => link.id !== id));
       closeModal();
     },

@@ -51,26 +51,66 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Si forceRefresh, eliminar cache existente
-    if (forceRefresh) {
+    // Buscar cache válido existente (incluso si está expirado, para verificar last calculation)
+    let cache: any = await insightsCache
+      .findOne({
+        userId,
+        period,
+        version: CURRENT_VERSION,
+      })
+      .lean();
+
+    let limitReached = false;
+    let nextUpdateAt: Date | null = null;
+
+    // Si forceRefresh, verificar límite de tiempo (24h)
+    if (forceRefresh && cache?.status === 'completed' && cache.calculatedAt) {
+      const lastCalculation = new Date(cache.calculatedAt).getTime();
+      const oneDayInMs = 24 * 60 * 60 * 1000;
+      const timeSinceCalculation = Date.now() - lastCalculation;
+
+      if (timeSinceCalculation < oneDayInMs) {
+        // Bloquear refresh
+        console.log('[API] Daily limit reached for insights calculation', { userId });
+        limitReached = true;
+        nextUpdateAt = new Date(lastCalculation + oneDayInMs);
+      } else {
+        // Permitir refresh -> Eliminar cache
+        await insightsCache.deleteOne({ _id: cache._id });
+        cache = null; // Resetear cache para forzar regeneración
+      }
+    } else if (forceRefresh) {
+      // Si no hay cache o no está completado, permitir borrar cualquier residuo
       await insightsCache.deleteOne({
         userId,
         period,
         version: CURRENT_VERSION,
       });
+      cache = null;
     }
 
-    // Buscar cache válido existente
-    let cache = await insightsCache
-      .findOne({
-        userId,
-        period,
-        version: CURRENT_VERSION,
-        expiresAt: { $gt: new Date() },
-      })
-      .lean();
+    // Si no forzamos refresh (o fue bloqueado), y el cache existente ya expiró (por TTL de MongoDB o lógica),
+    // normalmente MongoDB lo borraría por TTL index, pero si lo encontramos aquí es que existe.
+    // Sin embargo, mi query original filtraba por expiresAt > now.
+    // Debemos asegurar que si usamos el cache encontrado arriba, sea válido en tiempo de expiración normal
+    // A MENOS que hayamos bloqueado el refresh, en cuyo caso preferimos devolver el cache viejo que nada.
 
+    // Recuperar cache válido si no lo tenemos (caso normal sin forceRefresh)
+    if (!cache) {
+      cache = await insightsCache
+        .findOne({
+          userId,
+          period,
+          version: CURRENT_VERSION,
+          expiresAt: { $gt: new Date() },
+        })
+        .lean();
+    }
+
+    // Si aún así no hay cache (o estaba expirado y no se bloqueó refresh), crear uno nuevo
     let created = false;
+
+    // ... (resto del código de creación)
 
     // Si no existe, crear nuevo cache pending
     if (!cache) {
@@ -123,7 +163,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Construir response según status
-    const response = buildResponse(cache, created);
+    const response = buildResponse(cache, created, { limitReached, nextUpdateAt });
 
     return NextResponse.json(response);
   } catch (error: any) {
@@ -145,7 +185,11 @@ export async function GET(request: NextRequest) {
 /**
  * Construye response basado en estado del cache
  */
-function buildResponse(cache: any, created: boolean) {
+function buildResponse(
+  cache: any,
+  created: boolean,
+  meta?: { limitReached?: boolean; nextUpdateAt?: Date | null }
+) {
   switch (cache.status) {
     case 'completed':
       return {
@@ -161,6 +205,7 @@ function buildResponse(cache: any, created: boolean) {
           calculatedAt: cache.calculatedAt,
           expiresAt: cache.expiresAt,
         },
+        meta: meta || {},
       };
 
     case 'calculating':

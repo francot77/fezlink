@@ -8,6 +8,7 @@ export function useBiopageLinks(user: { id: string; name: string; email: string 
 
   const fetchLinks = useCallback(async () => {
     if (!user || hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
     try {
       const res = await fetch('/api/links');

@@ -6,6 +6,8 @@ import {
   Layout,
   Link as LinkIcon,
   Rocket,
+  Settings,
+  User as UserIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Spinner from '@/components/spinner';
@@ -13,6 +15,8 @@ import useLinks from '@/hooks/useLinks';
 import LinkManager from '@/features/links/components/LinkManager';
 import Stats from '@/components/stats';
 import BiopageEditor from './biopageeditor';
+import ProfileEditor from '@/features/profile/ProfileEditor';
+import ConfigSection from '@/features/config/ConfigSection';
 import PremiumFeatures from '@/components/premiumfeatures';
 import { useSession } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,9 +42,9 @@ const DashboardPage: React.FC = () => {
   const tCommon = useTranslations('common');
 
   useEffect(() => {
-    const stored = localStorage.getItem('quickMenuEnabled');
-    if (stored) {
-      setQuickMenuEnabled(JSON.parse(stored));
+    const storedQuickMenu = localStorage.getItem('quickMenuEnabled');
+    if (storedQuickMenu) {
+      setQuickMenuEnabled(JSON.parse(storedQuickMenu));
     }
   }, []);
 
@@ -48,6 +52,7 @@ const DashboardPage: React.FC = () => {
     setQuickMenuEnabled(enabled);
     localStorage.setItem('quickMenuEnabled', JSON.stringify(enabled));
   };
+
 
   const {
     activeSection,
@@ -69,6 +74,7 @@ const DashboardPage: React.FC = () => {
       description: t('menu.linksDesc'),
       icon: <LinkIcon size={18} />,
       content: <LinkManager linkState={linkState} language={language} />,
+      color: '#3b82f6', // blue-500
     },
     {
       id: 'stats',
@@ -76,13 +82,15 @@ const DashboardPage: React.FC = () => {
       description: t('menu.analyticsDesc'),
       icon: <BarChart3 size={18} />,
       content: <Stats links={linkState.links} language={language} />,
+      color: '#10b981', // emerald-500
     },
     {
       id: 'biopage',
       label: t('menu.biopage'),
       description: t('menu.biopageDesc'),
       icon: <Layout size={18} />,
-      content: <BiopageEditor />,
+      content: <BiopageEditor onGoToProfile={() => handleSectionChange('profile')} />,
+      color: '#8b5cf6', // violet-500
     },
     {
       id: 'insights',
@@ -90,12 +98,21 @@ const DashboardPage: React.FC = () => {
       description: t('menu.insightsDesc'),
       icon: <Rocket size={18} />,
       content: <InsightsDashboard />,
+      color: '#ec4899', // pink-500
+    },
+    {
+      id: 'profile',
+      label: t('menu.profile'),
+      description: t('menu.profileDesc'),
+      icon: <UserIcon size={18} />,
+      content: <ProfileEditor language={language} />,
+      color: '#06b6d4', // cyan-500
     },
     {
       id: 'premium',
       label: t('menu.subscription'),
       description: t('menu.subscriptionDesc'),
-      icon: <Flame size={18} color="#ff5900" />,
+      icon: <Flame size={18} />,
       content: (
         <div className="flex flex-wrap justify-center gap-4">
           <PremiumFeatures
@@ -110,6 +127,15 @@ const DashboardPage: React.FC = () => {
           />
         </div>
       ),
+      color: '#f97316', // orange-500
+    },
+    {
+      id: 'config',
+      label: t('menu.config') || 'Config', // Fallback if translation missing
+      description: t('menu.configDesc') || 'Manage your account settings',
+      icon: <Settings size={18} />,
+      content: <ConfigSection language={language} setLanguage={setLanguage} translations={{}} />,
+      color: '#9ca3af', // gray-400
     },
   ];
 
@@ -159,7 +185,7 @@ const DashboardPage: React.FC = () => {
           }}
         />
 
-        <div className="grid items-start gap-4 md:grid-cols-[minmax(0,260px),1fr] lg:grid-cols-[minmax(0,280px),1fr]">
+        <div className="flex flex-col gap-4">
           <DashboardSidebar
             sections={sections}
             activeSection={activeSection}

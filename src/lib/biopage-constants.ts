@@ -152,5 +152,12 @@ export const BIOPAGE_TRANSLATIONS: Record<SupportedLanguage, { [key: string]: st
     descriptionPlaceholder: 'Cuéntale a la gente quién eres o qué haces...',
     blur: 'Blur',
     backgroundImage: 'Selecciona una imagen de fondo',
+    sessionTitle: 'Gestión de Sesiones',
+    sessionDescription: 'Administra tus sesiones activas de forma segura.',
+    logoutAllWarningTitle: 'Cerrar sesión en todos los dispositivos',
+    logoutAllWarningText: 'Esto cerrará tu sesión en todos los dispositivos, incluido este. Tendrás que iniciar sesión de nuevo.',
+    logoutAllButton: 'Cerrar todas las sesiones',
+    confirmLogout: 'Sí, cerrar todo',
+    areYouSure: '¿Estás seguro?',
   },
 };

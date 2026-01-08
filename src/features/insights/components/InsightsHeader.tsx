@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -53,7 +54,7 @@ export function InsightsHeader({
           onClick={onRefresh}
           disabled={isRefreshing}
           className="p-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg transition-all disabled:opacity-50"
-          title={t('refreshInsights')}
+          title={`${t('refreshInsights')} - ${t('dailyLimitInfo')}`}
         >
           <RefreshCw
             size={18}

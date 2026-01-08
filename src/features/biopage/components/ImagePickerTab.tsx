@@ -57,7 +57,7 @@ export const ImagePickerTab = ({
 
   return (
     <PremiumLock locked={!isPremium}>
-      <div className="space-y-3 sm:w-3/4">
+      <div className="space-y-3 w-full sm:w-3/4">
         {backgroundImageUrl ? (
           <>
             {/* Current Image Info + Actions */}

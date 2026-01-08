@@ -6,6 +6,8 @@ declare module 'next-auth' {
       id: string;
       email: string;
       name: string;
+      isTwoFactorEnabled: boolean;
+      isVerified: boolean;
     };
   }
 
@@ -13,11 +15,17 @@ declare module 'next-auth' {
     id: string;
     email: string;
     name: string;
+    isTwoFactorEnabled: boolean;
+    isVerified: boolean;
+    tokenVersion: number;
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
+    version?: number;
+    isTwoFactorEnabled: boolean;
+    isVerified: boolean;
   }
 }

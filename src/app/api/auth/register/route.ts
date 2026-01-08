@@ -95,6 +95,8 @@ async function registerHandler(req: NextRequest) {
       isPremium: false,
       premiumExpiresAt: null,
       createdAt: new Date(),
+      isTwoFactorEnabled: false,
+      twoFactorSecret: undefined,
     });
 
     // ✅ 6. Log exitoso (sin datos sensibles)

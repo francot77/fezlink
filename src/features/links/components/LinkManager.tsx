@@ -1,12 +1,11 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
-import { BarChart3, Link as LinkIcon, Loader2, TrendingUp, Search, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link as LinkIcon, Loader2, Search, X } from 'lucide-react';
 import useLinks, { Link } from '@/hooks/useLinks';
 import LinkModals from './LinkModals';
 import { SupportedLanguage } from '@/types/i18n';
 import { useTranslations } from 'next-intl';
-import StatsGrid from './StatsGrid';
 import NewLinkForm from './NewLinkForm';
 import { LinkCard } from './LinkCard';
 import { LinkSkeleton } from './LinkSkeleton';
@@ -17,7 +16,10 @@ interface LinkManagerProps {
 }
 
 const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
-    const fallbackState = useLinks();
+    // Only fetch if linkState is not provided
+    const shouldFetch = !linkState;
+    const fallbackState = useLinks({ autoLoad: shouldFetch });
+
     const {
         links,
         newUrl,
@@ -41,10 +43,6 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
     const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
     const [urlPreview, setUrlPreview] = useState('');
 
-    const totalClicks = useMemo(
-        () => links.reduce((acc, link) => acc + (link.clicks ?? 0), 0),
-        [links]
-    );
     const tLinks = useTranslations('links');
 
     const filteredLinks = useMemo(() => {
@@ -58,7 +56,7 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
     }, [links, searchQuery]);
 
     const handleAdd = () => {
-        if (!newUrl || !newUrl.startsWith('http')) return;
+        if (!newUrl) return;
         addLink(newUrl.trim());
         setUrlPreview('');
     };
@@ -74,14 +72,17 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
     };
 
     useEffect(() => {
-        if (newUrl && newUrl.startsWith('http')) {
-            try {
-                const url = new URL(newUrl);
-                setUrlPreview(url.hostname);
-            } catch {
-                setUrlPreview('');
-            }
-        } else {
+        if (!newUrl) {
+            setUrlPreview('');
+            return;
+        }
+
+        try {
+            // Try to parse as is, or prepend https:// for preview logic
+            const urlToParse = newUrl.startsWith('http') ? newUrl : `https://${newUrl}`;
+            const url = new URL(urlToParse);
+            setUrlPreview(url.hostname);
+        } catch {
             setUrlPreview('');
         }
     }, [newUrl]);
@@ -99,7 +100,6 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                 hasCountries={hasCountries}
                 totalClicksByCountry={totalClicksByCountry}
             />
-            <StatsGrid linksCount={links.length} totalClicks={totalClicks} />
 
             <NewLinkForm
                 newUrl={newUrl}
@@ -113,7 +113,7 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                     <h2 className="text-xl font-semibold text-white">{tLinks('myLinks')}</h2>
 
                     {links.length > 0 && (
-                        <div className="relative max-w-xs">
+                        <div className="relative max-w-xs w-full sm:w-auto">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
@@ -142,7 +142,7 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                 </div>
 
                 {loading && links.length === 0 ? (
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3">
                         {[1, 2, 3, 4].map((i) => (
                             <LinkSkeleton key={i} />
                         ))}
@@ -165,7 +165,7 @@ const LinkManager = ({ linkState, language = 'en' }: LinkManagerProps) => {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div className="flex flex-col gap-3">
                         {filteredLinks.map((link, index) => (
                             <LinkCard
                                 key={link.id}

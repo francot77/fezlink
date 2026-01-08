@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Check,
   Copy,
@@ -6,16 +6,24 @@ import {
   Link as LinkIcon,
   Loader2,
   Trash2,
-  Instagram,
-  MessageCircle,
-  QrCode,
-  TrendingUp,
   BarChart3,
+  Share2,
+  Instagram,
+  Facebook,
+  Linkedin,
+  Twitter,
+  Mail,
+  QrCode,
+  MessageCircle,
+  Video,
+  Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/hooks/useLinks';
 import { SupportedLanguage } from '@/types/i18n';
+import { createPortal } from 'react-dom';
+import { QRModal } from './QRModal';
 
 interface LinkCardProps {
   link: Link;
@@ -45,205 +53,286 @@ export const LinkCard = ({
   );
   const tLinks = useTranslations('links');
   const [copied, setCopied] = useState(false);
-  const [channelCopied, setChannelCopied] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+  const [dropdownPlacement, setDropdownPlacement] = useState<'top' | 'bottom'>('bottom');
 
-  const buildChannelUrl = (source: string) => `${safeShortUrl}?src=${source}`;
+  const updateDropdownPosition = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const scrollY = window.scrollY;
+      const viewportHeight = window.innerHeight;
+      const dropdownHeight = 250; // Estimated height (header + list)
+      const spaceBelow = viewportHeight - rect.bottom;
 
-  const handleCopy = async (value?: string) => {
-    const textToCopy = value ?? safeShortUrl;
-    let success = false;
-    try {
-      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-        await navigator.clipboard.writeText(textToCopy);
-        success = true;
+      let top;
+      let placement: 'top' | 'bottom';
+
+      if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+        // Show above if not enough space below
+        top = rect.top + scrollY - dropdownHeight;
+        placement = 'top';
+      } else {
+        // Default to below
+        top = rect.bottom + scrollY + 8;
+        placement = 'bottom';
       }
-    } catch {}
-    if (!success) {
-      try {
-        const ta = document.createElement('textarea');
-        ta.value = textToCopy;
-        ta.style.position = 'fixed';
-        ta.style.top = '0';
-        ta.style.left = '0';
-        ta.style.opacity = '0';
-        ta.setAttribute('readonly', '');
-        document.body.appendChild(ta);
-        ta.select();
-        const range = document.createRange();
-        range.selectNodeContents(ta);
-        const sel = window.getSelection();
-        if (sel) {
-          sel.removeAllRanges();
-          sel.addRange(range);
-        }
-        success = document.execCommand('copy');
-        document.body.removeChild(ta);
-      } catch {}
+
+      setDropdownPos({
+        top,
+        left: rect.left + rect.width / 2 - 96
+      });
+      setDropdownPlacement(placement);
     }
-    if (success) {
-      setCopied(true);
-      toast.success(tLinks('copied'), { position: 'top-center', richColors: true });
-      setTimeout(() => setCopied(false), 1600);
-    } else {
+  };
+
+  // Handle positioning and scroll updates
+  useEffect(() => {
+    if (shareOpen) {
+      updateDropdownPosition();
+      window.addEventListener('scroll', updateDropdownPosition, { capture: true });
+      window.addEventListener('resize', updateDropdownPosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updateDropdownPosition, { capture: true });
+      window.removeEventListener('resize', updateDropdownPosition);
+    };
+  }, [shareOpen]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        setShareOpen(false);
+      }
+    };
+    if (shareOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [shareOpen]);
+
+  const handleCopy = async (text?: string) => {
+    const textToCopy = text ?? safeShortUrl;
+
+    const copyToClipboard = async () => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(textToCopy);
+        return true;
+      }
+      return false;
+    };
+
+    const fallbackCopy = () => {
+      const textArea = document.createElement("textarea");
+      textArea.value = textToCopy;
+      // Ensure textarea is not visible but part of DOM
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+      } catch (err) {
+        document.body.removeChild(textArea);
+        return false;
+      }
+    };
+
+    try {
+      let success = false;
+      try {
+        success = await copyToClipboard();
+      } catch {
+        success = false;
+      }
+
+      if (!success) {
+        success = fallbackCopy();
+      }
+
+      if (success) {
+        setCopied(true);
+        toast.success(tLinks('copied'), { position: 'top-center', richColors: true });
+        setTimeout(() => setCopied(false), 1600);
+        setShareOpen(false);
+      } else {
+        throw new Error('Copy failed');
+      }
+    } catch {
       toast.error('Unable to copy link', { position: 'top-center', richColors: true });
     }
   };
 
-  const handleChannelCopy = async (label: string, value: string) => {
-    setChannelCopied(label);
-    await handleCopy(value);
-    setTimeout(() => setChannelCopied((current) => (current === label ? null : current)), 1600);
-  };
+  const buildChannelUrl = (source: string) => `${safeShortUrl}?src=${source}`;
 
-  const channels = [
-    {
-      label: tLinks('copyInstagram'),
-      src: 'instagram_bio',
-      icon: Instagram,
-      color: 'from-pink-500 to-purple-500',
-    },
-    {
-      label: tLinks('copyWhatsapp'),
-      src: 'whatsapp',
-      icon: MessageCircle,
-      color: 'from-green-500 to-emerald-600',
-    },
-    { label: tLinks('copyQr'), src: 'qr_local', icon: QrCode, color: 'from-cyan-500 to-blue-600' },
+  const sources = [
+    { label: 'Instagram', src: 'instagram', icon: Instagram, color: 'text-pink-500' },
+    { label: 'WhatsApp', src: 'whatsapp', icon: MessageCircle, color: 'text-green-500' },
+    { label: 'TikTok', src: 'tiktok', icon: Video, color: 'text-cyan-500' },
+    { label: 'Twitter / X', src: 'twitter', icon: Twitter, color: 'text-blue-400' },
+    { label: 'Facebook', src: 'facebook', icon: Facebook, color: 'text-blue-600' },
+    { label: 'LinkedIn', src: 'linkedin', icon: Linkedin, color: 'text-blue-700' },
+    { label: 'Email', src: 'email', icon: Mail, color: 'text-gray-400' },
   ];
 
   return (
-    <div
-      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl hover:shadow-emerald-500/10 animate-in fade-in slide-in-from-bottom-4"
-      style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+    <>
+      <QRModal
+        url={`${safeShortUrl}?src=qr_local`}
+        isOpen={showQR}
+        onClose={() => setShowQR(false)}
+      />
 
-      {isDeleting && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-red-400" />
-            <span className="text-sm font-semibold text-red-400">{tLinks('deleting')}</span>
+      <div
+        className="group relative flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-white/10 bg-gray-900/60 p-3 shadow-lg transition-all duration-300 hover:border-white/20 hover:bg-gray-900/80 animate-in fade-in slide-in-from-bottom-2"
+        style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+      >
+        {/* Loading Overlay */}
+        {isDeleting && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl bg-black/80 backdrop-blur-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-red-400" />
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="relative p-4 sm:p-6 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-110">
-              <LinkIcon size={20} className="text-emerald-400" />
-            </div>
-            <div className="flex-1 min-w-0 space-y-1">
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                {originalHost}
-              </p>
-              <a
-                className="block truncate text-base sm:text-lg font-semibold text-white transition-colors hover:text-emerald-400"
-                href={safeShortUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={hostname}
-              >
-                {hostname}
-              </a>
-            </div>
+        {/* Content */}
+        <div className="flex flex-1 flex-col min-w-0 w-full sm:w-auto text-center sm:text-left pl-2">
+          <div className="flex items-center justify-center sm:justify-start gap-2">
+            <a
+              href={safeShortUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="truncate font-semibold text-white hover:text-emerald-400 hover:underline transition-colors"
+              title={safeShortUrl}
+            >
+              {hostname}
+            </a>
           </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 px-3 py-1.5 ring-1 ring-white/10">
-              <TrendingUp size={14} className="text-emerald-400" />
-              <span className="text-sm font-bold text-white">{link.clicks}</span>
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={() => handleCopy()}
-          className={`w-full flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-all duration-300 active:scale-95 ${
-            copied
-              ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 shadow-lg shadow-emerald-500/20'
-              : 'border-white/10 bg-white/5 text-gray-300 hover:border-emerald-400/40 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          {copied ? <Check size={16} /> : <Copy size={16} />}
-          {copied ? tLinks('copied') : tLinks('copy')}
-        </button>
-
-        <div className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-            {tLinks('quickShare')}
+          <p className="truncate text-xs text-gray-500 max-w-[200px] sm:max-w-[300px] mx-auto sm:mx-0">
+            {link.destinationUrl}
           </p>
-          <div className="grid grid-cols-3 gap-2">
-            {channels.map((channel) => {
-              const url = buildChannelUrl(channel.src);
-              const isCopied = channelCopied === channel.src;
-              const Icon = channel.icon;
-
-              return (
-                <button
-                  key={channel.src}
-                  onClick={() => handleChannelCopy(channel.src, url)}
-                  className={`group/btn relative overflow-hidden rounded-lg border p-3 transition-all duration-300 active:scale-95 ${
-                    isCopied
-                      ? 'border-emerald-400/60 bg-emerald-500/20 shadow-lg shadow-emerald-500/20'
-                      : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                  }`}
-                  title={channel.label}
-                >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${channel.color} opacity-0 transition-opacity duration-300 ${isCopied ? 'opacity-20' : 'group-hover/btn:opacity-10'}`}
-                  />
-                  <div className="relative flex flex-col items-center gap-1.5">
-                    {isCopied ? (
-                      <Check size={18} className="text-emerald-400" />
-                    ) : (
-                      <Icon
-                        size={18}
-                        className="text-gray-400 transition-colors group-hover/btn:text-white"
-                      />
-                    )}
-                    <span
-                      className={`text-xs font-medium transition-colors ${
-                        isCopied ? 'text-emerald-300' : 'text-gray-500 group-hover/btn:text-gray-300'
-                      }`}
-                    >
-                      {isCopied ? tLinks('copied') : channel.label}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 pt-2">
+        {/* Actions Toolbar */}
+        <div className="flex items-center gap-1 w-full sm:w-auto justify-center sm:justify-end border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 mt-1 sm:mt-0">
+
+          {/* Clicks Badge - Moved here */}
+          <div className="flex h-8 items-center gap-1.5 rounded-lg bg-white/5 px-3 text-xs font-medium text-gray-400 ring-1 ring-white/10 mr-2">
+            <BarChart3 size={14} />
+            <span className="text-white">{link.clicks}</span>
+          </div>
+
+          {/* Stats - Highlighted & Moved Left */}
           <button
             onClick={onStats}
-            disabled={isDeleting}
-            className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-105 hover:shadow-blue-500/40 active:scale-95 disabled:opacity-50"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400 ring-1 ring-purple-500/20 transition-all hover:bg-purple-500/20 hover:scale-105 active:scale-95 mr-2"
+            title={tLinks('stats')}
           >
-            <BarChart3 size={16} />
-            <span className="hidden sm:inline">{tLinks('stats')}</span>
+            <Globe size={16} />
           </button>
+
+          <div className="h-4 w-px bg-white/10 mx-1 mr-2" />
+
+          {/* Copy Button */}
+          <button
+            onClick={() => handleCopy()}
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 transition-colors hover:bg-emerald-500/20 active:scale-95"
+            title={tLinks('copy')}
+          >
+            {copied ? <Check size={16} /> : <Copy size={16} />}
+          </button>
+
+          {/* Share Dropdown */}
+          <button
+            ref={triggerRef}
+            onClick={() => {
+              if (!shareOpen) updateDropdownPosition();
+              setShareOpen(!shareOpen);
+            }}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20 transition-colors hover:bg-blue-500/20 active:scale-95 ${shareOpen ? 'bg-blue-500/20 text-blue-300' : ''}`}
+            title="Share with source"
+          >
+            <Share2 size={16} />
+          </button>
+
+          {shareOpen && typeof document !== 'undefined' && createPortal(
+            <div
+              ref={dropdownRef}
+              style={{
+                position: 'absolute',
+                top: dropdownPos.top,
+                left: dropdownPos.left,
+              }}
+              className={`z-50 w-48 rounded-xl border border-white/10 bg-gray-900/95 p-1 shadow-xl backdrop-blur-md animate-in fade-in duration-200 ${dropdownPlacement === 'bottom' ? 'slide-in-from-top-2' : 'slide-in-from-bottom-2'
+                }`}
+            >
+              <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wider">Share via</div>
+              <div className="space-y-0.5 max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700">
+                {sources.map((source) => {
+                  const Icon = source.icon;
+                  return (
+                    <button
+                      key={source.src}
+                      onClick={() => handleCopy(buildChannelUrl(source.src))}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+                    >
+                      <Icon size={14} className={source.color} />
+                      <span>{source.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>,
+            document.body
+          )}
+
+          {/* QR Code - New Button */}
+          <button
+            onClick={() => setShowQR(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-gray-400 ring-1 ring-white/10 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
+            title="QR Code"
+          >
+            <QrCode size={16} />
+          </button>
+
+          {/* Open Link */}
           <a
             href={safeShortUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-semibold text-gray-300 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:text-white active:scale-95 ${isDeleting ? 'pointer-events-none opacity-50' : ''}`}
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-gray-400 ring-1 ring-white/10 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
+            title={tLinks('openLink')}
           >
             <ExternalLink size={16} />
-            <span className="hidden sm:inline">{tLinks('openLink')}</span>
           </a>
+
+          <div className="h-4 w-px bg-white/10 mx-1" />
+
+          {/* Delete */}
           <button
             onClick={onDelete}
-            disabled={isDeleting}
-            className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-red-600/10 px-3 py-2.5 text-sm font-semibold text-red-400 ring-1 ring-red-500/20 transition-all duration-300 hover:bg-red-600/20 hover:ring-red-500/40 hover:text-red-300 active:scale-95 disabled:opacity-50"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-400 ring-1 ring-red-500/20 transition-colors hover:bg-red-500/20 hover:text-red-300 active:scale-95"
+            title={tLinks('delete')}
           >
             <Trash2 size={16} />
-            <span className="hidden sm:inline">{tLinks('delete')}</span>
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 };

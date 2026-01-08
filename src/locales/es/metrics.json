@@ -76,8 +76,27 @@
         "linkedin": "LinkedIn",
         "email": "Email",
         "tiktok": "TikTok",
-        "pinterest": "Pinterest"
+        "pinterest": "Pinterest",
+        "biopage": "Biopage"
       }
+    },
+    "overview": {
+      "title": "Resumen de Analíticas",
+      "subtitle": "Métricas de rendimiento global",
+      "backToDashboard": "Volver al Dashboard",
+      "allLinks": "Todos los Enlaces",
+      "totalClicksDesc": "Interacción total en todos los enlaces",
+      "activeLinks": "Enlaces Activos",
+      "active": "Activos",
+      "activeLinksDesc": "URLs cortas activas actualmente",
+      "avgClicksLink": "Prom. Clics / Enlace",
+      "avgPerformance": "Rendimiento promedio por enlace",
+      "topPerforming": "Enlaces con Mejor Rendimiento",
+      "topPerformingDesc": "URLs con mayor interacción",
+      "engagementShare": "Distribución de Interacción",
+      "trafficDistribution": "Distribución de clics por enlace",
+      "traffic": "Tráfico",
+      "others": "Otros"
     }
   }
 }

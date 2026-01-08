@@ -99,6 +99,32 @@ export const createLinkSchema = z.object({
   destinationUrl: z.string().refine(validateUrl, 'Invalid URL'),
 });
 
+// ✅ Schema para actualizar Biopage
+export const updateBiopageSchema = z.object({
+  links: z
+    .array(
+      z.object({
+        shortUrl: z.string(),
+        shortId: z.string(),
+        label: z.string().optional(),
+      })
+    )
+    .optional(),
+  backgroundColor: z.string().optional(),
+  backgroundImage: z.string().optional(),
+  backgroundBlur: z.number().min(0).max(100).optional(),
+  backgroundZoom: z.number().min(0.5).max(3).optional(),
+  backgroundPosition: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .optional(),
+  textColor: z.string().optional(),
+  avatarUrl: z.string().optional(),
+  description: z.string().max(500, 'Description too long').optional(),
+});
+
 // ✅ Sanitizar objetos para prevenir NoSQL injection
 export function sanitizeQuery(obj: Record<string, any>): Record<string, any> {
   const sanitized: Record<string, any> = {};

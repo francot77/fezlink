@@ -1,4 +1,4 @@
-import { ChevronRight, LogOut, X } from 'lucide-react';
+import { ChevronRight, LogOut, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import React from 'react';
 
 export interface Section {
@@ -7,6 +7,7 @@ export interface Section {
     description: string;
     icon: React.ReactNode;
     content: React.ReactNode;
+    color?: string;
 }
 
 interface DashboardSidebarProps {
@@ -23,6 +24,8 @@ interface DashboardSidebarProps {
         close: string;
         logout: string;
     };
+    isCollapsed?: boolean;
+    onToggleCollapse?: () => void;
 }
 
 export const DashboardSidebar = ({
@@ -38,16 +41,16 @@ export const DashboardSidebar = ({
 }: DashboardSidebarProps) => {
     return (
         <>
-            {/* Sidebar - Desktop */}
+            {/* Sidebar - Desktop (Horizontal Row) */}
             <aside
-                className="hidden md:block top-6 h-fit rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl p-3 shadow-xl animate-in fade-in slide-in-from-left-4 duration-500"
+                className="hidden md:flex w-full items-center justify-between rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl shadow-xl p-2 animate-in fade-in slide-in-from-top-4 duration-500"
                 style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}
             >
-                <ul className="space-y-2">
+                <ul className="flex flex-row w-full gap-2 overflow-x-auto no-scrollbar">
                     {sections.map((section, index) => (
                         <li
                             key={section.id}
-                            className="min-w-0 animate-in fade-in slide-in-from-left-4"
+                            className="min-w-0 flex-1"
                             style={{
                                 animationDelay: `${200 + index * 50}ms`,
                                 animationFillMode: 'backwards',
@@ -55,34 +58,30 @@ export const DashboardSidebar = ({
                         >
                             <button
                                 onClick={() => onSectionChange(section.id)}
-                                className={`group relative flex w-full min-w-0 items-start gap-3 rounded-xl border px-4 py-3 text-left transition-all duration-300 ${activeSection === section.id
+                                className={`group relative flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center transition-all duration-300 ${activeSection === section.id
                                     ? 'border-blue-500/50 bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-white shadow-lg shadow-blue-500/20'
                                     : 'border-transparent bg-white/5 text-gray-300 hover:border-white/20 hover:bg-white/10 hover:text-white'
                                     }`}
                             >
                                 <div
-                                    className={`mt-0.5 transition-transform duration-300 ${activeSection === section.id
-                                        ? 'text-blue-400 scale-110'
-                                        : 'text-gray-400 group-hover:text-blue-400 group-hover:scale-110'
+                                    className={`transition-transform duration-300 ${activeSection === section.id
+                                        ? 'scale-110'
+                                        : 'group-hover:scale-110'
                                         }`}
+                                    style={{ color: section.color }}
                                 >
                                     {section.icon}
                                 </div>
-                                <div className="flex-1 min-w-0 space-y-1">
-                                    <p className="text-sm font-semibold leading-tight">{section.label}</p>
-                                    <p className="text-xs text-gray-400 leading-snug">{section.description}</p>
-                                </div>
-                                {activeSection === section.id && (
-                                    <ChevronRight
-                                        size={16}
-                                        className="self-center text-blue-400  animate-in fade-in slide-in-from-left-2 duration-300"
-                                    />
-                                )}
+
+                                <span className="text-sm font-semibold leading-tight whitespace-nowrap">
+                                    {section.label}
+                                </span>
                             </button>
                         </li>
                     ))}
                 </ul>
             </aside>
+
 
             {/* Sidebar - Mobile (Slide in from right) */}
             <aside

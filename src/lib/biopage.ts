@@ -11,6 +11,7 @@ export interface BioPageData {
     destinationUrl: string;
     linkId: string;
   }[];
+  userId: string;
   textColor: string;
   background?: {
     base: string;

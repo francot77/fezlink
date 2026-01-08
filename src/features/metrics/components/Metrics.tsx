@@ -133,7 +133,7 @@ export default function Metrics({ linkId, selectedUrl, language = 'en' }: Metric
         availableSources={data.availableSources}
         availableDevices={data.availableDevices}
         translations={{
-          title: t('filters'),
+          filters: t('filters'),
           clearFilters: t('clearFilters'),
           from: t('from'),
           to: t('to'),

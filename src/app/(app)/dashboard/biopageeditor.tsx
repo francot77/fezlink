@@ -7,18 +7,17 @@ import { SupportedLanguage } from '@/types/i18n';
 import { BIOPAGE_TRANSLATIONS, GRADIENT_PRESETS, DEFAULT_AVATAR } from '@/lib/biopage-constants';
 import { useBiopage } from '@/hooks/useBiopage';
 import { useBiopageLinks } from '@/hooks/useBiopageLinks';
-import { ProfileSection } from '@/features/biopage/ProfileSection';
+import { ProfileSummary } from '@/features/biopage/ProfileSummary';
 import { LinksSection } from '@/features/biopage/LinksSection';
 import { AppearanceSection } from '@/features/biopage/AppearanceSection';
-import { AvatarModal } from '@/features/biopage/AvatarModal';
-import { UsernameModal } from '@/features/biopage/UsernameModal';
 import BiopagePreview from '@/features/biopage/BiopagePreview';
 
 interface BiopageEditorProps {
   language?: SupportedLanguage;
+  onGoToProfile?: () => void;
 }
 
-export default function BiopageEditor({ language = 'en' }: BiopageEditorProps) {
+export default function BiopageEditor({ language = 'en', onGoToProfile }: BiopageEditorProps) {
   const t = useMemo(() => BIOPAGE_TRANSLATIONS[language], [language]);
 
   // Biopage state and actions
@@ -40,12 +39,9 @@ export default function BiopageEditor({ language = 'en' }: BiopageEditorProps) {
     setSelected,
     setBgColor,
     setTextColor,
-    setAvatarUrl,
-    setDescription,
     setBiopage,
     createBiopage,
     saveBiopage,
-    changeSlug,
     handleBackgroundImageChange,
     setBackgroundZoom,
     setBackgroundBlur,
@@ -55,24 +51,6 @@ export default function BiopageEditor({ language = 'en' }: BiopageEditorProps) {
 
   // Links state and actions
   const { links, toggleSelect, updateLabel } = useBiopageLinks(user);
-  // Modals state
-  const [avatarModal, setAvatarModal] = useState(false);
-  const [usernameModal, setUsernameModal] = useState(false);
-  const [inputSlug, setInputSlug] = useState('');
-
-  // Handlers
-  const handleUsernameChange = async () => {
-    const success = await changeSlug(inputSlug);
-    if (success) {
-      setUsernameModal(false);
-      setInputSlug('');
-    }
-  };
-
-  const handleAvatarUpload = (url: string) => {
-    setAvatarUrl(url);
-    setBiopage((prev) => (prev ? { ...prev, avatarUrl: url } : prev));
-  };
 
   // Loading state
   if (loading) {
@@ -118,38 +96,15 @@ export default function BiopageEditor({ language = 'en' }: BiopageEditorProps) {
   // Main editor
   return (
     <div className="space-y-6 text-white">
-      {/* Modals */}
-      <AvatarModal
-        isOpen={avatarModal}
-        onClose={() => setAvatarModal(false)}
-        avatarUrl={avatarUrl}
-        defaultAvatar={DEFAULT_AVATAR}
-        onUploadComplete={handleAvatarUpload}
-        translations={t}
-      />
-
-      <UsernameModal
-        isOpen={usernameModal}
-        onClose={() => setUsernameModal(false)}
-        onAccept={handleUsernameChange}
-        inputSlug={inputSlug}
-        setInputSlug={setInputSlug}
-        translations={t}
-      />
-
       {/* Editor Grid */}
       <div className="grid gap-6 xl:grid-cols-[1.4fr,1fr]">
         <div className="space-y-6">
-          <ProfileSection
+          <ProfileSummary
             slug={biopage.slug}
-            isPremium={isPremium}
             avatarUrl={avatarUrl}
             defaultAvatar={DEFAULT_AVATAR}
             description={description}
-            onAvatarClick={() => setAvatarModal(true)}
-            onUsernameClick={() => setUsernameModal(true)}
-            onDescriptionChange={setDescription}
-            onAvatarUrlChange={setAvatarUrl}
+            onEditProfile={() => onGoToProfile?.()}
             translations={t}
           />
 
