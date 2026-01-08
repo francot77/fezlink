@@ -128,6 +128,31 @@ export async function POST(request: Request) {
       console.log(`Subscription ${subscriptionId} canceled`);
     }
 
+    // 3. Manejo de Fallos de Pago
+    if (eventType === 'transaction.payment_failed' || eventType === 'subscription.payment.failed') {
+      const subscriptionId = data.subscription_id;
+      const customerId = data.customer_id;
+
+      let user;
+      if (subscriptionId) {
+        user = await User.findOne({ subscriptionId });
+      } else if (data.custom_data?.userId) {
+        user = await User.findById(data.custom_data.userId);
+      }
+
+      if (user) {
+        console.log(`Payment failed for user ${user._id}`);
+        // Opcional: Actualizar estado a past_due si es necesario, aunque Paddle lo maneja
+
+        // Enviar email de fallo
+        await sendEmail({
+          to: user.email,
+          subject: 'Action Required: Payment Failed - URLShortener',
+          html: `<h1>Payment Failed</h1><p>We were unable to process your payment. Please update your payment method to avoid service interruption.</p>`
+        });
+      }
+    }
+
     return NextResponse.json({ message: 'Success' }, { status: 200 });
   } catch (error) {
     console.error('Webhook Error:', error);

@@ -10,6 +10,13 @@ export function usePaddle() {
       try {
         const instance = await initializePaddle({
           token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+          eventCallback: (event) => {
+            // Dispatch custom event for components to listen
+            if (typeof window !== 'undefined') {
+              const customEvent = new CustomEvent('paddle:event', { detail: event });
+              window.dispatchEvent(customEvent);
+            }
+          }
         });
         instance?.Environment.set('sandbox');
         setPaddle(instance ?? null);

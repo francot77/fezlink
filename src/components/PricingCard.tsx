@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Tooltip } from '@/shared/ui';
 import { Check, Flame, HelpCircle, X } from 'lucide-react';
 

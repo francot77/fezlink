@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePaddle } from '@/hooks/usePaddle';
 import { useSubscription } from '@/hooks/useSubscription';
 import { PricingCard, PricingPlan } from './PricingCard';
@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { redirect, useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 
 interface PricingSectionProps {
   showManageActions?: boolean; // Prop para diferenciar Dashboard vs Public
@@ -13,11 +14,50 @@ interface PricingSectionProps {
 
 export const PricingSection = ({ showManageActions = false }: PricingSectionProps) => {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly');
-  const { accountType, isLoading: subLoading } = useSubscription();
+  const { accountType, isLoading: subLoading, mutate } = useSubscription();
   const { userId } = useAuth();
-  const { data: session } = useSession(); // Para obtener el email real
+  const { data: session, update: updateSession } = useSession(); // Para obtener el email real
   const paddle = usePaddle();
   const router = useRouter();
+
+  // Escuchar eventos de Paddle (disparados por usePaddle hook)
+  useEffect(() => {
+    const handlePaddleEvent = async (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const eventData = customEvent.detail;
+
+      if (eventData?.name === 'checkout.completed') {
+        toast.success('Payment successful! Updating your account...');
+
+        // Polling para verificar actualización de cuenta
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        const checkStatus = async () => {
+          attempts++;
+          // Forzar revalidación de la suscripción
+          const newStatus = await mutate();
+
+          // Si cambió el tipo de cuenta (asumiendo que venimos de free) o si llegamos al límite
+          // Nota: Esto es simplificado, idealmente verificaríamos que el accountType sea el esperado
+          if (attempts >= maxAttempts) {
+            window.location.reload();
+            return;
+          }
+
+          // Si el estado sigue igual, intentar de nuevo en 2s
+          setTimeout(checkStatus, 2000);
+        };
+
+        checkStatus();
+      } else if (eventData?.name === 'checkout.closed') {
+        // Opcional: manejar cierre sin compra
+      }
+    };
+
+    window.addEventListener('paddle:event', handlePaddleEvent);
+    return () => window.removeEventListener('paddle:event', handlePaddleEvent);
+  }, [mutate, router]);
 
   const handleCheckout = (priceId: string, planId: string) => {
     if (!userId) {
