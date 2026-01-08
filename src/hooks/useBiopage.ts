@@ -77,6 +77,7 @@ export function useBiopage(translations: Record<string, string>) {
           setBackgroundPositionX(data.biopage.background.image.positionX);
           setBackgroundPositionY(data.biopage.background.image.positionY);
           setBackgroundImageUrl(data.biopage.background.image.url);
+          setBackgroundZoom(data.biopage.background.image.zoom ?? 1);
         } else {
           setBiopage(null);
         }
@@ -194,7 +195,10 @@ export function useBiopage(translations: Record<string, string>) {
         setDescription(data.biopage.description || description);
         toast.success(translations.saved, { richColors: true, position: 'top-center' });
       } else {
-        toast.error(`${translations.slugErrorPrefix} ${data.error || translations.saveError}`, {
+        const errorMessage = typeof data.error === 'object'
+          ? Object.values(data.error).map((e: any) => e.errors?.join(', ')).join('; ')
+          : data.error;
+        toast.error(`${translations.slugErrorPrefix} ${errorMessage || translations.saveError}`, {
           richColors: true,
           position: 'top-center',
         });
@@ -235,7 +239,10 @@ export function useBiopage(translations: Record<string, string>) {
           toast.success(translations.slugSaved, { richColors: true, position: 'top-center' });
           return true;
         } else {
-          toast.error(`${translations.slugErrorPrefix} ${data.error || translations.saveError}`, {
+          const errorMessage = typeof data.error === 'object'
+            ? Object.values(data.error).map((e: any) => e.errors?.join(', ')).join('; ')
+            : data.error;
+          toast.error(`${translations.slugErrorPrefix} ${errorMessage || translations.saveError}`, {
             richColors: true,
             position: 'top-center',
           });
