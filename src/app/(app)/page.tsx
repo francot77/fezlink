@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import FeaturesSection from '@/components/FeaturesSection';
 
 export default function Home() {
   const router = useRouter();
@@ -15,7 +16,6 @@ export default function Home() {
   const [animatedCount, setAnimatedCount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLElement>(null);
   const stepsRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -40,22 +40,24 @@ export default function Home() {
   useEffect(() => {
     if (globalClicks === null) return;
 
-    const duration = 2000;
-    const steps = 60;
-    const increment = globalClicks / steps;
-    let current = 0;
+    let startTimestamp: number | null = null;
+    const duration = 1500;
 
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= globalClicks) {
-        setAnimatedCount(globalClicks);
-        clearInterval(timer);
-      } else {
-        setAnimatedCount(Math.floor(current));
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+      // easeOutExpo for a more professional "snap" effect
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+      setAnimatedCount(Math.floor(globalClicks * easeProgress));
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
       }
-    }, duration / steps);
+    };
 
-    return () => clearInterval(timer);
+    window.requestAnimationFrame(step);
   }, [globalClicks]);
 
   // Intersection Observer for scroll animations
@@ -255,7 +257,7 @@ export default function Home() {
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start">
               <div className="hover-lift">
                 <Button
-                  title={t('hero.cta.primary')}
+                  title={t('hero.cta.secondary')}
                   customStyles={{
                     backgroundColor: '#10B981',
                     color: '#0B1021',
@@ -265,15 +267,15 @@ export default function Home() {
                     fontWeight: 'bold',
                     boxShadow: '0 15px 45px rgba(16, 185, 129, 0.35)',
                   }}
-                  onClick={() => router.push('/bio')}
+                  onClick={() => router.push('/dashboard')}
                 />
               </div>
               <button
                 className="group w-full rounded-xl border border-white/20 px-5 py-3 text-base font-medium text-white transition-all duration-300 hover:border-emerald-400/50 hover:bg-white/5 hover:shadow-lg hover:shadow-emerald-500/20 sm:w-auto"
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push('/bio')}
               >
                 <span className="group-hover:text-emerald-300 transition-colors">
-                  {t('hero.cta.secondary')}
+                  {t('hero.cta.primary')}
                 </span>
               </button>
             </div>
@@ -281,8 +283,8 @@ export default function Home() {
 
           {/* PREVIEW */}
           <div
-            className={`relative flex justify-center ${isVisible ? 'animate-slide-in-right' : 'opacity-0'}`}
-            style={{ animationDelay: '200ms' }}
+            className={`relative flex justify-center transition-all duration-1000 ease-out delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+              }`}
           >
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/5 via-white/0 to-cyan-500/10 blur-2xl" />
             <div className="relative w-full max-w-md floating">
@@ -318,36 +320,7 @@ export default function Home() {
         </section>
 
         {/* FEATURES */}
-        <section ref={featuresRef} className="space-y-8 observe-scroll opacity-0">
-          <div className="text-center space-y-2">
-            <p className="text-sm uppercase tracking-[0.25em] text-emerald-200">
-              {t('features.sectionTitle')}
-            </p>
-            <h2 className="text-3xl font-bold md:text-4xl bg-gradient-to-r from-white via-emerald-100 to-white bg-clip-text text-transparent">
-              {t('features.sectionSubtitle')}
-            </h2>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              { icon: '🎨', accent: 'from-emerald-400/25 to-green-500/15' },
-              { icon: '📊', accent: 'from-cyan-400/30 to-blue-500/20' },
-              { icon: '📱', accent: 'from-fuchsia-400/25 to-purple-500/20' },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className={`glass-card rounded-2xl bg-gradient-to-br ${feature.accent} p-6 shadow-lg`}
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <div className="text-4xl mb-3 transition-transform duration-300 hover:scale-110 inline-block">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold">{t(`features.cards.${index}.title`)}</h3>
-                <p className="mt-2 text-gray-200">{t(`features.cards.${index}.description`)}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <FeaturesSection />
 
         {/* HOW IT WORKS */}
         <section

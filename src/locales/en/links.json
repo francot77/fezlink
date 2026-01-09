@@ -24,6 +24,35 @@
         "search": "Search links...",
         "clear": "Clear",
         "deleting": "Deleting...",
-        "noResults": "No links found"
+        "noResults": "No links found",
+        "qr": {
+            "customize": "Customize QR",
+            "settings": "Settings",
+            "preview": "Preview",
+            "background": "Background",
+            "border": "Border",
+            "borderWidth": "Width",
+            "showTitle": "Show Title",
+            "showDescription": "Show Description",
+            "download": "Download",
+            "poweredBy": "Powered by",
+            "titlePlaceholder": "Title",
+            "descPlaceholder": "Description",
+            "content": "Content",
+            "appearance": "Appearance",
+            "none": "None",
+            "thick": "Thick",
+            "share": "Share",
+            "generating": "Generating...",
+            "toasts": {
+                "generateError": "Failed to generate QR image",
+                "shareSuccess": "Shared successfully!",
+                "linkShareSuccess": "Link shared successfully!",
+                "imageCopied": "Image copied to clipboard (Share not supported)",
+                "noShareMethods": "No share methods available",
+                "linkCopied": "Link URL copied to clipboard",
+                "shareError": "Could not share or copy"
+            }
+        }
     }
 }

@@ -55,6 +55,7 @@ const DashboardPage: React.FC = () => {
   const [quickMenuEnabled, setQuickMenuEnabled] = useState(false);
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
+  const tSidebar = useTranslations('sidebar');
 
   useEffect(() => {
     const storedQuickMenu = localStorage.getItem('quickMenuEnabled');
@@ -212,6 +213,7 @@ const DashboardPage: React.FC = () => {
               menu: tCommon('menu'),
               close: tCommon('close'),
               logout: t('logout'),
+              quickMenu: tSidebar('quickMenu'),
             }}
           />
 

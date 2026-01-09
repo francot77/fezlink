@@ -3,9 +3,9 @@
     "hero": {
       "badge": "Built for creators who care about speed and clarity",
       "title": {
-        "line1": "One link.",
-        "line2": "Zero friction.",
-        "line3": "Real feedback."
+        "line1": "Your Bio.",
+        "line2": "Professional.",
+        "line3": "Distraction-free."
       },
       "subtitle": "Fezlink gives creators a single, fast link with a clean bio page and clear click insights — without ads, clutter, or distractions.",
       "highlights": [
@@ -15,8 +15,8 @@
         "No ads, no pop-ups, no distractions for your audience."
       ],
       "cta": {
-        "primary": "View a sample bio page",
-        "secondary": "Create your link"
+        "primary": "View example",
+        "secondary": "Start for free"
       }
     },
     "stats": {
@@ -24,6 +24,79 @@
       "subtitle": "Live platform activity",
       "totalClicks": "Total clicks tracked",
       "realData": "Real data, updated automatically."
+    },
+    "about": {
+      "title": "About — FezLink",
+      "manifesto": {
+        "p1": "You post content. People visit your bio. And then... you lose the trail.",
+        "p2": "You see clicks, but you don't understand decisions. You don't know which link they chose. You don't know what they ignored. You don't know why they stopped tapping.",
+        "p3": "Likes are not intention. Visits are not context. And a pretty bio doesn't explain real behavior.",
+        "p4": "Most link-in-bios just show links. Fezlink shows what happens after the click.",
+        "p5": "Every interaction leaves a signal. Some are seen immediately. Others appear when you start looking seriously.",
+        "p6": "Fezlink organizes those signals, measures them, and turns them into clear insights, so you stop guessing and start deciding.",
+        "p7": "We don't chase vanity metrics. We seek useful information: the kind that allows you to adjust, improve, and choose wisely.",
+        "p8": "Fezlink isn't for those who just want to 'put links'. It's for those who want to understand their audience and take action with real data."
+      }
+    },
+    "features_extended": {
+      "badge": "Ad-Free Forever",
+      "title": "More than a shortener, your digital ally",
+      "subtitle": "No hidden restrictions, everything clear from the start. The choice of demanding creators.",
+      "scarcity": "Join the new generation of smart links",
+      "categories": {
+        "technical": {
+          "title": "Technical Power",
+          "items": [
+            {
+              "title": "Extreme Performance",
+              "description": "Global infrastructure optimized for instant redirects with zero latency."
+            },
+            {
+              "title": "Deep Analytics",
+              "description": "Granular data on devices, geolocation, and traffic patterns."
+            },
+            {
+              "title": "Advanced Customization",
+              "description": "Custom slugs and full branding for your digital identity."
+            }
+          ]
+        },
+        "emotional": {
+          "title": "Peace of Mind",
+          "items": [
+            {
+              "title": "Radical Simplicity",
+              "description": "An interface designed to save you time and eliminate frustration."
+            },
+            {
+              "title": "Total Trust",
+              "description": "Absolute transparency in pricing and features. What you see is what you get."
+            },
+            {
+              "title": "Professional Image",
+              "description": "Elevate your personal brand with clean, spam-free links."
+            }
+          ]
+        },
+        "unique": {
+          "title": "The FezLink Standard",
+          "items": [
+            {
+              "title": "Ad-Free Commitment",
+              "description": "We will never show ads on your links. Ever. That's our promise."
+            },
+            {
+              "title": "Privacy First",
+              "description": "We don't sell your data. Your audience is yours, not our product."
+            },
+            {
+              "title": "Constant Innovation",
+              "description": "Continuous updates based on what you actually need."
+            }
+          ]
+        }
+      },
+      "cta": "Start your ad-free journey"
     },
     "features": {
       "sectionTitle": "Why creators choose Fezlink",

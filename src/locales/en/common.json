@@ -26,5 +26,33 @@
         "seconds": "{count, plural, one {second} other {seconds}}"
       }
     }
+  },
+  "navbar": {
+    "home": "Home",
+    "pricing": "Pricing",
+    "features": "Features",
+    "about": "About",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Log Out"
+  },
+  "sidebar": {
+    "menu": "Menu",
+    "close": "Close",
+    "quickMenu": "Quick Menu",
+    "logout": "Log Out"
+  },
+  "logout": {
+    "title": "Log Out",
+    "description": "Sign out of your current session.",
+    "button": "Log Out",
+    "processing": "Logging out..."
+  },
+  "logoutModal": {
+    "title": "Log Out",
+    "description": "Are you sure you want to sign out?",
+    "cancel": "Cancel",
+    "confirm": "Log Out"
   }
 }

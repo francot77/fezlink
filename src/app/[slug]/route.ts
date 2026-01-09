@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server';
-import { detectDeviceType, detectSource, getCountryCode, cacheableRedirect } from '@/core/redirects/resolver';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { cacheableRedirect, detectDeviceType, detectSource, getCountryCode } from '@/core/redirects/resolver';
 import { Link } from '@/app/models/links';
 import dbConnect from '@/lib/mongodb';
 import { ClickEvent, emitAnalyticsEvent } from '@/core/analytics/emitter';
+import { notFound } from 'next/navigation';
 
 function sanitize(slug: string) {
   if (slug.startsWith('@')) return '@' + slug.replace(/[^\w-]/g, '');
@@ -13,7 +15,13 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
   const { slug } = await context.params;
   const sanitizedSlug = slug ? sanitize(slug) : '';
 
-  if (!sanitizedSlug) return cacheableRedirect(`${process.env.BASE_URL}/404`);
+  if (!sanitizedSlug) return notFound();
+
+  // Evitar bucle infinito y conflictos con rutas estáticas
+  if (sanitizedSlug === '404' || sanitizedSlug === 'about') {
+    return notFound();
+  }
+
   if (sanitizedSlug.startsWith('@')) {
     return cacheableRedirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.slice(1)}`);
   }
@@ -31,7 +39,7 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
   await dbConnect();
 
   const link = await Link.findOne({ slug: sanitizedSlug });
-  if (!link) return cacheableRedirect(`${process.env.BASE_URL}/404`);
+  if (!link) return notFound();
 
   // 🔥 EMITIR EVENTO (única responsabilidad nueva)
   const clickEvent: ClickEvent = {

@@ -1,22 +1,23 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  BarChart3,
   Check,
   Copy,
+
   ExternalLink,
-  Link as LinkIcon,
-  Loader2,
-  Trash2,
-  BarChart3,
-  Share2,
-  Instagram,
   Facebook,
+  Flame,
+  Globe,
+  Instagram,
   Linkedin,
-  Twitter,
+  Loader2,
   Mail,
-  QrCode,
   MessageCircle,
-  Video,
-  Globe
+  QrCode,
+  Share2,
+  Trash2,
+  Twitter,
+  Video
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -38,7 +39,7 @@ export const LinkCard = ({
   link,
   onStats,
   onDelete,
-  language = 'en',
+  //language = 'en',
   isDeleting = false,
   index = 0,
 }: LinkCardProps) => {
@@ -47,10 +48,10 @@ export const LinkCard = ({
     () => safeShortUrl.match(/^https?:\/\/(.+)/)?.[1] ?? safeShortUrl,
     [safeShortUrl]
   );
-  const originalHost = useMemo(
+  /* const originalHost = useMemo(
     () => link.destinationUrl.match(/^https?:\/\/([^/]+)/)?.[1] ?? link.destinationUrl,
     [link.destinationUrl]
-  );
+  ); */
   const tLinks = useTranslations('links');
   const [copied, setCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -148,7 +149,7 @@ export const LinkCard = ({
         const successful = document.execCommand('copy');
         document.body.removeChild(textArea);
         return successful;
-      } catch (err) {
+      } catch {
         document.body.removeChild(textArea);
         return false;
       }
@@ -194,9 +195,11 @@ export const LinkCard = ({
   return (
     <>
       <QRModal
-        url={`${safeShortUrl}?src=qr_local`}
+        url={`${safeShortUrl}?src=qr`}
         isOpen={showQR}
         onClose={() => setShowQR(false)}
+        title={hostname}
+        description={link.destinationUrl}
       />
 
       <div
@@ -304,10 +307,13 @@ export const LinkCard = ({
           {/* QR Code - New Button */}
           <button
             onClick={() => setShowQR(true)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-gray-400 ring-1 ring-white/10 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
+            className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-gray-400 ring-1 ring-white/10 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
             title="QR Code"
           >
             <QrCode size={16} />
+            <span className="absolute -top-3 -right-1 flex items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-red-600 px-0.5 py-0.5 text-[9px] font-bold text-white shadow-sm ring-1 ring-black/50">
+              <Flame size={16} />
+            </span>
           </button>
 
           {/* Open Link */}

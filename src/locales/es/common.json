@@ -26,5 +26,33 @@
         "seconds": "{count, plural, one {segundo} other {segundos}}"
       }
     }
+  },
+  "navbar": {
+    "home": "Inicio",
+    "pricing": "Precios",
+    "features": "Características",
+    "about": "Nosotros",
+    "dashboard": "Panel",
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar sesión"
+  },
+  "sidebar": {
+    "menu": "Menú",
+    "close": "Cerrar",
+    "quickMenu": "Menú Rápido",
+    "logout": "Cerrar sesión"
+  },
+  "logout": {
+    "title": "Cerrar sesión",
+    "description": "Cierra tu sesión actual de forma segura.",
+    "button": "Cerrar sesión",
+    "processing": "Cerrando..."
+  },
+  "logoutModal": {
+    "title": "Cerrar sesión",
+    "description": "¿Seguro que quieres salir de tu cuenta?",
+    "cancel": "Cancelar",
+    "confirm": "Salir"
   }
 }

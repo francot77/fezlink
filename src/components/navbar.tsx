@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Menu, X, LogIn, UserPlus, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslations } from 'next-intl';
 
 type NavElement = {
   title: string;
@@ -11,11 +12,14 @@ type NavElement = {
 };
 
 const NavBar = () => {
+  const t = useTranslations('navbar');
+  const tModal = useTranslations('logoutModal');
+
   const Routes: NavElement[] = [
-    { title: 'Home', path: '/' },
-    { title: 'Pricing', path: '/pricing' },
-    { title: 'Features', path: '/features' },
-    { title: 'About', path: '/about' },
+    { title: t('home'), path: '/' },
+    { title: t('pricing'), path: '/pricing' },
+    { title: t('features'), path: '/features' },
+    { title: t('about'), path: '/about' },
   ];
 
   const [showSignOutModal, setShowSignOutModal] = useState(false);
@@ -163,17 +167,17 @@ const NavBar = () => {
             tabIndex={-1}
           >
             <p id="signout-heading" className="text-center text-lg font-bold">
-              Cerrar sesión
+              {tModal('title')}
             </p>
             <p className="mt-3 text-center text-sm text-gray-400">
-              ¿Seguro que quieres salir de tu cuenta?
+              {tModal('description')}
             </p>
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => setShowSignOutModal(false)}
                 className="flex-1 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-white/5"
               >
-                Cancelar
+                {tModal('cancel')}
               </button>
               <button
                 onClick={() => {
@@ -182,7 +186,7 @@ const NavBar = () => {
                 }}
                 className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-red-700"
               >
-                Salir
+                {tModal('confirm')}
               </button>
             </div>
           </div>

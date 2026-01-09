@@ -1,4 +1,5 @@
-import { ChevronRight, LogOut, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+/* eslint-disable no-unused-vars */
+import { ChevronRight, LogOut, X } from 'lucide-react';
 import React from 'react';
 
 export interface Section {
@@ -23,6 +24,7 @@ interface DashboardSidebarProps {
         menu: string;
         close: string;
         logout: string;
+        quickMenu?: string;
     };
     isCollapsed?: boolean;
     onToggleCollapse?: () => void;
@@ -128,7 +130,7 @@ export const DashboardSidebar = ({
                     <div className="px-1">
                         <label className="flex items-center justify-between cursor-pointer group rounded-xl border border-white/5 bg-white/5 p-3 transition-colors hover:bg-white/10 hover:border-white/10">
                             <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
-                                Menú Rápido
+                                {t.quickMenu || 'Quick Menu'}
                             </span>
                             <div className="relative inline-flex items-center cursor-pointer">
                                 <input

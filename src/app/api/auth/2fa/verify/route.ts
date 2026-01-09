@@ -35,14 +35,14 @@ export async function POST(req: Request) {
     }, { new: true }); // new: true returns the updated document
 
     if (!updatedUser) {
-        console.error('[2FA Verify] User not found during update');
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      console.error('[2FA Verify] User not found during update');
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     console.log('[2FA Verify] Update result:', {
-        id: updatedUser._id,
-        enabled: updatedUser.isTwoFactorEnabled,
-        hasSecret: !!updatedUser.twoFactorSecret
+      id: updatedUser._id,
+      enabled: updatedUser.isTwoFactorEnabled,
+      hasSecret: !!updatedUser.twoFactorSecret
     });
 
     return NextResponse.json({ success: true, message: '2FA enabled successfully' });

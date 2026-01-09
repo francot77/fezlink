@@ -24,6 +24,35 @@
         "search": "Buscar enlaces...",
         "clear": "Limpiar",
         "deleting": "Eliminando...",
-        "noResults": "No se encontraron enlaces"
+        "noResults": "No se encontraron enlaces",
+        "qr": {
+            "customize": "Personalizar QR",
+            "settings": "Ajustes",
+            "preview": "Vista Previa",
+            "background": "Fondo",
+            "border": "Borde",
+            "borderWidth": "Grosor",
+            "showTitle": "Mostrar Título",
+            "showDescription": "Mostrar Descripción",
+            "download": "Descargar",
+            "poweredBy": "Powered by",
+            "titlePlaceholder": "Título",
+            "descPlaceholder": "Descripción",
+            "content": "Contenido",
+            "appearance": "Apariencia",
+            "none": "Ninguno",
+            "thick": "Grueso",
+            "share": "Compartir",
+            "generating": "Generando...",
+            "toasts": {
+                "generateError": "Error al generar imagen QR",
+                "shareSuccess": "¡Compartido con éxito!",
+                "linkShareSuccess": "¡Enlace compartido con éxito!",
+                "imageCopied": "Imagen copiada al portapapeles (Compartir no soportado)",
+                "noShareMethods": "No hay métodos de compartir disponibles",
+                "linkCopied": "URL del enlace copiada al portapapeles",
+                "shareError": "No se pudo compartir ni copiar"
+            }
+        }
     }
 }

@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import Button from '@/components/button';
+import { useTranslations } from 'next-intl';
 
 interface LogoutSectionProps {
   translations?: Record<string, string>;
 }
 
-export function LogoutSection({ translations: t = {} }: LogoutSectionProps) {
+export function LogoutSection({ translations: tProps = {} }: LogoutSectionProps) {
+  const t = useTranslations('logout');
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -22,8 +24,8 @@ export function LogoutSection({ translations: t = {} }: LogoutSectionProps) {
           <LogOut size={18} className="text-gray-300" />
         </div>
         <div>
-          <h3 className="text-sm font-medium text-white">{t.logoutTitle || 'Log Out'}</h3>
-          <p className="text-xs text-gray-400">{t.logoutDescription || 'Sign out of your current session.'}</p>
+          <h3 className="text-sm font-medium text-white">{t('title')}</h3>
+          <p className="text-xs text-gray-400">{t('description')}</p>
         </div>
       </div>
 
@@ -34,7 +36,7 @@ export function LogoutSection({ translations: t = {} }: LogoutSectionProps) {
           variant="secondary"
           className="w-full sm:w-auto justify-center"
         >
-          {loading ? 'Logging out...' : (t.logoutButton || 'Log Out')}
+          {loading ? t('processing') : t('button')}
         </Button>
       </div>
     </div>
