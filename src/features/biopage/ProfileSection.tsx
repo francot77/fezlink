@@ -7,6 +7,7 @@ import { SectionCard } from './SectionCard';
 interface ProfileSectionProps {
   slug: string;
   isPremium: boolean;
+  accountType?: string;
   avatarUrl: string;
   defaultAvatar: string;
   description: string;
@@ -19,6 +20,7 @@ interface ProfileSectionProps {
 export function ProfileSection({
   slug,
   isPremium,
+  accountType,
   avatarUrl,
   defaultAvatar,
   description,
@@ -27,6 +29,42 @@ export function ProfileSection({
   onDescriptionChange,
   translations: t,
 }: ProfileSectionProps) {
+  const renderBadge = () => {
+    if (accountType === 'pro') {
+      return (
+        <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-amber-500/20 px-3 py-1 ring-1 ring-yellow-500/30 shadow-[0_0_15px_-3px_rgba(234,179,8,0.3)]">
+          <Crown size={14} className="text-yellow-400" />
+          <span className="text-xs font-bold tracking-wide text-yellow-300 uppercase">{t.proBadge || 'Pro'}</span>
+        </div>
+      );
+    }
+
+    if (accountType === 'starter') {
+      return (
+        <div className="flex items-center gap-1.5 rounded-full bg-blue-500/20 px-3 py-1 ring-1 ring-blue-500/30 shadow-[0_0_15px_-3px_rgba(59,130,246,0.3)]">
+          <Crown size={14} className="text-blue-400" />
+          <span className="text-xs font-bold tracking-wide text-blue-300 uppercase">{t.starterBadge || 'Starter'}</span>
+        </div>
+      );
+    }
+
+    // Fallback for isPremium=true but no accountType (shouldn't happen often but good for safety)
+    if (isPremium && accountType !== 'free') {
+      return (
+        <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-amber-500/20 px-3 py-1 ring-1 ring-yellow-500/30 shadow-[0_0_15px_-3px_rgba(234,179,8,0.3)]">
+          <Crown size={14} className="text-yellow-400" />
+          <span className="text-xs font-bold tracking-wide text-yellow-300 uppercase">{t.premiumBadge}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 ring-1 ring-emerald-500/20">
+        <span className="text-xs font-bold tracking-wide text-emerald-400 uppercase">{t.freeBadge}</span>
+      </div>
+    );
+  };
+
   return (
     <SectionCard title={t.profileTitle} description={t.profileDescription} icon={User}>
       <div className="grid gap-8 md:grid-cols-[auto,1fr] md:items-start">
@@ -50,17 +88,8 @@ export function ProfileSection({
         <div className="space-y-6">
           <div className="space-y-3 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center gap-3">
-              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">@{slug}</h2>
-              {isPremium ? (
-                <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-amber-500/20 px-3 py-1 ring-1 ring-yellow-500/30 shadow-[0_0_15px_-3px_rgba(234,179,8,0.3)]">
-                  <Crown size={14} className="text-yellow-400" />
-                  <span className="text-xs font-bold tracking-wide text-yellow-300 uppercase">{t.premiumBadge}</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 ring-1 ring-emerald-500/20">
-                  <span className="text-xs font-bold tracking-wide text-emerald-400 uppercase">{t.freeBadge}</span>
-                </div>
-              )}
+              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 capitalize">@{slug}</h2>
+              {renderBadge()}
             </div>
             <p className="text-sm text-gray-400 max-w-md mx-auto md:mx-0">{t.premiumHint}</p>
           </div>

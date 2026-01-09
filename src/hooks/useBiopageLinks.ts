@@ -1,34 +1,15 @@
 // src/hooks/useBiopageLinks.ts
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { LinkType, SelectedLink } from '@/types/globals';
+import { useCallback } from 'react';
+import { SelectedLink } from '@/types/globals';
+import useLinks, { Link } from './useLinks';
 
 export function useBiopageLinks(user: { id: string; name: string; email: string } | undefined) {
-  const [links, setLinks] = useState<LinkType[]>([]);
-  const hasFetchedRef = useRef(false);
-
-  const fetchLinks = useCallback(async () => {
-    if (!user || hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
-
-    try {
-      const res = await fetch('/api/links');
-      const data = await res.json();
-      if (res.ok) {
-        setLinks(data.links || []);
-        hasFetchedRef.current = true;
-      }
-    } catch (error) {
-      console.error('Error fetching links:', error);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchLinks();
-  }, [fetchLinks]);
+  // Reuse useLinks (SWR) to share cache
+  const { links } = useLinks({ autoLoad: !!user });
 
   const toggleSelect = useCallback(
     (
-      link: LinkType,
+      link: Link, // Use Link interface from useLinks
       selected: SelectedLink[],
       setSelected: (value: SelectedLink[] | ((prev: SelectedLink[]) => SelectedLink[])) => void
     ) => {
@@ -46,13 +27,16 @@ export function useBiopageLinks(user: { id: string; name: string; email: string 
           const cleaned = prev.filter(
             (l) =>
               l.shortUrl !== link.shortUrl && // Should be implied, but safe
-              l.shortId !== link.shortId && // Match by code
+              // @ts-ignore: link might not have shortId, but checking just in case
+              (link.shortId ? l.shortId !== link.shortId : true) && 
               (link.slug ? l.shortId !== link.slug : true) // Match by slug (if stored in shortId)
           );
 
+          // Use slug as primary ID, fallback to shortId if it existed (legacy)
+          // @ts-ignore: link.shortId
           const displayId = link.slug ?? link.shortId;
 
-          if (!displayId) return cleaned; // Should not happen
+          if (!displayId) return cleaned; // Should not happen if slug is present
 
           return [
             ...cleaned,
@@ -83,7 +67,7 @@ export function useBiopageLinks(user: { id: string; name: string; email: string 
   );
 
   return {
-    links,
+    links, 
     toggleSelect,
     updateLabel,
   };

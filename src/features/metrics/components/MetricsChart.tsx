@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   AreaChart,
   Area,
@@ -73,7 +73,7 @@ export default function MetricsChart({
     return d.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
   };
 
-  const data = stats.map((stat) => {
+  const data = useMemo(() => stats.map((stat) => {
     const displayDate =
       stat.displayDate || (isMonthly ? formatMonthlyDate(stat._id) : formatDailyDate(stat._id));
 
@@ -86,13 +86,24 @@ export default function MetricsChart({
       rawDate: stat._id,
       isMonthly: stat.isMonthly || isMonthly,
     };
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [stats, isMonthly, locale]);
 
-  const maxClicks = Math.max(...data.map((d) => d.clicks), 0);
-  const totalClicks = data.reduce((sum, d) => sum + d.clicks, 0);
-  const avgClicks = data.length > 0 ? Math.round(totalClicks / data.length) : 0;
-  const peakDate = data.find((d) => d.clicks === maxClicks)?.fullDate || '';
-  const minClicks = Math.min(...data.map((d) => d.clicks), 0);
+  const { totalClicks, avgClicks, maxClicks, minClicks, peakDate } = useMemo(() => {
+    const total = data.reduce((sum, d) => sum + d.clicks, 0);
+    const max = Math.max(...data.map((d) => d.clicks), 0);
+    const min = Math.min(...data.map((d) => d.clicks), 0);
+    const avg = data.length > 0 ? Math.round(total / data.length) : 0;
+    const peak = data.find((d) => d.clicks === max)?.fullDate || '';
+
+    return {
+      totalClicks: total,
+      avgClicks: avg,
+      maxClicks: max,
+      minClicks: min,
+      peakDate: peak
+    };
+  }, [data]);
 
   const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (!active || !payload?.length) return null;
@@ -322,22 +333,20 @@ export default function MetricsChart({
         <div className="flex items-center gap-2 rounded-lg bg-white/5 p-1 ring-1 ring-white/10">
           <button
             onClick={() => handleChartTypeChange('line')}
-            className={`flex min-h-[32px] items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
-              chartType === 'line'
+            className={`flex min-h-[32px] items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${chartType === 'line'
                 ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-lg shadow-emerald-500/30'
                 : 'text-gray-400 hover:text-white'
-            }`}
+              }`}
           >
             <LineChart size={14} />
             <span className="hidden sm:inline">{t('chart.type.line')}</span>
           </button>
           <button
             onClick={() => handleChartTypeChange('bar')}
-            className={`flex min-h-[32px] items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
-              chartType === 'bar'
+            className={`flex min-h-[32px] items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${chartType === 'bar'
                 ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-lg shadow-emerald-500/30'
                 : 'text-gray-400 hover:text-white'
-            }`}
+              }`}
           >
             <BarChart3 size={14} />
             <span className="hidden sm:inline">{t('chart.type.bar')}</span>
@@ -356,11 +365,10 @@ export default function MetricsChart({
       <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-400">
         <div className="flex items-center gap-2">
           <div
-            className={`w-3 h-3 rounded ${
-              chartType === 'bar'
+            className={`w-3 h-3 rounded ${chartType === 'bar'
                 ? 'bg-gradient-to-r from-emerald-400 to-cyan-400'
                 : 'bg-gradient-to-r from-emerald-500/40 to-cyan-500/40'
-            }`}
+              }`}
           />
           <span>{t('legend.totalClicks')}</span>
         </div>

@@ -39,6 +39,7 @@ export type BiopageType = {
   textColor: string;
   avatarUrl?: string;
   description?: string;
+  lastSlugChange?: string | Date;
   background: {
     base: string;
     image: {

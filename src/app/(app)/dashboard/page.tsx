@@ -11,18 +11,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Spinner from '@/components/spinner';
-import useLinks from '@/hooks/useLinks';
-import LinkManager from '@/features/links/components/LinkManager';
-import Stats from '@/components/stats';
-import BiopageEditor from './biopageeditor';
-import ProfileEditor from '@/features/profile/ProfileEditor';
-import ConfigSection from '@/features/config/ConfigSection';
-import { PricingSection } from '@/components/PricingSection';
 import { useSession } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
-import InsightsDashboard from '@/features/insights/InsightsDashboard';
 import CustomModal from '@/components/Modalv2';
-// import { useLanguage } from '@/context/LanguageContext';
 import { useTranslations } from 'next-intl';
 import { DashboardHeader } from './components/DashboardHeader';
 import { SupportedLanguage } from '@/types/i18n';
@@ -30,12 +21,35 @@ import { DashboardSidebar, Section } from './components/DashboardSidebar';
 import { VerifyEmailWarning } from './components/VerifyEmailWarning';
 
 import { useDashboard } from './hooks/useDashboard';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for heavy components
+const LinkManager = dynamic(() => import('@/features/links/components/LinkManager'), {
+  loading: () => <div className="flex justify-center p-8"><Spinner color="white" /></div>,
+});
+const Stats = dynamic(() => import('@/components/stats'), {
+  loading: () => <div className="flex justify-center p-8"><Spinner color="white" /></div>,
+});
+const BiopageEditor = dynamic(() => import('./biopageeditor'), {
+  loading: () => <div className="flex justify-center p-8"><Spinner color="white" /></div>,
+});
+const ProfileEditor = dynamic(() => import('@/features/profile/ProfileEditor'), {
+  loading: () => <div className="flex justify-center p-8"><Spinner color="white" /></div>,
+});
+const ConfigSection = dynamic(() => import('@/features/config/ConfigSection'), {
+  loading: () => <div className="flex justify-center p-8"><Spinner color="white" /></div>,
+});
+const PricingSection = dynamic(() => import('@/components/PricingSection').then(mod => mod.PricingSection), {
+  loading: () => <div className="flex justify-center p-8"><Spinner color="white" /></div>,
+});
+const InsightsDashboard = dynamic(() => import('@/features/insights/InsightsDashboard'), {
+  loading: () => <div className="flex justify-center p-8"><Spinner color="white" /></div>,
+});
 
 const DashboardPage: React.FC = () => {
   const { data: session } = useSession();
   const user = session?.user;
   const { isLoaded } = useAuth();
-  const linkState = useLinks();
   // const { language, setLanguage } = useLanguage();
   const [language, setLanguage] = useState<SupportedLanguage>('es'); // Temporal fallback until context is restored or found
   const [quickMenuEnabled, setQuickMenuEnabled] = useState(false);
@@ -74,7 +88,7 @@ const DashboardPage: React.FC = () => {
       label: t('menu.links'),
       description: t('menu.linksDesc'),
       icon: <LinkIcon size={18} />,
-      content: <LinkManager linkState={linkState} language={language} />,
+      content: <LinkManager language={language} />,
       color: '#3b82f6', // blue-500
     },
     {
@@ -82,7 +96,7 @@ const DashboardPage: React.FC = () => {
       label: t('menu.analytics'),
       description: t('menu.analyticsDesc'),
       icon: <BarChart3 size={18} />,
-      content: <Stats links={linkState.links} language={language} />,
+      content: <Stats language={language} />,
       color: '#10b981', // emerald-500
     },
     {
@@ -228,4 +242,3 @@ const DashboardPage: React.FC = () => {
 };
 
 export default DashboardPage;
-

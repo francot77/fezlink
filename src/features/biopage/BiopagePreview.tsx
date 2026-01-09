@@ -91,7 +91,7 @@ export default function BiopagePreview({
                 </div>
 
                 <div className="space-y-1">
-                  <h1 className="text-xl font-bold tracking-tight">@{slug || 'username'}</h1>
+                  <h1 className="text-xl font-bold tracking-tight capitalize">@{slug || 'username'}</h1>
                   <p className="text-xs text-white/80 px-2">{description || defaultDescription}</p>
                 </div>
               </div>

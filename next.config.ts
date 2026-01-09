@@ -4,6 +4,9 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion', 'react-globe.gl', 'three'],
+  },
   images: {
     remotePatterns: [
       {

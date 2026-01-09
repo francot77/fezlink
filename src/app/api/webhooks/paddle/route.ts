@@ -132,7 +132,7 @@ export async function POST(request: Request) {
     if (eventType === 'transaction.payment_failed' || eventType === 'subscription.payment.failed') {
       const subscriptionId = data.subscription_id;
       const customerId = data.customer_id;
-
+      
       let user;
       if (subscriptionId) {
         user = await User.findOne({ subscriptionId });
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
       if (user) {
         console.log(`Payment failed for user ${user._id}`);
         // Opcional: Actualizar estado a past_due si es necesario, aunque Paddle lo maneja
-
+        
         // Enviar email de fallo
         await sendEmail({
           to: user.email,

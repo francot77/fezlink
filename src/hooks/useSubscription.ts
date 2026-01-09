@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import useSWR from 'swr';
 
 export type AccountType = 'free' | 'starter' | 'pro';
 
@@ -9,54 +9,44 @@ interface SubscriptionState {
   expiresAt?: number;
   isLoading: boolean;
   error: Error | null;
-  mutate: () => Promise<void>;
+  mutate: () => Promise<any>;
 }
 
-export function useSubscription() {
+const fetcher = (url: string) => fetch(url, {
+  headers: { 'Cache-Control': 'no-cache' }
+}).then((res) => {
+  if (!res.ok) throw new Error('Failed to fetch subscription');
+  return res.json();
+});
+
+export function useSubscription(): SubscriptionState {
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState<Omit<SubscriptionState, 'mutate'>>({
-    accountType: 'free',
-    isPremium: false,
-    isLoading: true,
-    error: null,
-  });
 
-  const fetchSubscription = async () => {
-    try {
-      const res = await fetch('/api/accounttype', { 
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' } 
-      });
-      
-      if (!res.ok) throw new Error('Failed to fetch subscription');
-      
-      const data = await res.json();
-      
-      setSubscription({
-        accountType: data.accountType || 'free',
-        isPremium: data.isPremium || false,
-        expiresAt: data.expiresAt,
-        isLoading: false,
-        error: null,
-      });
-    } catch (err) {
-      setSubscription(prev => ({ 
-        ...prev, 
-        isLoading: false, 
-        error: err instanceof Error ? err : new Error('Unknown error') 
-      }));
+  const { data, error, isLoading, mutate } = useSWR(
+    user ? '/api/accounttype' : null,
+    fetcher,
+    {
+      revalidateOnFocus: false, // Subscription doesn't change often
+      dedupingInterval: 60000, // 1 minute
     }
+  );
+
+  if (!user) {
+    return {
+      accountType: 'free',
+      isPremium: false,
+      isLoading: false,
+      error: null,
+      mutate: async () => { },
+    };
+  }
+
+  return {
+    accountType: data?.accountType || 'free',
+    isPremium: data?.isPremium || false,
+    expiresAt: data?.expiresAt,
+    isLoading,
+    error: error || null,
+    mutate,
   };
-
-  useEffect(() => {
-    // Si no hay usuario logueado, asumimos free inmediatamente
-    if (!user) {
-      setSubscription(prev => ({ ...prev, isLoading: false, accountType: 'free' }));
-      return;
-    }
-
-    fetchSubscription();
-  }, [user]);
-
-  return { ...subscription, mutate: fetchSubscription };
 }

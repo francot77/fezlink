@@ -2,13 +2,18 @@
 
 import { useState } from 'react';
 import Modal from '@/shared/ui/Modal';
-import ClicksGlobe from '@/components/Globe';
 import { COUNTRY_NAMES } from '@/lib/countryNames';
 import { Link } from '@/hooks/useLinks';
 import { Badge } from '@/shared/ui';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+
+const ClicksGlobe = dynamic(() => import('@/components/Globe'), {
+    loading: () => <div className="h-[280px] w-full animate-pulse rounded-2xl bg-gray-900/60" />,
+    ssr: false,
+});
 
 interface LinkModalsProps {
     selectedLink: Link | null;

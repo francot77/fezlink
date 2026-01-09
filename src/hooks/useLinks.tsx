@@ -1,6 +1,7 @@
 'use client';
 import { toast } from 'sonner';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import useSWR from 'swr';
 
 /* ---------------- types ---------------- */
 
@@ -24,35 +25,28 @@ function countryCodeToFlag(code: string) {
       .map((c) => base + c.charCodeAt(0))
   );
 }
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 const useLinks = (options?: { autoLoad?: boolean }) => {
   const autoLoad = options?.autoLoad ?? true;
 
-  const [links, setLinks] = useState<Link[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { data, error, isLoading, mutate } = useSWR(
+    autoLoad ? '/api/links' : null,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 5000,
+    }
+  );
+
+  const links: Link[] = useMemo(() => data?.links || [], [data]);
+  const loading = isLoading;
+
   const [newUrl, setNewUrl] = useState('https://');
   const [selectedLink, setSelectedLink] = useState<Link | null>(null);
   const [modalType, setModalType] = useState<null | 'stats' | 'delete'>(null);
   const [deleteInput, setDeleteInput] = useState<string>('');
-
-  /* ---------------- data ---------------- */
-
-  const refreshLinks = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/links');
-      const data = await res.json();
-      console.log(data.links);
-      setLinks(data.links || []);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (autoLoad) refreshLinks();
-  }, [refreshLinks, autoLoad]);
 
   /* ---------------- actions ---------------- */
 
@@ -66,7 +60,13 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
         });
         const newLink = await res.json();
         if (newLink.error) throw new Error(newLink.error);
-        setLinks((prev) => [...prev, newLink]);
+        
+        // Mutate local cache
+        mutate((currentData: any) => ({
+            ...currentData,
+            links: [...(currentData?.links || []), newLink]
+        }), false);
+        
         setNewUrl('https://');
       },
       {
@@ -77,7 +77,7 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
         richColors: true,
       }
     );
-  }, []);
+  }, [mutate]);
 
   const openStats = useCallback((link: Link) => {
     setSelectedLink(link);
@@ -123,10 +123,15 @@ const useLinks = (options?: { autoLoad?: boolean }) => {
         throw new Error('Failed to delete link');
       }
 
-      setLinks((prev) => prev.filter((link) => link.id !== id));
+      // Mutate local cache
+      mutate((currentData: any) => ({
+        ...currentData,
+        links: (currentData?.links || []).filter((link: Link) => link.id !== id)
+      }), false);
+
       closeModal();
     },
-    [deleteInput]
+    [deleteInput, mutate] // Added mutate to dependencies
   );
 
   const closeModal = useCallback(() => {

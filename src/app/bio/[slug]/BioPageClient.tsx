@@ -86,7 +86,7 @@ export default function BioPageClient({ initialBioPage }: Props) {
               </div>
 
               <div className="space-y-2">
-                <h1 className="text-4xl font-bold tracking-tight">@{bioPage.slug}</h1>
+                <h1 className="text-4xl font-bold tracking-tight capitalize">@{bioPage.slug}</h1>
                 <p className="text-sm text-white/80 max-w-xl">
                   {bioPage.description || defaultDescription}
                 </p>

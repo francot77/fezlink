@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 import { User, Edit } from 'lucide-react';
 import { SectionCard } from './SectionCard';
 import Button from '@/components/button';
+import Image from 'next/image';
 
 interface ProfileSummaryProps {
   slug: string;
@@ -23,11 +23,13 @@ export function ProfileSummary({
   return (
     <SectionCard title={t.profileTitle} description={t.profileDescription} icon={User}>
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
-        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl ring-2 ring-emerald-400/50">
-          <img
+        <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl ring-2 ring-emerald-400/50">
+          <Image
             src={avatarUrl || defaultAvatar}
             alt="avatar"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 96px, 96px"
           />
         </div>
         <div className="flex-1 space-y-2 w-full sm:w-auto">

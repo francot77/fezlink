@@ -1,11 +1,12 @@
 import { Link as LinkIcon } from 'lucide-react';
 import { SectionCard } from './SectionCard';
-import { LinkType, SelectedLink } from '@/types/globals';
+import { SelectedLink } from '@/types/globals';
+import { Link } from '@/hooks/useLinks';
 
 interface LinksSectionProps {
-  links: LinkType[];
+  links: Link[];
   selected: SelectedLink[];
-  onToggle: (link: LinkType) => void;
+  onToggle: (link: Link) => void;
   onLabelChange: (shortUrl: string, value: string) => void;
   translations: Record<string, string>;
 }

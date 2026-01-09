@@ -22,6 +22,7 @@ export default function ProfileEditor({ language = 'en' }: ProfileEditorProps) {
     biopage,
     loading,
     isPremium,
+    accountType,
     avatarUrl,
     description,
     setAvatarUrl,
@@ -33,13 +34,14 @@ export default function ProfileEditor({ language = 'en' }: ProfileEditorProps) {
 
   const [avatarModal, setAvatarModal] = useState(false);
   const [usernameModal, setUsernameModal] = useState(false);
-  const [inputSlug, setInputSlug] = useState('');
+  const [isSavingSlug, setIsSavingSlug] = useState(false);
 
-  const handleUsernameChange = async () => {
-    const success = await changeSlug(inputSlug);
+  const handleUsernameChange = async (newSlug: string) => {
+    setIsSavingSlug(true);
+    const success = await changeSlug(newSlug);
+    setIsSavingSlug(false);
     if (success) {
       setUsernameModal(false);
-      setInputSlug('');
     }
   };
 
@@ -84,19 +86,23 @@ export default function ProfileEditor({ language = 'en' }: ProfileEditorProps) {
         isOpen={usernameModal}
         onClose={() => setUsernameModal(false)}
         onAccept={handleUsernameChange}
-        inputSlug={inputSlug}
-        setInputSlug={setInputSlug}
+        initialSlug={biopage.slug}
         translations={t}
+        isLoading={isSavingSlug}
+        lastSlugChange={biopage.lastSlugChange}
       />
 
       <ProfileSection
         slug={biopage.slug}
         isPremium={isPremium}
+        accountType={accountType}
         avatarUrl={avatarUrl}
         defaultAvatar={DEFAULT_AVATAR}
         description={description}
         onAvatarClick={() => setAvatarModal(true)}
-        onUsernameClick={() => setUsernameModal(true)}
+        onUsernameClick={() => {
+          setUsernameModal(true);
+        }}
         onDescriptionChange={setDescription}
         translations={t}
       />

@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Globe, TrendingUp } from 'lucide-react';
 import { SupportedLanguage } from '@/types/i18n';
-import MetricsChart from './MetricsChart';
 import { MetricsFilters } from './MetricsFilters';
 import { MetricCard } from './MetricCard';
 import { useMetricsData } from '../hooks/useMetricsData';
@@ -16,6 +15,12 @@ import {
 import { useTranslations } from 'next-intl';
 import { COUNTRY_NAMES } from '@/lib/countryNames';
 import { useAuth } from '@/hooks/useAuth';
+import dynamic from 'next/dynamic';
+
+const MetricsChart = dynamic(() => import('./MetricsChart'), {
+  loading: () => <div className="h-[300px] w-full animate-pulse rounded-xl bg-white/5" />,
+  ssr: false,
+});
 
 interface MetricsProps {
   linkId: string;

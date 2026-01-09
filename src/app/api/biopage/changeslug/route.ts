@@ -22,6 +22,24 @@ export async function PUT(req: Request) {
 
     await dbConnect();
 
+    // Get current biopage to check time restriction
+    const currentBiopage = await Biopage.findOne({ userId });
+    if (!currentBiopage) {
+      return NextResponse.json({ error: 'Biopage not found' }, { status: 404 });
+    }
+
+    // Check 3 days restriction
+    if (currentBiopage.lastSlugChange) {
+      const daysSinceChange = (Date.now() - new Date(currentBiopage.lastSlugChange).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceChange < 3) {
+        const remaining = Math.ceil(3 - daysSinceChange);
+        return NextResponse.json(
+          { error: `You must wait ${remaining} day(s) before changing username again` },
+          { status: 403 }
+        );
+      }
+    }
+
     // Check if slug is already taken by another user
     const existing = await Biopage.findOne({ slug });
     if (existing && existing.userId !== userId) {
@@ -30,7 +48,12 @@ export async function PUT(req: Request) {
 
     const updated = await Biopage.findOneAndUpdate(
       { userId },
-      { $set: { slug } },
+      { 
+        $set: { 
+          slug,
+          lastSlugChange: new Date()
+        } 
+      },
       { new: true }
     );
 

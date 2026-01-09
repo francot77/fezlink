@@ -14,6 +14,7 @@ export interface ModalProps {
     isStats?: boolean;
     acceptText?: string;
     variant?: 'primary' | 'danger';
+    disabled?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -26,6 +27,7 @@ const Modal: React.FC<ModalProps> = ({
     isStats = false,
     acceptText = 'Cerrar',
     variant = 'primary',
+    disabled = false,
 }) => {
     const dialogRef = useRef<HTMLDivElement>(null);
     const headingId = useId();
@@ -149,7 +151,7 @@ const Modal: React.FC<ModalProps> = ({
                             <div className="flex justify-end">
                                 <button
                                     onClick={onAccept}
-                                    disabled={isLoading}
+                                    disabled={isLoading || disabled}
                                     className={`flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${variant === 'danger'
                                             ? 'bg-gradient-to-r from-red-600 to-red-700 shadow-red-500/30 hover:shadow-red-500/40'
                                             : 'bg-gradient-to-r from-blue-600 to-blue-700 shadow-blue-500/30 hover:shadow-blue-500/40'

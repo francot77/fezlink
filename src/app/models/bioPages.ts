@@ -20,6 +20,7 @@ export interface IBiopage extends Document {
   textColor: string;
   avatarUrl?: string;
   description?: string;
+  lastSlugChange?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -73,6 +74,7 @@ const biopageSchema = new Schema<IBiopage>(
       type: String,
       default: 'Descubre y comparte tus enlaces destacados desde un perfil moderno y adaptable.',
     },
+    lastSlugChange: { type: Date },
   },
   { timestamps: true }
 );
