@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
 import Button from '@/components/button';
 import { SupportedLanguage } from '@/types/i18n';
-import { BIOPAGE_TRANSLATIONS, GRADIENT_PRESETS, DEFAULT_AVATAR } from '@/lib/biopage-constants';
+import { BIOPAGE_TRANSLATIONS, DEFAULT_AVATAR, GRADIENT_PRESETS } from '@/lib/biopage-constants';
 import { useBiopage } from '@/hooks/useBiopage';
 import { useBiopageLinks } from '@/hooks/useBiopageLinks';
 import { ProfileSummary } from '@/features/biopage/ProfileSummary';
@@ -39,7 +39,6 @@ export default function BiopageEditor({ language = 'en', onGoToProfile }: Biopag
     setSelected,
     setBgColor,
     setTextColor,
-    setBiopage,
     createBiopage,
     saveBiopage,
     handleBackgroundImageChange,

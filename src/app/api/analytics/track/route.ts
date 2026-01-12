@@ -1,12 +1,13 @@
-import { NextResponse, NextRequest } from 'next/server';
-import { detectDeviceType, detectSource, getCountryCode } from '@/core/redirects/resolver';
+import { NextRequest, NextResponse } from 'next/server';
+import { detectDeviceType, getCountryCode } from '@/core/redirects/resolver';
+import { detectSource } from '@/lib/attribution';
 import { ClickEvent, emitAnalyticsEvent } from '@/lib/emitAnalyticsEvent';
 import { withRateLimit } from '@/lib/middleware/withRateLimit';
 
 async function handler(req: NextRequest) {
   try {
     const body = await req.json();
-    const { linkId, userId } = body;
+    const { linkId, userId, context } = body;
 
     if (!linkId || !userId) {
       return NextResponse.json({ error: 'Missing linkId or userId' }, { status: 400 });
@@ -17,7 +18,7 @@ async function handler(req: NextRequest) {
     const userAgent = req.headers.get('user-agent');
 
     // Permitir source personalizado desde el cliente, o detectarlo
-    const source = body.source || detectSource(searchParams, referer, userAgent);
+    const source = body.source || detectSource(req);
     const country = getCountryCode(req);
     const deviceType = detectDeviceType(userAgent, req.headers);
 
@@ -27,6 +28,7 @@ async function handler(req: NextRequest) {
       userId,
       country,
       source,
+      context,
       deviceType,
       userAgent: userAgent ?? undefined,
       timestamp: new Date(),

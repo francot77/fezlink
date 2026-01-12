@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { cacheableRedirect, detectDeviceType, detectSource, getCountryCode } from '@/core/redirects/resolver';
+import { cacheableRedirect, detectDeviceType, getCountryCode } from '@/core/redirects/resolver';
+import { detectSource } from '@/lib/attribution';
 import { Link } from '@/app/models/links';
 import dbConnect from '@/lib/mongodb';
 import { ClickEvent, emitAnalyticsEvent } from '@/core/analytics/emitter';
@@ -22,16 +23,16 @@ export async function GET(req: Request, context: { params: Promise<{ slug?: stri
     return notFound();
   }
 
+  // ✅ DETECTAR SOURCE INTELIGENTEMENTE
+  const source = detectSource(req);
+
   if (sanitizedSlug.startsWith('@')) {
-    return cacheableRedirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.slice(1)}`);
+    return cacheableRedirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.slice(1)}?source=${source}`);
   }
 
   const { searchParams } = new URL(req.url);
   const referer = req.headers.get('referer') || req.headers.get('referrer');
   const userAgent = req.headers.get('user-agent');
-
-  // ✅ DETECTAR SOURCE INTELIGENTEMENTE
-  const source = detectSource(searchParams, referer, userAgent);
 
   const country = getCountryCode(req as any);
   const deviceType = detectDeviceType(userAgent, req.headers);

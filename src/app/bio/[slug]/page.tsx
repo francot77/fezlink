@@ -1,5 +1,6 @@
 // src/app/bio/[slug]/page.tsx
 import type { Metadata } from 'next';
+import { cookies, headers } from 'next/headers';
 import BioPageClient from './BioPageClient';
 import { getBiopageBySlug } from '@/lib/biopage';
 
@@ -56,5 +57,14 @@ export default async function BioPage({ params }: PageParams) {
   const { slug } = await params;
   const biopage = await getBiopageBySlug(slug);
 
-  return <BioPageClient slug={slug} initialBioPage={biopage} />;
+  // Retrieve attribution source from cookie or header (set by middleware)
+  const cookieStore = await cookies();
+  const headersList = await headers();
+  
+  let attributionSource = cookieStore.get('biopage_source')?.value;
+  if (!attributionSource) {
+    attributionSource = headersList.get('x-biopage-source') || 'direct';
+  }
+
+  return <BioPageClient slug={slug} initialBioPage={biopage} attributionSource={attributionSource} />;
 }

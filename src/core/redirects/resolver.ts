@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ClickEvent, DeviceType, emitAnalyticsEvent } from '@/lib/emitAnalyticsEvent';
 import { Link } from '@/app/models/links';
 import dbConnect from '@/lib/mongodb';
+import { detectSource } from '@/lib/attribution';
 
 export function getCountryCode(req: Request): string {
   const headers = (req as any).headers as Headers;
@@ -23,31 +24,6 @@ export function detectDeviceType(userAgent: string | null, headers: Headers): De
   return 'desktop';
 }
 
-export function detectSource(searchParams: URLSearchParams, referer: string | null, userAgent: string | null): string {
-  const explicitSrc = searchParams.get('src') || searchParams.get('source') || searchParams.get('utm_source');
-  if (explicitSrc) return explicitSrc.toLowerCase().replace(/[^\w-]/g, '_');
-  if (referer) {
-    const refLower = referer.toLowerCase();
-    if (refLower.includes('instagram.com') || refLower.includes('l.instagram.com')) return 'instagram_bio';
-    if (refLower.includes('whatsapp.com') || refLower.includes('wa.me')) return 'whatsapp';
-    if (refLower.includes('facebook.com') || refLower.includes('fb.com') || refLower.includes('m.facebook.com')) return 'facebook';
-    if (refLower.includes('twitter.com') || refLower.includes('t.co') || refLower.includes('x.com')) return 'twitter';
-    if (refLower.includes('linkedin.com') || refLower.includes('lnkd.in')) return 'linkedin';
-    if (refLower.includes('tiktok.com')) return 'tiktok';
-    if (refLower.includes('youtube.com') || refLower.includes('youtu.be')) return 'youtube';
-    if (refLower.includes('telegram.org') || refLower.includes('t.me')) return 'telegram';
-    try {
-      const refUrl = new URL(referer);
-      if (refUrl.hostname !== new URL(process.env.BASE_URL || '').hostname) return 'referral';
-    } catch {}
-  }
-  if (userAgent) {
-    const uaLower = userAgent.toLowerCase();
-    if (uaLower.includes('qr') || uaLower.includes('scanner')) return 'qr_scan';
-  }
-  return 'direct';
-}
-
 export function sanitizeSlug(slug: string) {
   if (slug.startsWith('@')) return '@' + slug.replace(/[^\w-]/g, '');
   return slug.replace(/[^\w-]/g, '');
@@ -61,11 +37,11 @@ export function cacheableRedirect(url: string, status = 301) {
 export async function resolveAndRedirect(req: Request, slug: string) {
   const sanitizedSlug = sanitizeSlug(slug);
   if (!sanitizedSlug) return cacheableRedirect(`${process.env.BASE_URL}/404`);
-  if (sanitizedSlug.startsWith('@')) return cacheableRedirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.slice(1)}`);
-  const { searchParams } = new URL(req.url);
-  const referer = req.headers.get('referer') || req.headers.get('referrer');
+  
+  const source = detectSource(req);
+  if (sanitizedSlug.startsWith('@')) return cacheableRedirect(`${process.env.BASE_URL}/bio/${sanitizedSlug.slice(1)}?source=${source}`);
+  
   const userAgent = req.headers.get('user-agent');
-  const source = detectSource(searchParams, referer, userAgent);
   const country = getCountryCode(req);
   const deviceType = detectDeviceType(userAgent, req.headers);
   await dbConnect();

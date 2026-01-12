@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Link as LinkIcon } from 'lucide-react';
 import { SectionCard } from './SectionCard';
 import { SelectedLink } from '@/types/globals';
@@ -23,17 +24,16 @@ export function LinksSection({
       {links.length === 0 ? (
         <p className="text-gray-400 text-center py-8">{t.noLinks}</p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 ">
           {links.map((link) => {
             const isSelected = selected.find((l) => l.shortUrl === link.shortUrl);
             return (
               <div
                 key={link.shortUrl}
-                className={`rounded-xl border transition-all duration-300 ${
-                  isSelected
+                className={`rounded-xl border  transition-all duration-300 ${isSelected
                     ? 'border-emerald-400/50 bg-emerald-500/10'
                     : 'border-white/10 bg-white/5 hover:border-white/20'
-                }`}
+                  }`}
               >
                 <label className="flex items-start gap-3 p-4 cursor-pointer">
                   <input

@@ -31,6 +31,12 @@ const AnalyticsMonthlySchema = new mongoose.Schema(
       default: () => new Map(),
     },
 
+    byContext: {
+      type: Map,
+      of: Number,
+      default: () => new Map(),
+    },
+
     byDevice: {
       type: Map,
       of: Number,

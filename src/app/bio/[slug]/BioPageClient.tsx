@@ -7,9 +7,10 @@ import { getBackgroundImageStyles, getBaseColorStyle } from '@/utils/backgroundI
 interface Props {
   slug: string;
   initialBioPage: BioPageData | null;
+  attributionSource?: string;
 }
 
-export default function BioPageClient({ initialBioPage }: Props) {
+export default function BioPageClient({ initialBioPage, attributionSource = 'direct' }: Props) {
   const bioPage = initialBioPage;
 
   if (!bioPage) {
@@ -47,7 +48,8 @@ export default function BioPageClient({ initialBioPage }: Props) {
       body: JSON.stringify({
         linkId: link.linkId,
         userId: bioPage.userId,
-        source: 'biopage',
+        source: attributionSource,
+        context: 'biopage',
       }),
       keepalive: true,
     }).catch((err) => console.error('Tracking error:', err));

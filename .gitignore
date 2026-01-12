@@ -12,7 +12,8 @@
 /.trae
 # testing
 /coverage
-
+/scripts
+/go-worker
 # next.js
 /.next/
 /out/
